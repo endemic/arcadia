@@ -1,5 +1,5 @@
 /*jslint sloppy: true */
-/*globals Vctr, Player */
+/*globals Vctr, Player, PlayerBullet */
 
 var GameLayer = function (context) {
 	Vctr.Layer.apply(this, arguments);
@@ -18,16 +18,27 @@ var GameLayer = function (context) {
 	this.bullets = [];
 	this.bulletIndex = 0;
 	while (this.bullets.length < 20) {
-		b = new Vctr.Sprite(0, 0, 'square', 1, '#fff');
-		b.speed = 100;
-		b.velocity.y = -1;
-		b.active = false;
+		b = new PlayerBullet(0, 0, 'square', 1, '#fff');
 		this.bullets.push(b);
 		this.add(b);
 	}
 };
 
 GameLayer.prototype = new Vctr.Layer();
+
+GameLayer.prototype.addPlayerBullet = function (b) {
+	if (this.activePlayerBullets > this.maxPlayerBullets) {
+		return;
+	}
+
+	this.playerBullets[this.activePlayerBullets] = b;
+	this.activePlayerBullets += 1;
+};
+
+GameLayer.prototype.removePlayerBullet = function (index) {
+	this.playerBullets[index] = this.playerBullets[this.activePlayerBullets - 1];
+	this.activePlayerBullets -= 1;
+};
 
 GameLayer.prototype.onPointMove = function (points) {
 	this.player.position = points[0];
