@@ -14,11 +14,11 @@ var GameLayer = function (context) {
 	this.add(this.player);
 
 	// Create some bullets
-	this.bullets = [];
-	this.bulletIndex = 0;
-	while (this.bullets.length < 20) {
+	this.playerBullets = [];
+	this.playerBulletIndex = 0;
+	while (this.playerBullets.length < 20) {
 		b = new PlayerBullet(0, 0, 'square', 1, '#fff');
-		this.bullets.push(b);
+		this.playerBullets.push(b);
 		this.add(b);
 	}
 };
@@ -31,19 +31,24 @@ GameLayer.prototype = new Vectr.Layer();
 // To add a bullet, set bullet at index pointer to active. If index pointer == bullets.length - 1 then return
 // To remove a bullet, splice out the bullet at a particular index and push it back on to the end of the array, then decrement the index pointer
 
-GameLayer.prototype.addPlayerBullet = function (b) {
-	if (this.activePlayerBullets > this.maxPlayerBullets) {
-		return;
+GameLayer.prototype.getPlayerBullet = function () {
+	if (this.playerBulletIndex === this.playerBullets.length - 1) {
+		return null;
 	}
 
-	this.playerBullets[this.activePlayerBullets] = b;
-	this.activePlayerBullets += 1;
+	var b = this.playerBullets[this.playerBulletIndex];
+	b.active = true;
+	this.playerBulletIndex += 1;
+	return b;
 };
 
 GameLayer.prototype.removePlayerBullet = function (index) {
-	this.playerBullets[index] = this.playerBullets[this.activePlayerBullets - 1];
-	this.activePlayerBullets -= 1;
+	this.playerBullets[index].active = false;
+	this.playerBullets.push(this.playerBullets.splice(index, 1));
+	this.playerBulletIndex -= 1;
 };
+
+// GameLayer.prototype.update
 
 /**
  * @description Mouse/touch movement
@@ -56,14 +61,14 @@ GameLayer.prototype.onPointMove = function (points) {
  * @description Handle keyboard input
  */
 GameLayer.prototype.onKeyDown = function (input) {
-	if (input.z) {
-		this.bullets[this.bulletIndex].position.x = this.player.position.x;
-		this.bullets[this.bulletIndex].position.y = this.player.position.y;
-		this.bullets[this.bulletIndex].active = true;
-		this.bulletIndex += 1;
+	var b;
 
-		if (this.bulletIndex === this.bullets.length) {
-			this.bulletIndex = 0;
+	if (input.z) {
+		b = this.getPlayerBullet();
+
+		if (b !== null) {
+			b.position.x = this.player.position.x;
+			b.position.y = this.player.position.y;
 		}
 	}
 
