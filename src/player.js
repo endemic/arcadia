@@ -1,8 +1,8 @@
 /*jslint sloppy: true, browser: true */
-/*globals Vctr, Player */
+/*globals Vectr, Player */
 
 var Player = function (x, y, shape, size, color) {
-	Vctr.Sprite.apply(this, arguments);
+	Vectr.Sprite.apply(this, arguments);
 
 	// this.velocity = {
 	// 	'x': 75,
@@ -13,10 +13,10 @@ var Player = function (x, y, shape, size, color) {
 	// this.solid = true;
 };
 
-Player.prototype = new Vctr.Sprite();
+Player.prototype = new Vectr.Sprite();
 
 Player.prototype.update = function (dt) {
-	Vctr.Sprite.prototype.update.call(this, dt);
+	Vectr.Sprite.prototype.update.call(this, dt);
 	
 	this.rotation += 0.01;
 	// this.scale += 0.1 * this.direction;
@@ -27,7 +27,7 @@ Player.prototype.update = function (dt) {
 
 	// console.log(this.velocity);
 
-	if (this.position.x + this.size / 2 > Vctr.constants.width) {
+	if (this.position.x + this.size / 2 > Vectr.WIDTH) {
 		this.velocity.x *= -1;
 	}
 
@@ -35,7 +35,7 @@ Player.prototype.update = function (dt) {
 		this.velocity.x *= -1;
 	}
 
-	if (this.position.y + this.size / 2 > Vctr.constants.height) {
+	if (this.position.y + this.size / 2 > Vectr.HEIGHT) {
 		this.velocity.y *= -1;
 	}
 

@@ -1,8 +1,10 @@
 /*jslint sloppy: true */
-/*globals Vctr, Player, PlayerBullet */
+/*globals Vectr, Player, PlayerBullet */
 
 var GameLayer = function (context) {
-	Vctr.Layer.apply(this, arguments);
+	Vectr.Layer.apply(this, arguments);
+	this.clearColor = 'rgba(0, 0, 0, 0.05)';
+	// this.clearColor = '#000';
 
 	var b;
 
@@ -10,9 +12,6 @@ var GameLayer = function (context) {
 	this.player.speed = 50;
 
 	this.add(this.player);
-
-	this.clearColor = 'rgba(0, 0, 0, 0.05)';
-	// this.clearColor = '#000';
 
 	// Create some bullets
 	this.bullets = [];
@@ -24,7 +23,13 @@ var GameLayer = function (context) {
 	}
 };
 
-GameLayer.prototype = new Vctr.Layer();
+GameLayer.prototype = new Vectr.Layer();
+
+// Potential particle management:
+// Set all bullets to "inactive"
+// Index pointer is at 0
+// To add a bullet, set bullet at index pointer to active. If index pointer == bullets.length - 1 then return
+// To remove a bullet, splice out the bullet at a particular index and push it back on to the end of the array, then decrement the index pointer
 
 GameLayer.prototype.addPlayerBullet = function (b) {
 	if (this.activePlayerBullets > this.maxPlayerBullets) {
@@ -40,12 +45,18 @@ GameLayer.prototype.removePlayerBullet = function (index) {
 	this.activePlayerBullets -= 1;
 };
 
+/**
+ * @description Mouse/touch movement
+ */
 GameLayer.prototype.onPointMove = function (points) {
 	this.player.position = points[0];
 };
 
+/**
+ * @description Handle keyboard input
+ */
 GameLayer.prototype.onKeyDown = function (input) {
-	if (input.space) {
+	if (input.z) {
 		this.bullets[this.bulletIndex].position.x = this.player.position.x;
 		this.bullets[this.bulletIndex].position.y = this.player.position.y;
 		this.bullets[this.bulletIndex].active = true;
@@ -73,6 +84,9 @@ GameLayer.prototype.onKeyDown = function (input) {
 	}
 };
 
+/**
+ * @description Handle keyboard input
+ */
 GameLayer.prototype.onKeyUp = function (input) {
 	if (input.left) {
 		this.player.velocity.x += 1;
