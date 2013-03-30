@@ -9,3 +9,7 @@ var PlayerBullet = function (x, y, shape, size, color) {
 };
 
 PlayerBullet.prototype = new Vectr.Sprite();
+
+PlayerBullet.prototype.update = function (delta) {
+	Vectr.Sprite.prototype.update.call(this, delta);
+};

@@ -1,4 +1,4 @@
-/*jslint sloppy: true */
+/*jslint sloppy: true, plusplus: true */
 /*globals Vectr, Player, PlayerBullet */
 
 var GameLayer = function (context) {
@@ -6,17 +6,17 @@ var GameLayer = function (context) {
 	this.clearColor = 'rgba(0, 0, 0, 0.05)';
 	// this.clearColor = '#000';
 
-	var b;
+	var b,
+		i;
 
 	this.player = new Player(160, 160, 'triangle', 25, 'rgb(255, 0, 0)');
-	this.player.speed = 50;
-
 	this.add(this.player);
 
+	this.playerBullets = new Vectr.Collection();
+
 	// Create some bullets
-	this.playerBullets = [];
-	this.playerBulletIndex = 0;
-	while (this.playerBullets.length < 20) {
+	i = 20;
+	while (i--) {
 		b = new PlayerBullet(0, 0, 'square', 1, '#fff');
 		this.playerBullets.push(b);
 		this.add(b);
@@ -25,30 +25,22 @@ var GameLayer = function (context) {
 
 GameLayer.prototype = new Vectr.Layer();
 
-// Potential particle management:
-// Set all bullets to "inactive"
-// Index pointer is at 0
-// To add a bullet, set bullet at index pointer to active. If index pointer == bullets.length - 1 then return
-// To remove a bullet, splice out the bullet at a particular index and push it back on to the end of the array, then decrement the index pointer
+GameLayer.prototype.update = function (delta) {
+	Vectr.Layer.prototype.update.call(this, delta);
 
-GameLayer.prototype.getPlayerBullet = function () {
-	if (this.playerBulletIndex === this.playerBullets.length - 1) {
-		return null;
+	var b,
+		i;
+
+	i = this.playerBullets.length;
+	while (i--) {
+		b = this.playerBullets[i];
+
+		if (b.active === true && (b.position.x > Vectr.WIDTH || b.position.x < 0 || b.position.y > Vectr.HEIGHT || b.position.y < 0)) {
+			this.playerBullets.remove(i);
+			i += 1;
+		}
 	}
-
-	var b = this.playerBullets[this.playerBulletIndex];
-	b.active = true;
-	this.playerBulletIndex += 1;
-	return b;
 };
-
-GameLayer.prototype.removePlayerBullet = function (index) {
-	this.playerBullets[index].active = false;
-	this.playerBullets.push(this.playerBullets.splice(index, 1));
-	this.playerBulletIndex -= 1;
-};
-
-// GameLayer.prototype.update
 
 /**
  * @description Mouse/touch movement
@@ -64,7 +56,7 @@ GameLayer.prototype.onKeyDown = function (input) {
 	var b;
 
 	if (input.z) {
-		b = this.getPlayerBullet();
+		b = this.playerBullets.get();
 
 		if (b !== null) {
 			b.position.x = this.player.position.x;
