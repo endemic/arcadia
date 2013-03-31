@@ -12,6 +12,9 @@ var GameLayer = function (context) {
 	this.player = new Player(160, 160, 'triangle', 25, 'rgb(255, 0, 0)');
 	this.add(this.player);
 
+	this.text = new Vectr.Label("Testing", 160, 160, "20px sans-serif", "rgb(0, 0, 255)");
+	this.add(this.text);
+
 	this.playerBullets = new Vectr.Collection();
 	this.enemies = new Vectr.Collection();
 
