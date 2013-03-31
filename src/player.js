@@ -7,6 +7,7 @@ var Player = function (x, y, shape, size, color) {
 	this.speed = 100;
 	// this.shadow = '0 0 25 rgb(255, 0, 0)';
 	this.solid = true;
+	this.rotation = 270;
 };
 
 Player.prototype = new Vectr.Sprite();
