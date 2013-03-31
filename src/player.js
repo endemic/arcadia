@@ -6,7 +6,6 @@ var Player = function (x, y, shape, size, color) {
 
 	this.speed = 100;
 	// this.shadow = '0 0 25 rgb(255, 0, 0)';
-	this.direction = 1;
 	this.solid = true;
 };
 
