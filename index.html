@@ -8,7 +8,11 @@
 	<script type="text/javascript" src="lib/vectr.emitter.js"></script>
 	<script type="text/javascript" src="lib/vectr.label.js"></script>
 
-	<script type="text/javascript" src="src/gamelayer.js"></script>
+	<!-- layers -->
+	<script type="text/javascript" src="src/game.js"></script>
+	<script type="text/javascript" src="src/title.js"></script>
+
+	<!-- objects -->
 	<script type="text/javascript" src="src/player.js"></script>
 	<script type="text/javascript" src="src/enemy.js"></script>
 	<script type="text/javascript" src="src/player-bullet.js"></script>
@@ -17,7 +21,7 @@
 
 /* Test */
 window.onload = function () {
-	var game = new Vectr.Game(320, 480, [GameLayer]);//, [array of layers]);
+	var game = new Vectr.Game(320, 480, Title);
 	game.start();
 };
 </script>

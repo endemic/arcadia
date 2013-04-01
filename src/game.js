@@ -1,7 +1,7 @@
 /*jslint sloppy: true, plusplus: true */
 /*globals Vectr, Player, PlayerBullet, Enemy */
 
-var GameLayer = function (context) {
+var Game = function (context) {
 	Vectr.Layer.apply(this, arguments);
 	this.clearColor = 'rgba(0, 0, 0, 0.05)';
 	// this.clearColor = '#000';
@@ -17,14 +17,15 @@ var GameLayer = function (context) {
 	this.score = 0;
 
 	this.playerBullets = new Vectr.Collection();
+	this.add(this.playerBullets);
 	this.enemies = new Vectr.Collection();
+	this.add(this.enemies);
 
 	// Create some bullets
 	i = 20;
 	while (i--) {
 		obj = new PlayerBullet(0, 0, 'square', 1, '#fff');
 		this.playerBullets.push(obj);
-		this.add(obj);
 	}
 
 	// Create some enemies
@@ -33,14 +34,13 @@ var GameLayer = function (context) {
 		obj = new Enemy(0, 0, 'triangle', 25, 'rgb(0, 255, 0)');
 		obj.active = false;
 		this.enemies.push(obj);
-		this.add(obj);
 	}
 	this.spawnTimer = 0;
 };
 
-GameLayer.prototype = new Vectr.Layer();
+Game.prototype = new Vectr.Layer();
 
-GameLayer.prototype.update = function (delta) {
+Game.prototype.update = function (delta) {
 	Vectr.Layer.prototype.update.call(this, delta);
 
 	var angle,
@@ -98,14 +98,14 @@ GameLayer.prototype.update = function (delta) {
 /**
  * @description Mouse/touch movement
  */
-GameLayer.prototype.onPointMove = function (points) {
+Game.prototype.onPointMove = function (points) {
 	this.player.position = points[0];
 };
 
 /**
  * @description Handle keyboard input
  */
-GameLayer.prototype.onKeyDown = function (input) {
+Game.prototype.onKeyDown = function (input) {
 	var b;
 
 	if (input.z) {
@@ -137,7 +137,7 @@ GameLayer.prototype.onKeyDown = function (input) {
 /**
  * @description Handle keyboard input
  */
-GameLayer.prototype.onKeyUp = function (input) {
+Game.prototype.onKeyUp = function (input) {
 	if (input.left) {
 		this.player.velocity.x += 1;
 	}
