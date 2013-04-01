@@ -12,8 +12,8 @@ var GameLayer = function (context) {
 	this.player = new Player(160, 160, 'triangle', 25, 'rgb(255, 0, 0)');
 	this.add(this.player);
 
-	this.text = new Vectr.Label("Score: 0", 0, 20, "80pt sans-serif", "rgb(255, 255, 255)");
-	this.add(this.text);
+	this.label = new Vectr.Label("Score: 0", 0, 20, "16px sans-serif", "rgb(255, 255, 255)");
+	this.add(this.label);
 	this.score = 0;
 
 	this.playerBullets = new Vectr.Collection();
@@ -49,7 +49,7 @@ GameLayer.prototype.update = function (delta) {
 		j;
 
 	this.spawnTimer += delta;
-	if (this.spawnTimer > 3) {
+	if (this.spawnTimer > 2) {
 		this.spawnTimer = 0;
 
 		obj = this.enemies.get();
@@ -88,7 +88,7 @@ GameLayer.prototype.update = function (delta) {
 					i += 1;
 					j += 1;
 					this.score += 10;
-					this.text.text = "Score: " + this.score;
+					this.label.text = "Score: " + this.score;
 				}
 			}
 		}

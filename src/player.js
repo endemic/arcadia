@@ -15,7 +15,7 @@ Player.prototype = new Vectr.Sprite();
 Player.prototype.update = function (dt) {
 	Vectr.Sprite.prototype.update.call(this, dt);
 
-	this.rotation += 0.01;
+	// this.rotation += 0.01;
 
 	if (this.position.x + this.size / 2 > Vectr.WIDTH) {
 		this.position.x = Vectr.WIDTH - this.size / 2;
