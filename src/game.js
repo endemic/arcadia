@@ -9,13 +9,16 @@ var Game = function (context) {
 	var obj,
 		i;
 
-	this.player = new Player(160, 160, 'triangle', 25, 'rgb(255, 0, 0)');
+	// Player
+	this.player = new Player(Vectr.WIDTH / 2, Vectr.HEIGHT / 1.5);
 	this.add(this.player);
 
+	// Score label
 	this.label = new Vectr.Label("Score: 0", 0, 20, "16px sans-serif", "rgb(255, 255, 255)");
 	this.add(this.label);
 	this.score = 0;
 
+	// Other game objects
 	this.playerBullets = new Vectr.Collection();
 	this.add(this.playerBullets);
 	this.enemies = new Vectr.Collection();
@@ -31,11 +34,15 @@ var Game = function (context) {
 	// Create some enemies
 	i = 20;
 	while (i--) {
-		obj = new Enemy(0, 0, 'triangle', 25, 'rgb(0, 255, 0)');
+		obj = new Enemy(0, 0);
 		obj.active = false;
 		this.enemies.push(obj);
 	}
 	this.spawnTimer = 0;
+
+	// Particle emitter
+	this.particles = new Vectr.Emitter(30, 'triangle', 5, 'rgb(0, 255, 0)');
+	this.add(this.particles);
 };
 
 Game.prototype = new Vectr.Layer();
@@ -75,6 +82,7 @@ Game.prototype.update = function (delta) {
 		obj = this.playerBullets[i];
 
 		if (obj.active === true) {
+			// Remove bullets if they go offscreen
 			if (obj.position.x > Vectr.WIDTH || obj.position.x < 0 || obj.position.y > Vectr.HEIGHT || obj.position.y < 0) {
 				this.playerBullets.remove(i);
 				i += 1;
@@ -82,7 +90,9 @@ Game.prototype.update = function (delta) {
 
 			j = this.enemies.length;
 			while (j--) {
+				// Remove both enemy and bullet if they collide
 				if (this.enemies[j].active === true && this.enemies[j].collidesWith(obj) === true) {
+					this.particles.start(obj.position.x, obj.position.y);
 					this.enemies.remove(j);
 					this.playerBullets.remove(i);
 					i += 1;

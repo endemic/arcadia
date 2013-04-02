@@ -6,6 +6,9 @@ var Enemy = function (x, y, shape, size, color) {
 
 	this.shadow = '0 0 25 rgb(0, 255, 0)';
 	this.speed = 40;
+	this.shape = 'triangle';
+	this.size = 20;
+	this.color = 'rgb(0, 255, 0)';
 };
 
 Enemy.prototype = new Vectr.Sprite();

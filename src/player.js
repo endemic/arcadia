@@ -5,8 +5,11 @@ var Player = function (x, y, shape, size, color) {
 	Vectr.Sprite.apply(this, arguments);
 
 	this.speed = 100;
-	// this.shadow = '0 0 25 rgb(255, 0, 0)';
-	this.solid = true;
+	this.shadow = '0 0 25 rgb(255, 255, 255)';
+	this.shape = 'triangle';
+	this.size = 20;
+	this.color = 'rgb(255, 255, 255)';
+	this.solid = false;
 	this.rotation = 270;
 };
 
