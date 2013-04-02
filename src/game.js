@@ -14,7 +14,7 @@ var Game = function (context) {
 	this.add(this.player);
 
 	// Score label
-	this.label = new Vectr.Label("Score: 0", 0, 20, "16px sans-serif", "rgb(255, 255, 255)");
+	this.label = new Vectr.Label("Score: 0", 0, 20, "16px sans-serif", "rgba(255, 255, 255, 0.8)");
 	this.add(this.label);
 	this.score = 0;
 
@@ -27,21 +27,18 @@ var Game = function (context) {
 	// Create some bullets
 	i = 20;
 	while (i--) {
-		obj = new PlayerBullet(0, 0, 'square', 1, '#fff');
-		this.playerBullets.push(obj);
+		this.playerBullets.add(new PlayerBullet());
 	}
 
 	// Create some enemies
 	i = 20;
 	while (i--) {
-		obj = new Enemy(0, 0);
-		obj.active = false;
-		this.enemies.push(obj);
+		this.enemies.add(new Enemy());
 	}
-	this.spawnTimer = 0;
+	this.spawnTimer = 2;	// Immediately spawn an enemy
 
 	// Particle emitter
-	this.particles = new Vectr.Emitter(30, 'triangle', 5, 'rgb(0, 255, 0)');
+	this.particles = new Vectr.Emitter(30, 'triangle', 5, 'rgba(0, 255, 0, 0.9)');
 	this.add(this.particles);
 };
 
@@ -51,6 +48,8 @@ Game.prototype.update = function (delta) {
 	Vectr.Layer.prototype.update.call(this, delta);
 
 	var angle,
+		bullet,
+		enemy,
 		obj,
 		i,
 		j;
@@ -59,42 +58,44 @@ Game.prototype.update = function (delta) {
 	if (this.spawnTimer > 2) {
 		this.spawnTimer = 0;
 
-		obj = this.enemies.get();
-		obj.position.y = 0;
-		obj.position.x = Math.random() * Vectr.WIDTH;
+		enemy = this.enemies.activate();
+		if (enemy !== null) {
+			enemy.position.y = 0;
+			enemy.position.x = Math.random() * Vectr.WIDTH;
+		}
 	}
 
 	// Update enemy angle
-	i = this.enemies.length;
+	i = this.enemies.children.length;
 	while (i--) {
-		obj = this.enemies[i];
-		if (obj.active === true) {
-			angle = Math.atan2(this.player.position.y - obj.position.y, this.player.position.x - obj.position.x);
-			obj.rotation = angle * 180 / Math.PI;
-			obj.velocity.x = Math.cos(angle);
-			obj.velocity.y = Math.sin(angle);
+		enemy = this.enemies.at(i);
+		if (enemy.active === true) {
+			angle = Math.atan2(this.player.position.y - enemy.position.y, this.player.position.x - enemy.position.x);
+			enemy.rotation = angle * 180 / Math.PI;
+			enemy.velocity.x = Math.cos(angle);
+			enemy.velocity.y = Math.sin(angle);
 		}
 	}
 
 	// Check for bullet collisions, etc.
-	i = this.playerBullets.length;
+	i = this.playerBullets.children.length;
 	while (i--) {
-		obj = this.playerBullets[i];
+		bullet = this.playerBullets.at(i);
 
-		if (obj.active === true) {
+		if (bullet.active === true) {
 			// Remove bullets if they go offscreen
-			if (obj.position.x > Vectr.WIDTH || obj.position.x < 0 || obj.position.y > Vectr.HEIGHT || obj.position.y < 0) {
-				this.playerBullets.remove(i);
+			if (bullet.position.x > Vectr.WIDTH || bullet.position.x < 0 || bullet.position.y > Vectr.HEIGHT || bullet.position.y < 0) {
+				this.playerBullets.deactivate(i);
 				i += 1;
 			}
 
-			j = this.enemies.length;
+			j = this.enemies.children.length;
 			while (j--) {
 				// Remove both enemy and bullet if they collide
-				if (this.enemies[j].active === true && this.enemies[j].collidesWith(obj) === true) {
-					this.particles.start(obj.position.x, obj.position.y);
-					this.enemies.remove(j);
-					this.playerBullets.remove(i);
+				if (this.enemies.at(j).active === true && this.enemies.at(j).collidesWith(bullet) === true) {
+					this.particles.start(bullet.position.x, bullet.position.y);
+					this.enemies.deactivate(j);
+					this.playerBullets.deactivate(i);
 					i += 1;
 					j += 1;
 					this.score += 10;
@@ -108,8 +109,21 @@ Game.prototype.update = function (delta) {
 /**
  * @description Mouse/touch movement
  */
+Game.prototype.onPointStart = function (points) {
+	this.player.position = points[0];
+};
+
 Game.prototype.onPointMove = function (points) {
 	this.player.position = points[0];
+};
+
+Game.prototype.onPointEnd = function (points) {
+	var b = this.playerBullets.activate();
+
+	if (b !== null) {
+		b.position.x = this.player.position.x;
+		b.position.y = this.player.position.y;
+	}
 };
 
 /**
@@ -119,7 +133,7 @@ Game.prototype.onKeyDown = function (input) {
 	var b;
 
 	if (input.z) {
-		b = this.playerBullets.get();
+		b = this.playerBullets.activate();
 
 		if (b !== null) {
 			b.position.x = this.player.position.x;

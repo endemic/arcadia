@@ -7,23 +7,23 @@ var Title = function (context) {
 	// this.clearColor = 'rgba(0, 0, 0, 0.05)';
 	this.clearColor = "#000";
 
-	this.add(new Vectr.Label("Uchuu Sensou", 10, Vectr.HEIGHT / 4, "40px sans-serif", "rgb(255, 255, 255)"));
-	this.add(new Vectr.Label("Click or tap to start", 10, Vectr.HEIGHT / 2, "20px sans-serif", "rgb(255, 255, 255)"));
+	this.add(new Vectr.Label("Uchuu Sensou", 10, Vectr.HEIGHT / 4, "40px sans-serif", "rgba(255, 255, 255, 0.95)"));
+	this.add(new Vectr.Label("Click or tap to start", 10, Vectr.HEIGHT / 2, "20px sans-serif", "rgba(255, 255, 255, 0.95)"));
 
 	// Add a starfield background
 	this.stars = new Vectr.Collection();
 	this.add(this.stars);
-	
+
 	var i,
 		star;
 
 	i = 100;
 
 	while (i--) {
-		star = new Vectr.Sprite(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.round(Math.random() * 3), '#fff');
+		star = new Vectr.Sprite(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.round(Math.random() * 2 + 1), 'rgba(255, 255, 255, 1)');
 		star.solid = true;
 		star.velocity.y = 30 / star.size;
-		this.stars.push(star);
+		this.stars.add(star);
 	}
 };
 
@@ -35,10 +35,10 @@ Title.prototype.update = function (delta) {
 	var i,
 		star;
 
-	// Update stars
-	i = this.stars.length;
+	// Reset star positions
+	i = this.stars.children.length;
 	while (i--) {
-		star = this.stars[i];
+		star = this.stars.at(i);
 		if (star.position.y > Vectr.HEIGHT) {
 			star.position.y = 0;
 		}

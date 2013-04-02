@@ -1,6 +1,13 @@
 <html>
 <head>
-	<title></title>
+	<title>Vectr</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+	<style type="text/css">
+	body { padding: 0; margin: 0; }
+	</style>
+
 	<script type="text/javascript" src="lib/vectr.game.js"></script>
 	<script type="text/javascript" src="lib/vectr.layer.js"></script>
 	<script type="text/javascript" src="lib/vectr.sprite.js"></script>
@@ -17,14 +24,17 @@
 	<script type="text/javascript" src="src/enemy.js"></script>
 	<script type="text/javascript" src="src/player-bullet.js"></script>
 
-<script type="text/javascript">
+	<script type="text/javascript">
+		document.addEventListener('touchmove', function (e) {
+			e.preventDefault();
+		});
 
-/* Test */
-window.onload = function () {
-	var game = new Vectr.Game(320, 480, Title);
-	game.start();
-};
-</script>
+		/* Test */
+		window.onload = function () {
+			var game = new Vectr.Game(320, 480, Title);
+			game.start();
+		};
+	</script>
 </head>
 <body>
 

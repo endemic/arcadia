@@ -4,11 +4,28 @@
 var Enemy = function (x, y, shape, size, color) {
 	Vectr.Sprite.apply(this, arguments);
 
-	this.shadow = '0 0 25 rgb(0, 255, 0)';
+	this.color = {
+		'red': 0,
+		'green': 255,
+		'blue': 0,
+		'alpha': 1
+	};
+
+	this.shadow = {
+		'x': 0,
+		'y': 0,
+		'blur': 25,
+		'color': {
+			'red': 0,
+			'green': 255,
+			'blue': 0,
+			'alpha': 1
+		}
+	};
 	this.speed = 40;
-	this.shape = 'triangle';
 	this.size = 20;
-	this.color = 'rgb(0, 255, 0)';
+	this.shape = 'triangle';
+	this.active = false;
 };
 
 Enemy.prototype = new Vectr.Sprite();

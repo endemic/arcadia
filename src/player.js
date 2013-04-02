@@ -1,15 +1,23 @@
 /*jslint sloppy: true, browser: true */
 /*globals Vectr, Player */
 
-var Player = function (x, y, shape, size, color) {
+var Player = function (x, y) {
 	Vectr.Sprite.apply(this, arguments);
 
 	this.speed = 100;
-	this.shadow = '0 0 25 rgb(255, 255, 255)';
 	this.shape = 'triangle';
 	this.size = 20;
-	this.color = 'rgb(255, 255, 255)';
-	this.solid = false;
+	this.shadow = {
+		'x': 0,
+		'y': 0,
+		'blur': 25,
+		'color': {
+			'red': 255,
+			'green': 255,
+			'blue': 255,
+			'alpha': 1
+		}
+	};
 	this.rotation = 270;
 };
 
@@ -17,8 +25,6 @@ Player.prototype = new Vectr.Sprite();
 
 Player.prototype.update = function (dt) {
 	Vectr.Sprite.prototype.update.call(this, dt);
-
-	// this.rotation += 0.01;
 
 	if (this.position.x + this.size / 2 > Vectr.WIDTH) {
 		this.position.x = Vectr.WIDTH - this.size / 2;
