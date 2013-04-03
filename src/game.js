@@ -14,14 +14,14 @@ var Game = function (context) {
 	this.add(this.player);
 
 	// Score label
-	this.label = new Vectr.Label("Score: 0", 0, 20, "16px sans-serif", "rgba(255, 255, 255, 0.8)");
+	this.label = new Vectr.Label("Score: 0", "16px sans-serif", "rgba(255, 255, 255, 0.8)", 0, 20, "left");
 	this.add(this.label);
 	this.score = 0;
 
 	// Other game objects
-	this.playerBullets = new Vectr.Collection();
+	this.playerBullets = new Vectr.Pool();
 	this.add(this.playerBullets);
-	this.enemies = new Vectr.Collection();
+	this.enemies = new Vectr.Pool();
 	this.add(this.enemies);
 
 	// Create some bullets
@@ -50,7 +50,6 @@ Game.prototype.update = function (delta) {
 	var angle,
 		bullet,
 		enemy,
-		obj,
 		i,
 		j;
 
@@ -66,7 +65,7 @@ Game.prototype.update = function (delta) {
 	}
 
 	// Update enemy angle
-	i = this.enemies.children.length;
+	i = this.enemies.length;
 	while (i--) {
 		enemy = this.enemies.at(i);
 		if (enemy.active === true) {
@@ -78,28 +77,27 @@ Game.prototype.update = function (delta) {
 	}
 
 	// Check for bullet collisions, etc.
-	i = this.playerBullets.children.length;
+	i = this.playerBullets.length;
 	while (i--) {
 		bullet = this.playerBullets.at(i);
 
-		if (bullet.active === true) {
-			// Remove bullets if they go offscreen
-			if (bullet.position.x > Vectr.WIDTH || bullet.position.x < 0 || bullet.position.y > Vectr.HEIGHT || bullet.position.y < 0) {
-				this.playerBullets.deactivate(i);
-				i += 1;
-			}
-
-			j = this.enemies.children.length;
+		// Remove bullets if they go offscreen
+		if (bullet !== null && (bullet.position.y > Vectr.HEIGHT || bullet.position.y < 0)) {
+			this.playerBullets.deactivate(i);
+			break;
+		} else {
+			j = this.enemies.length;
 			while (j--) {
+				enemy = this.enemies.at(j);
+
 				// Remove both enemy and bullet if they collide
-				if (this.enemies.at(j).active === true && this.enemies.at(j).collidesWith(bullet) === true) {
-					this.particles.start(bullet.position.x, bullet.position.y);
+				if (enemy !== null && enemy.collidesWith(bullet) === true) {
+					this.particles.start(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
 					this.enemies.deactivate(j);
 					this.playerBullets.deactivate(i);
-					i += 1;
-					j += 1;
 					this.score += 10;
 					this.label.text = "Score: " + this.score;
+					break;
 				}
 			}
 		}
