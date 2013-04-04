@@ -35,11 +35,24 @@ var Game = function (context) {
 	while (i--) {
 		this.enemies.add(new Enemy());
 	}
-	this.spawnTimer = 2;	// Immediately spawn an enemy
+	this.spawnTimer = 999;	// Immediately spawn an enemy
 
 	// Particle emitter
-	this.particles = new Vectr.Emitter(30, 'triangle', 5, 'rgba(0, 255, 0, 0.9)');
+	this.particles = new Vectr.Emitter(30, 'triangle', 5, 'rgba(255, 0, 0, 0.9)');
 	this.add(this.particles);
+
+	// Add a starfield background
+	this.stars = new Vectr.Pool();
+	this.add(this.stars);
+
+	i = 50;
+
+	while (i--) {
+		obj = new Vectr.Sprite(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.random() + 0.5, 'rgba(255, 255, 255, 1)');
+		obj.solid = true;
+		obj.velocity.y = 40 / obj.size;
+		this.stars.add(obj);
+	}
 };
 
 Game.prototype = new Vectr.Layer();
@@ -50,11 +63,21 @@ Game.prototype.update = function (delta) {
 	var angle,
 		bullet,
 		enemy,
+		star,
 		i,
 		j;
 
+	// Reset star positions
+	i = this.stars.children.length;
+	while (i--) {
+		star = this.stars.at(i);
+		if (star.position.y > Vectr.HEIGHT) {
+			star.position.y = 0;
+		}
+	}
+
 	this.spawnTimer += delta;
-	if (this.spawnTimer > 2) {
+	if (this.spawnTimer > 1) {
 		this.spawnTimer = 0;
 
 		enemy = this.enemies.activate();

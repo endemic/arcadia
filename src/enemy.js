@@ -5,8 +5,8 @@ var Enemy = function (x, y, shape, size, color) {
 	Vectr.Sprite.apply(this, arguments);
 
 	this.color = {
-		'red': 0,
-		'green': 255,
+		'red': 255,
+		'green': 0,
 		'blue': 0,
 		'alpha': 1
 	};
@@ -16,8 +16,8 @@ var Enemy = function (x, y, shape, size, color) {
 		'y': 0,
 		'blur': 25,
 		'color': {
-			'red': 0,
-			'green': 255,
+			'red': 255,
+			'green': 0,
 			'blue': 0,
 			'alpha': 1
 		}

@@ -17,10 +17,10 @@ var Title = function (context) {
 	var i,
 		star;
 
-	i = 100;
+	i = 50;
 
 	while (i--) {
-		star = new Vectr.Sprite(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.random() + 1, 'rgba(255, 255, 255, 1)');
+		star = new Vectr.Sprite(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.random() + 0.5, 'rgba(255, 255, 255, 1)');
 		star.solid = true;
 		star.velocity.y = 40 / star.size;
 		this.stars.add(star);
