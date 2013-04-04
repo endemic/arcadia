@@ -5,10 +5,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
 	<style type="text/css">
-	body { padding: 0; margin: 0; }
+	body { 
+		padding: 0; 
+		margin: 0; 
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
 	</style>
 
-	<script type="text/javascript" src="lib/vectr.game.js"></script>
+	<script type="text/javascript" src="lib/vectr.js"></script>
 	<script type="text/javascript" src="lib/vectr.layer.js"></script>
 	<script type="text/javascript" src="lib/vectr.sprite.js"></script>
 	<script type="text/javascript" src="lib/vectr.pool.js"></script>
@@ -23,6 +31,7 @@
 	<script type="text/javascript" src="src/player.js"></script>
 	<script type="text/javascript" src="src/enemy.js"></script>
 	<script type="text/javascript" src="src/player-bullet.js"></script>
+	<script type="text/javascript" src="src/enemy-bullet.js"></script>
 
 	<script type="text/javascript">
 		document.addEventListener('touchmove', function (e) {

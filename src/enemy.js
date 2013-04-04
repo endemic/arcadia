@@ -26,6 +26,7 @@ var Enemy = function (x, y, shape, size, color) {
 	this.size = 20;
 	this.shape = 'triangle';
 	this.active = false;
+	this.bulletTimer = 0;
 };
 
 Enemy.prototype = new Vectr.Sprite();

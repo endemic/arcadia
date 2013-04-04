@@ -1,5 +1,5 @@
 /*jslint sloppy: true, plusplus: true */
-/*globals Vectr, Player, PlayerBullet, Enemy */
+/*globals Vectr, Player, PlayerBullet, Enemy, EnemyBullet */
 
 var Game = function (context) {
 	Vectr.Layer.apply(this, arguments);
@@ -14,13 +14,15 @@ var Game = function (context) {
 	this.add(this.player);
 
 	// Score label
-	this.label = new Vectr.Label("Score: 0", "16px sans-serif", "rgba(255, 255, 255, 0.8)", 0, 20, "left");
+	this.label = new Vectr.Label("Score: 0", "16px monospace", "rgba(255, 255, 255, 0.8)", 0, 20, "left");
 	this.add(this.label);
 	this.score = 0;
 
 	// Other game objects
 	this.playerBullets = new Vectr.Pool();
 	this.add(this.playerBullets);
+	this.enemyBullets = new Vectr.Pool();
+	this.add(this.enemyBullets);
 	this.enemies = new Vectr.Pool();
 	this.add(this.enemies);
 
@@ -28,6 +30,11 @@ var Game = function (context) {
 	i = 20;
 	while (i--) {
 		this.playerBullets.add(new PlayerBullet());
+	}
+
+	i = 40;
+	while (i--) {
+		this.enemyBullets.add(new EnemyBullet());
 	}
 
 	// Create some enemies
@@ -38,8 +45,11 @@ var Game = function (context) {
 	this.spawnTimer = 999;	// Immediately spawn an enemy
 
 	// Particle emitter
-	this.particles = new Vectr.Emitter(30, 'triangle', 5, 'rgba(255, 0, 0, 0.9)');
+	this.particles = new Vectr.Emitter(30, 'square', 3, 'rgba(255, 0, 0, 0.9)');
 	this.add(this.particles);
+
+	this.playerExplosion = new Vectr.Emitter(30, 'circle', 3, 'rgba(255, 255, 255, 0.9)');
+	this.add(this.playerExplosion);
 
 	// Add a starfield background
 	this.stars = new Vectr.Pool();
@@ -67,7 +77,7 @@ Game.prototype.update = function (delta) {
 		i,
 		j;
 
-	// Reset star positions
+	// Update star positions
 	i = this.stars.children.length;
 	while (i--) {
 		star = this.stars.at(i);
@@ -76,6 +86,11 @@ Game.prototype.update = function (delta) {
 		}
 	}
 
+	if (this.gameOver === true) {
+		return;
+	}
+
+	// Spawn enemies
 	this.spawnTimer += delta;
 	if (this.spawnTimer > 1) {
 		this.spawnTimer = 0;
@@ -87,19 +102,42 @@ Game.prototype.update = function (delta) {
 		}
 	}
 
-	// Update enemy angle
+	// Update enemy velocity
 	i = this.enemies.length;
 	while (i--) {
 		enemy = this.enemies.at(i);
-		if (enemy.active === true) {
-			angle = Math.atan2(this.player.position.y - enemy.position.y, this.player.position.x - enemy.position.x);
-			enemy.rotation = angle * 180 / Math.PI;
-			enemy.velocity.x = Math.cos(angle);
-			enemy.velocity.y = Math.sin(angle);
+		angle = Math.atan2(this.player.position.y - enemy.position.y, this.player.position.x - enemy.position.x);
+		enemy.rotation = angle * 180 / Math.PI;
+		enemy.velocity.x = Math.cos(angle);
+		enemy.velocity.y = Math.sin(angle);
+		enemy.bulletTimer += delta;
+
+		// Have enemies shoot in a somewhat erratic fashion
+		if (enemy.bulletTimer > Math.random() * 2 + 1) {
+			enemy.bulletTimer = 0;
+			bullet = this.enemyBullets.activate();
+			bullet.position.x = enemy.position.x + enemy.velocity.x;
+			bullet.position.y = enemy.position.y + enemy.velocity.y;
+			bullet.velocity.x = enemy.velocity.x;
+			bullet.velocity.y = enemy.velocity.y;
 		}
 	}
 
-	// Check for bullet collisions, etc.
+	// Check for enemy bullet collisons
+	i = this.enemyBullets.length;
+	while (i--) {
+		bullet = this.enemyBullets.at(i);
+
+		if (bullet.position.y > Vectr.HEIGHT || bullet.position.y < 0) {
+			this.enemyBullets.deactivate(i);
+		} else if (bullet.collidesWith(this.player) === true) {
+			this.playerExplosion.start(this.player.position.x, this.player.position.y);
+			this.showGameOver();
+			break;
+		}
+	}
+
+	// Check for player bullet collisions, etc.
 	i = this.playerBullets.length;
 	while (i--) {
 		bullet = this.playerBullets.at(i);
@@ -131,19 +169,38 @@ Game.prototype.update = function (delta) {
  * @description Mouse/touch movement
  */
 Game.prototype.onPointStart = function (points) {
-	this.player.position = points[0];
+	var angle = Math.atan2(points[0].y - this.player.position.y, points[0].x - this.player.position.x);
+
+	if (this.player.position.x !== points[0].x && this.player.position.y !== points[0].y) {
+		this.player.velocity.x = Math.cos(angle);
+		this.player.velocity.y = Math.sin(angle);
+	}
 };
 
 Game.prototype.onPointMove = function (points) {
-	this.player.position = points[0];
+	var angle = Math.atan2(points[0].y - this.player.position.y, points[0].x - this.player.position.x);
+
+	if (this.player.position.x !== points[0].x && this.player.position.y !== points[0].y) {
+		this.player.velocity.x = Math.cos(angle);
+		this.player.velocity.y = Math.sin(angle);
+	}
 };
 
 Game.prototype.onPointEnd = function (points) {
+	if (this.gameOver === true) {
+		Vectr.changeLayer(Game);
+	}
+
 	var b = this.playerBullets.activate();
 
 	if (b !== null) {
 		b.position.x = this.player.position.x;
 		b.position.y = this.player.position.y;
+	}
+
+	if (points.length === 1) {
+		this.player.velocity.x = 0;
+		this.player.velocity.y = 0;
 	}
 };
 
@@ -151,9 +208,13 @@ Game.prototype.onPointEnd = function (points) {
  * @description Handle keyboard input
  */
 Game.prototype.onKeyDown = function (input) {
+	if (this.gameOver === true) {
+		return;
+	}
+
 	var b;
 
-	if (input.z) {
+	if (input.z || input.space) {
 		b = this.playerBullets.activate();
 
 		if (b !== null) {
@@ -198,4 +259,22 @@ Game.prototype.onKeyUp = function (input) {
 	if (input.down) {
 		this.player.velocity.y -= 1;
 	}
+
+	// If game is over, reload the game scene when user presses a key
+	if (this.gameOver === true && input.escape) {
+		Vectr.changeLayer(Game);
+	}
+};
+
+/**
+ * @description Show "game over!" text
+ */
+Game.prototype.showGameOver = function () {
+	this.gameOver = true;
+
+	this.player.active = false;
+
+	// Show text allowing the user to try again
+	this.add(new Vectr.Label("GAME OVER", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4));
+	this.add(new Vectr.Label("Hit ESC to retry", "20px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2));
 };

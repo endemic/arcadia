@@ -7,8 +7,8 @@ var Title = function (context) {
 	this.clearColor = 'rgba(0, 0, 0, 0.05)';
 	// this.clearColor = "#000";
 
-	this.add(new Vectr.Label("ARMADA", "40px sans-serif", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4));
-	this.add(new Vectr.Label("Click or tap to start", "20px sans-serif", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2));
+	this.add(new Vectr.Label("ARMADA", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4));
+	this.add(new Vectr.Label("Hit Z or SPACE to start", "20px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2));
 
 	// Add a starfield background
 	this.stars = new Vectr.Pool();
@@ -45,11 +45,13 @@ Title.prototype.update = function (delta) {
 	}
 };
 
-/**
- * @description Mouse/touch movement
- */
+// Change to game scene
 Title.prototype.onPointEnd = function (points) {
-	var point = points[0];
-
 	Vectr.changeLayer(Game);
+};
+
+Title.prototype.onKeyUp = function (input) {
+	if (input.z || input.space) {
+		Vectr.changeLayer(Game);
+	}
 };
