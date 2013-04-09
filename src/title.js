@@ -8,7 +8,15 @@ var Title = function (context) {
 	// this.clearColor = "#000";
 
 	this.add(new Vectr.Label("ARMADA", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4));
-	this.add(new Vectr.Label("Hit Z or SPACE to start", "20px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2));
+	// this.add(new Vectr.Label("Hit Z or SPACE to start", "20px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2));
+
+	this.button = new Vectr.Button("START", "20px monospace", "rgba(255, 255, 255, 1)", "rgba(255, 255, 255, 1)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2);
+	this.button.solid = false;
+	this.button.padding = 10;
+	this.button.onUp = function () {
+		Vectr.changeLayer(Game);
+	};
+	this.add(this.button);
 
 	// Add a starfield background
 	this.stars = new Vectr.Pool();
@@ -47,7 +55,7 @@ Title.prototype.update = function (delta) {
 
 // Change to game scene
 Title.prototype.onPointEnd = function (points) {
-	Vectr.changeLayer(Game);
+
 };
 
 Title.prototype.onKeyUp = function (input) {

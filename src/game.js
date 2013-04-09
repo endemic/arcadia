@@ -44,11 +44,17 @@ var Game = function (context) {
 	}
 	this.spawnTimer = 999;	// Immediately spawn an enemy
 
-	// Particle emitter
-	this.particles = new Vectr.Emitter(30, 'square', 3, 'rgba(255, 0, 0, 0.9)');
+	// Particle emitters
+	this.particles = new Vectr.Pool();
 	this.add(this.particles);
 
-	this.playerExplosion = new Vectr.Emitter(30, 'circle', 3, 'rgba(255, 255, 255, 0.9)');
+	i = 5;
+	while (i--) {
+		obj = new Vectr.Emitter(30, 'circle', 2, 'rgba(255, 0, 0, 0.9)');
+		this.particles.add(obj);
+	}
+
+	this.playerExplosion = new Vectr.Emitter(30, 'circle', 2, 'rgba(255, 255, 255, 0.9)');
 	this.add(this.playerExplosion);
 
 	// Add a starfield background
@@ -56,7 +62,6 @@ var Game = function (context) {
 	this.add(this.stars);
 
 	i = 50;
-
 	while (i--) {
 		obj = new Vectr.Sprite(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.random() + 0.5, 'rgba(255, 255, 255, 1)');
 		obj.solid = true;
@@ -73,6 +78,7 @@ Game.prototype.update = function (delta) {
 	var angle,
 		bullet,
 		enemy,
+		particles,
 		star,
 		i,
 		j;
@@ -153,7 +159,10 @@ Game.prototype.update = function (delta) {
 
 				// Remove both enemy and bullet if they collide
 				if (enemy !== null && enemy.collidesWith(bullet) === true) {
-					this.particles.start(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
+					particles = this.particles.activate();
+					if (particles !== null) {
+						particles.start(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
+					}
 					this.enemies.deactivate(j);
 					this.playerBullets.deactivate(i);
 					this.score += 10;
@@ -259,11 +268,6 @@ Game.prototype.onKeyUp = function (input) {
 	if (input.down) {
 		this.player.velocity.y -= 1;
 	}
-
-	// If game is over, reload the game scene when user presses a key
-	if (this.gameOver === true && input.escape) {
-		Vectr.changeLayer(Game);
-	}
 };
 
 /**
@@ -276,5 +280,13 @@ Game.prototype.showGameOver = function () {
 
 	// Show text allowing the user to try again
 	this.add(new Vectr.Label("GAME OVER", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4));
-	this.add(new Vectr.Label("Hit ESC to retry", "20px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2));
+	// this.add(new Vectr.Label("Hit ESC to retry", "20px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2));
+
+	this.button = new Vectr.Button("TRY AGAIN", "20px monospace", "rgba(255, 255, 255, 1)", "rgba(255, 255, 255, 1)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2);
+	this.button.solid = false;
+	this.button.padding = 10;
+	this.button.onUp = function () {
+		Vectr.changeLayer(Game);
+	};
+	this.add(this.button);
 };
