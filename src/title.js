@@ -4,7 +4,7 @@
 var Title = function (context) {
 	Vectr.Layer.apply(this, arguments);
 
-	this.clearColor = 'rgba(0, 0, 0, 0.05)';
+	this.clearColor = 'rgba(0, 0, 0, 0.25)';
 	// this.clearColor = "#000";
 
 	this.add(new Vectr.Label("ARMADA", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4));

@@ -3,7 +3,7 @@
 
 var Game = function (context) {
 	Vectr.Layer.apply(this, arguments);
-	this.clearColor = 'rgba(0, 0, 0, 0.05)';
+	this.clearColor = 'rgba(0, 0, 0, 0.25)';
 	// this.clearColor = '#000';
 
 	var obj,
@@ -178,6 +178,10 @@ Game.prototype.update = function (delta) {
  * @description Mouse/touch movement
  */
 Game.prototype.onPointStart = function (points) {
+	if (this.gameOver === true) {
+		return;
+	}
+
 	var angle = Math.atan2(points[0].y - this.player.position.y, points[0].x - this.player.position.x);
 
 	if (this.player.position.x !== points[0].x && this.player.position.y !== points[0].y) {
@@ -187,6 +191,10 @@ Game.prototype.onPointStart = function (points) {
 };
 
 Game.prototype.onPointMove = function (points) {
+	if (this.gameOver === true) {
+		return;
+	}
+
 	var angle = Math.atan2(points[0].y - this.player.position.y, points[0].x - this.player.position.x);
 
 	if (this.player.position.x !== points[0].x && this.player.position.y !== points[0].y) {
@@ -197,7 +205,7 @@ Game.prototype.onPointMove = function (points) {
 
 Game.prototype.onPointEnd = function (points) {
 	if (this.gameOver === true) {
-		Vectr.changeLayer(Game);
+		return;
 	}
 
 	var b = this.playerBullets.activate();
@@ -253,6 +261,10 @@ Game.prototype.onKeyDown = function (input) {
  * @description Handle keyboard input
  */
 Game.prototype.onKeyUp = function (input) {
+	if (this.gameOver === true) {
+		return;
+	}
+	
 	if (input.left) {
 		this.player.velocity.x += 1;
 	}
