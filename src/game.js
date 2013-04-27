@@ -50,11 +50,11 @@ var Game = function (context) {
 
 	i = 5;
 	while (i--) {
-		obj = new Vectr.Emitter(30, 'circle', 2, 'rgba(255, 0, 0, 0.9)');
+		obj = new Vectr.Emitter(30, 'circle', 4, 'rgba(255, 0, 0, 0.9)');
 		this.particles.add(obj);
 	}
 
-	this.playerExplosion = new Vectr.Emitter(30, 'circle', 2, 'rgba(255, 255, 255, 0.9)');
+	this.playerExplosion = new Vectr.Emitter(30, 'circle', 4, 'rgba(255, 255, 255, 0.9)');
 	this.add(this.playerExplosion);
 
 	// Add a starfield background
@@ -63,7 +63,7 @@ var Game = function (context) {
 
 	i = 50;
 	while (i--) {
-		obj = new Vectr.Sprite(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.random() + 0.5, 'rgba(255, 255, 255, 1)');
+		obj = new Vectr.Shape(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.random() * 3 + 0.5, 'rgba(255, 255, 255, 1)');
 		obj.solid = true;
 		obj.velocity.y = 40 / obj.size;
 		this.stars.add(obj);
@@ -122,10 +122,12 @@ Game.prototype.update = function (delta) {
 		if (enemy.bulletTimer > Math.random() * 2 + 1) {
 			enemy.bulletTimer = 0;
 			bullet = this.enemyBullets.activate();
-			bullet.position.x = enemy.position.x + enemy.velocity.x;
-			bullet.position.y = enemy.position.y + enemy.velocity.y;
-			bullet.velocity.x = enemy.velocity.x;
-			bullet.velocity.y = enemy.velocity.y;
+			if (bullet !== null) {
+				bullet.position.x = enemy.position.x + enemy.velocity.x;
+				bullet.position.y = enemy.position.y + enemy.velocity.y;
+				bullet.velocity.x = enemy.velocity.x;
+				bullet.velocity.y = enemy.velocity.y;
+			}
 		}
 	}
 
@@ -264,7 +266,7 @@ Game.prototype.onKeyUp = function (input) {
 	if (this.gameOver === true) {
 		return;
 	}
-	
+
 	if (input.left) {
 		this.player.velocity.x += 1;
 	}

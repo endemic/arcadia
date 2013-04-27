@@ -2,26 +2,16 @@
 /*globals Vectr, Player */
 
 var Player = function (x, y) {
-	Vectr.Sprite.apply(this, arguments);
+	Vectr.Shape.apply(this, arguments);
 
-	this.speed = 100;
+	this.speed = 200;
 	this.shape = 'triangle';
-	this.size = 20;
-	this.shadow = {
-		'x': 0,
-		'y': 0,
-		'blur': 25,
-		'color': {
-			'red': 255,
-			'green': 255,
-			'blue': 255,
-			'alpha': 1
-		}
-	};
+	this.size = 40;
+	this.lineWidth = 3;
 	this.rotation = 270;
 };
 
-Player.prototype = new Vectr.Sprite();
+Player.prototype = new Vectr.Shape();
 
 Player.prototype.customPath = function (context) {
 	context.beginPath();
@@ -34,10 +24,10 @@ Player.prototype.customPath = function (context) {
 
 	context.strokeStyle = 'rgba(' + this.color.red + ', ' + this.color.green + ', ' + this.color.blue + ', ' + this.color.alpha + ')';
 	context.stroke();
-}
+};
 
 Player.prototype.update = function (dt) {
-	Vectr.Sprite.prototype.update.call(this, dt);
+	Vectr.Shape.prototype.update.call(this, dt);
 
 	if (this.position.x + this.size / 2 > Vectr.WIDTH) {
 		this.position.x = Vectr.WIDTH - this.size / 2;

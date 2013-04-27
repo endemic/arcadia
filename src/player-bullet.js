@@ -2,20 +2,20 @@
 /*globals Vectr, Player */
 
 var PlayerBullet = function () {
-	Vectr.Sprite.apply(this, arguments);
+	Vectr.Shape.apply(this, arguments);
 
 	this.shape = 'square';
-	this.size = 2;
+	this.size = 4;
 	this.color = {
 		'red': 255,
 		'blue': 255,
 		'green': 255,
 		'alpha': 1
 	};
-
+	this.lineWidth = 3;
 	this.speed = 300;
 	this.velocity.y = -1;
 	this.active = false;
 };
 
-PlayerBullet.prototype = new Vectr.Sprite();
+PlayerBullet.prototype = new Vectr.Shape();
