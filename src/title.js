@@ -52,14 +52,3 @@ Title.prototype.update = function (delta) {
 		}
 	}
 };
-
-// Change to game scene
-Title.prototype.onPointEnd = function (points) {
-
-};
-
-Title.prototype.onKeyUp = function (input) {
-	if (input.z || input.space) {
-		Vectr.changeLayer(Game);
-	}
-};

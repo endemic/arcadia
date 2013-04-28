@@ -226,14 +226,14 @@ Game.prototype.onPointEnd = function (points) {
 /**
  * @description Handle keyboard input
  */
-Game.prototype.onKeyDown = function (input) {
+Game.prototype.onKeyDown = function (key) {
 	if (this.gameOver === true) {
 		return;
 	}
 
 	var b;
 
-	if (input.z || input.space) {
+	if (key === "z" || key === "space") {
 		b = this.playerBullets.activate();
 
 		if (b !== null) {
@@ -242,19 +242,19 @@ Game.prototype.onKeyDown = function (input) {
 		}
 	}
 
-	if (input.left) {
+	if (key === "left") {
 		this.player.velocity.x -= 1;
 	}
 
-	if (input.right) {
+	if (key === "right") {
 		this.player.velocity.x += 1;
 	}
 
-	if (input.up) {
+	if (key === "up") {
 		this.player.velocity.y -= 1;
 	}
 
-	if (input.down) {
+	if (key === "down") {
 		this.player.velocity.y += 1;
 	}
 };
@@ -262,24 +262,24 @@ Game.prototype.onKeyDown = function (input) {
 /**
  * @description Handle keyboard input
  */
-Game.prototype.onKeyUp = function (input) {
+Game.prototype.onKeyUp = function (key) {
 	if (this.gameOver === true) {
 		return;
 	}
 
-	if (input.left) {
+	if (key === "left") {
 		this.player.velocity.x += 1;
 	}
 
-	if (input.right) {
+	if (key === "right") {
 		this.player.velocity.x -= 1;
 	}
 
-	if (input.up) {
+	if (key === "up") {
 		this.player.velocity.y += 1;
 	}
 
-	if (input.down) {
+	if (key === "down") {
 		this.player.velocity.y -= 1;
 	}
 };
