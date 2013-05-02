@@ -11,7 +11,7 @@
 
 	var Vectr = {
 		'VERSION': '0.1',
-		'Game': function (width, height, Layer) {
+		'Game': function (width, height, SceneClass) {
 			if (typeof width === "undefined") {
 				width = 320;
 			}
@@ -83,8 +83,8 @@
 			// Stores objects representing mouse/touch input
 			this.points = [];
 
-			// Instantiate a layer
-			this.active = new Layer();
+			// Instantiate initial scene
+			this.active = new SceneClass();
 		}
 	};
 
@@ -288,15 +288,14 @@
 	};
 
 	/**
-	 * @description Change the active layer being displayed
+	 * @description Change the active scene being displayed
 	 */
-	Vectr.changeLayer = function (Klass) {
-		if (typeof Klass !== "function") {
-			throw "Trying to change to an invalid layer.";
+	Vectr.changeScene = function (SceneClass) {
+		if (typeof SceneClass !== "function") {
+			throw "Trying to change to an invalid scene.";
 		}
 
-		// TODO: Transition out using CSS-based classes
-		Vectr.instance.active = new Klass();
+		Vectr.instance.active = new SceneClass();
 	};
 
 	/**

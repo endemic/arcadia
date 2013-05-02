@@ -2,7 +2,7 @@
 /*globals Vectr, Player, PlayerBullet, Enemy, Game */
 
 var Title = function (context) {
-	Vectr.Layer.apply(this, arguments);
+	Vectr.Scene.apply(this, arguments);
 
 	this.clearColor = 'rgba(0, 0, 0, 0.25)';
 	// this.clearColor = "#000";
@@ -14,7 +14,7 @@ var Title = function (context) {
 	this.button.solid = false;
 	this.button.padding = 10;
 	this.button.onUp = function () {
-		Vectr.changeLayer(Game);
+		Vectr.changeScene(Game);
 	};
 	this.add(this.button);
 
@@ -35,10 +35,10 @@ var Title = function (context) {
 	}
 };
 
-Title.prototype = new Vectr.Layer();
+Title.prototype = new Vectr.Scene();
 
 Title.prototype.update = function (delta) {
-	Vectr.Layer.prototype.update.call(this, delta);
+	Vectr.Scene.prototype.update.call(this, delta);
 
 	var i,
 		star;

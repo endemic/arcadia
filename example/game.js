@@ -2,7 +2,7 @@
 /*globals Vectr, Player, PlayerBullet, Enemy, EnemyBullet */
 
 var Game = function (context) {
-	Vectr.Layer.apply(this, arguments);
+	Vectr.Scene.apply(this, arguments);
 	this.clearColor = 'rgba(0, 0, 0, 0.25)';
 	// this.clearColor = '#000';
 
@@ -70,10 +70,10 @@ var Game = function (context) {
 	}
 };
 
-Game.prototype = new Vectr.Layer();
+Game.prototype = new Vectr.Scene();
 
 Game.prototype.update = function (delta) {
-	Vectr.Layer.prototype.update.call(this, delta);
+	Vectr.Scene.prototype.update.call(this, delta);
 
 	var angle,
 		bullet,
@@ -300,7 +300,7 @@ Game.prototype.showGameOver = function () {
 	this.button.solid = false;
 	this.button.padding = 10;
 	this.button.onUp = function () {
-		Vectr.changeLayer(Game);
+		Vectr.changeScene(Game);
 	};
 	this.add(this.button);
 };
