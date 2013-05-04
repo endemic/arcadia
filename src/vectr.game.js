@@ -85,6 +85,9 @@
 
 			// Instantiate initial scene
 			this.active = new SceneClass();
+
+			// Start animation request
+			this.start();
 		}
 	};
 
