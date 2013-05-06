@@ -11,13 +11,21 @@
 
 	var Vectr = {
 		'VERSION': '0.1',
-		'Game': function (width, height, SceneClass) {
+		'Game': function (width, height, SceneClass, fitWindow) {
 			if (typeof width === "undefined") {
 				width = 320;
 			}
 
 			if (typeof height === "undefined") {
 				height = 480;
+			}
+
+			if (typeof SceneClass !== "function") {
+				throw 'Please provide a valid Scene object.';
+			}
+
+			if (typeof fitWindow === "undefined") {
+				fitWindow = true;
 			}
 
 			Vectr.WIDTH = width;
@@ -38,9 +46,6 @@
 			this.canvas.setAttribute('height', height);
 			this.context = this.canvas.getContext('2d');
 
-			// Fit <canvas> to window
-			this.onResize();
-
 			this.element.appendChild(this.canvas);
 			document.body.appendChild(this.element);
 
@@ -51,9 +56,10 @@
 			this.onPointEnd = this.onPointEnd.bind(this);
 			this.onKeyDown = this.onKeyDown.bind(this);
 			this.onKeyUp = this.onKeyUp.bind(this);
+			this.pause = this.pause.bind(this);
+			this.resume = this.resume.bind(this);
 
 			// Set up event listeners; Mouse and touch use the same ones
-			window.addEventListener('resize', this.onResize, false);
 			document.addEventListener('keydown', this.onKeyDown, false);
 			document.addEventListener('keyup', this.onKeyUp, false);
 			this.element.addEventListener('mousedown', this.onPointStart, false);
@@ -61,6 +67,22 @@
 			this.element.addEventListener('touchstart', this.onPointStart, false);
 			this.element.addEventListener('touchmove', this.onPointMove, false);
 			this.element.addEventListener('touchend', this.onPointEnd, false);
+
+			// Prevent the page from scrolling
+			document.addEventListener('touchmove', function (e) {
+				e.preventDefault();
+			});
+
+			// Fit <canvas> to window
+			if (fitWindow === true) {
+				this.onResize();
+				window.addEventListener('resize', this.onResize, false);
+			}
+
+			if (typeof window.cordova !== "undefined") {
+				document.addEventListener('pause', this.pause, false);
+				document.addEventListener('resume', this.resume, false);
+			}
 
 			// Map of current input, used to prevent duplicate events being sent to handlers
 			this.input = {
@@ -88,6 +110,29 @@
 
 			// Start animation request
 			this.start();
+		}
+	};
+
+	/**
+	 * @description Pause active scene if it has a pause method
+	 */
+	Vectr.Game.prototype.pause = function () {
+		this.pausedMusic = this.currentMusic;
+		Vectr.stopMusic();
+
+		if (typeof this.active.pause === "function") {
+			this.active.pause();
+		}
+	};
+
+	/**
+	 * @description Resume active scene if it has a pause method
+	 */
+	Vectr.Game.prototype.resume = function () {
+		Vectr.playMusic(this.pausedMusic);
+
+		if (typeof this.active.resume === "function") {
+			this.active.resume();
 		}
 	};
 
@@ -291,6 +336,35 @@
 	};
 
 	/**
+	 * @description Try to get some info about the current runtime environment
+	 */
+	Vectr.env = (function () {
+		var agent,
+			android,
+			ios,
+			firefox,
+			mobile;
+
+		agent = navigator.userAgent.toLowerCase();
+
+		android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false;
+		ios = (agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length) > 0 || false;
+		firefox = (agent.match(/firefox/i) && agent.match(/firefox/i).length > 0) || false;
+
+		// "mobile" here refers to a touchscreen - this is pretty janky
+		mobile = ((agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || false) || android;
+
+		return {
+			android: android,
+			ios: ios,
+			firefox: firefox,
+			mobile: mobile,
+			desktop: !mobile,
+			cordova: typeof window.cordova !== "undefined"
+		};
+	}());
+
+	/**
 	 * @description Change the active scene being displayed
 	 */
 	Vectr.changeScene = function (SceneClass) {
@@ -328,6 +402,66 @@
 				i += 1;
 			}
 		}
+	};
+
+	/* Static variables used to store music/sound effects */
+	Vectr.music = {};
+	Vectr.sounds = {};
+	Vectr.currentMusic = null;
+
+	/**
+	 * @description Static method to play sound effects.
+	 * Assumes you have an instance property 'sounds' filled with Buzz sound objects.
+	 * Otherwise you can override this method to use whatever sound library you like.
+	 */
+	Vectr.playSfx = function (id) {
+		if (localStorage.getItem('playSfx') === "false") {
+			return;
+		}
+
+		if (typeof Vectr.sounds[id] !== "undefined" && typeof Vectr.sounds[id].play === "function") {
+			Vectr.sounds[id].play();
+		}
+	};
+
+	/**
+	 * @description Static method to play music.
+	 * Assumes you have an instance property 'music' filled with Buzz sound objects.
+	 * Otherwise you can override this method to use whatever sound library you like.
+	 */
+	Vectr.playMusic = function (id) {
+		if (localStorage.getItem('playMusic') === "false") {
+			return;
+		}
+
+		if (Vectr.currentMusic === id) {
+			return;
+		}
+
+		if (typeof id === "undefined" && Vectr.currentMusic !== null) {
+			id = Vectr.currentMusic;
+		}
+
+		if (Vectr.currentMusic !== null) {
+			Vectr.music[Vectr.currentMusic].stop();
+		}
+
+		Vectr.music[id].play();
+		Vectr.currentMusic = id;
+	};
+
+	/**
+	 * @description Static method to stop music.
+	 * Assumes you have an instance property 'music' filled with Buzz sound objects.
+	 * Otherwise you can override this method to use whatever sound library you like.
+	 */
+	Vectr.stopMusic = function () {
+		if (Vectr.currentMusic === null) {
+			return;
+		}
+
+		Vectr.music[Vectr.currentMusic].stop();
+		Vectr.currentMusic = null;
 	};
 
 	window.Vectr = Vectr;
