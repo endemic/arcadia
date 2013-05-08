@@ -98,8 +98,8 @@
 			context.scale(this.scale, this.scale);
 		}
 
-		if (this.rotation !== 0 && this.rotation !== 360) {
-			context.rotate(this.rotation * Math.PI / 180);
+		if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+			context.rotate(this.rotation);
 		}
 
 		if (this.shadow.x > 0 || this.shadow.y > 0 || this.shadow.blur > 0) {

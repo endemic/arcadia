@@ -72,6 +72,20 @@
 	};
 
 	/**
+	 * @description Move object to the deadpool
+	 */
+	Vectr.Pool.prototype.deactivateAll = function () {
+		var object;
+
+		while (this.children.length) {
+			object = this.children.pop();
+			object.active = false;
+			this.inactive.push(object);
+			this.length -= 1;
+		}
+	};
+
+	/**
 	 * @description Convenience method to access a particular child index
 	 */
 	Vectr.Pool.prototype.at = function (index) {

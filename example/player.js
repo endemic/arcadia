@@ -8,7 +8,7 @@ var Player = function (x, y) {
 	this.shape = 'triangle';
 	this.size = 40;
 	this.lineWidth = 3;
-	this.rotation = 270;
+	this.rotation = 270 * Math.PI / 180;
 };
 
 Player.prototype = new Vectr.Shape();

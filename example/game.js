@@ -1,4 +1,4 @@
-/*jslint sloppy: true, plusplus: true */
+/*jslint sloppy: true, plusplus: true, continue: true */
 /*globals Vectr, Player, PlayerBullet, Enemy, EnemyBullet */
 
 var Game = function (context) {
@@ -113,7 +113,7 @@ Game.prototype.update = function (delta) {
 	while (i--) {
 		enemy = this.enemies.at(i);
 		angle = Math.atan2(this.player.position.y - enemy.position.y, this.player.position.x - enemy.position.x);
-		enemy.rotation = angle * 180 / Math.PI;
+		enemy.rotation = angle;
 		enemy.velocity.x = Math.cos(angle);
 		enemy.velocity.y = Math.sin(angle);
 		enemy.bulletTimer += delta;
@@ -153,7 +153,7 @@ Game.prototype.update = function (delta) {
 		// Remove bullets if they go offscreen
 		if (bullet !== null && (bullet.position.y > Vectr.HEIGHT || bullet.position.y < 0)) {
 			this.playerBullets.deactivate(i);
-			break;
+			continue;
 		} else {
 			j = this.enemies.length;
 			while (j--) {
@@ -169,7 +169,14 @@ Game.prototype.update = function (delta) {
 					this.playerBullets.deactivate(i);
 					this.score += 10;
 					this.label.text = "Score: " + this.score;
-					break;
+
+					// Spawn a new enemy immediately
+					enemy = this.enemies.activate();
+					if (enemy !== null) {
+						enemy.position.y = 0;
+						enemy.position.x = Math.random() * Vectr.WIDTH;
+					}
+					continue;
 				}
 			}
 		}
