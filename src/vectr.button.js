@@ -59,7 +59,7 @@
 	 * @description If touch/mouse end is inside button, execute the user-supplied callback
 	 */
 	Vectr.Button.prototype.onPointEnd = function (event) {
-		if (this.active !== true || typeof this.onUp !== "function") {
+		if (this.active === false || typeof this.onUp !== "function") {
 			return;
 		}
 
@@ -94,14 +94,6 @@
 	 * @description Clean up event listeners
 	 */
 	Vectr.Button.prototype.destroy = function () {
-		var property;
-
-		for (property in this) {
-			if (this.hasOwnProperty(property)) {
-				delete this[property];
-			}
-		}
-
 		Vectr.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
 		Vectr.instance.element.removeEventListener('touchend', this.onPointEnd, false);
 	};

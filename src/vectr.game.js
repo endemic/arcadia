@@ -372,6 +372,9 @@
 			throw "Trying to change to an invalid scene.";
 		}
 
+		// Clean up previous scene
+		Vectr.instance.active.destroy();		
+
 		Vectr.instance.active = new SceneClass();
 	};
 

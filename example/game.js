@@ -4,19 +4,32 @@
 var Game = function (context) {
 	Vectr.Scene.apply(this, arguments);
 	this.clearColor = 'rgba(0, 0, 0, 0.25)';
-	// this.clearColor = '#000';
 
 	var obj,
 		i;
 
-	// Player
-	this.player = new Player(Vectr.WIDTH / 2, Vectr.HEIGHT / 1.5);
-	this.add(this.player);
+	// Text/button that lets player try again
+	this.gameOverLabel = new Vectr.Label("GAME OVER", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4);
+	this.gameOverLabel.active = false;
+	this.add(this.gameOverLabel);
+
+	this.tryAgainButton = new Vectr.Button("TRY AGAIN", "20px monospace", "rgba(255, 255, 255, 1)", "rgba(255, 255, 255, 1)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2);
+	this.tryAgainButton.solid = false;
+	this.tryAgainButton.padding = 10;
+	this.tryAgainButton.onUp = function () {
+		Vectr.changeScene(Game);
+	};
+	this.tryAgainButton.active = false;
+	this.add(this.tryAgainButton);
 
 	// Score label
 	this.label = new Vectr.Label("Score: 0", "16px monospace", "rgba(255, 255, 255, 0.8)", 0, 20, "left");
 	this.add(this.label);
 	this.score = 0;
+
+	// Player
+	this.player = new Player(Vectr.WIDTH / 2, Vectr.HEIGHT / 1.5);
+	this.add(this.player);
 
 	// Other game objects
 	this.playerBullets = new Vectr.Pool();
@@ -50,11 +63,11 @@ var Game = function (context) {
 
 	i = 5;
 	while (i--) {
-		obj = new Vectr.Emitter(30, 'circle', 4, 'rgba(255, 0, 0, 0.9)');
+		obj = new Vectr.Emitter(30, 0.5, 'circle', 4, 'rgba(255, 0, 0, 1)');
 		this.particles.add(obj);
 	}
 
-	this.playerExplosion = new Vectr.Emitter(30, 'circle', 4, 'rgba(255, 255, 255, 0.9)');
+	this.playerExplosion = new Vectr.Emitter(30, 0.5, 'circle', 4, 'rgba(255, 255, 255, 1)');
 	this.add(this.playerExplosion);
 
 	// Add a starfield background
@@ -299,15 +312,6 @@ Game.prototype.showGameOver = function () {
 
 	this.player.active = false;
 
-	// Show text allowing the user to try again
-	this.add(new Vectr.Label("GAME OVER", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4));
-	// this.add(new Vectr.Label("Hit ESC to retry", "20px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2));
-
-	this.button = new Vectr.Button("TRY AGAIN", "20px monospace", "rgba(255, 255, 255, 1)", "rgba(255, 255, 255, 1)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2);
-	this.button.solid = false;
-	this.button.padding = 10;
-	this.button.onUp = function () {
-		Vectr.changeScene(Game);
-	};
-	this.add(this.button);
+	this.gameOverLabel.active = true;
+	this.tryAgainButton.active = true;
 };
