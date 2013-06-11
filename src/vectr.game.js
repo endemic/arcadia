@@ -1,4 +1,5 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
+
 // point vendor-specific implementations to window.requestAnimationFrame
 if (window.requestAnimationFrame === undefined) {
     window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -331,8 +332,8 @@ Vectr.Game.prototype.onResize = function (e) {
     Vectr.OFFSET.x = (window.innerWidth - scaledWidth) / 2;
     Vectr.OFFSET.y = (window.innerHeight - scaledHeight) / 2;
     this.element.setAttribute('style', 'position: relative; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px; margin: ' + margin);
-    this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px;');
-    // this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; -webkit-transform: scale(' + Vectr.SCALE + ')');
+    // this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px;');
+    this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; -webkit-transform: scale(' + Vectr.SCALE + '); -webkit-transform-origin: 0 0;');
 };
 
 /**
