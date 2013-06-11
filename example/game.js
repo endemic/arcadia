@@ -258,7 +258,7 @@ Game.prototype.onKeyDown = function (key) {
 
         if (b !== null) {
             b.position.x = this.player.position.x;
-            b.position.y = this.player.position.y;
+            b.position.y = this.player.position.y - this.player.size / 2;
         }
     }
 

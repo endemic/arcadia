@@ -361,7 +361,7 @@ Vectr.env = (function () {
         firefox: firefox,
         mobile: mobile,
         desktop: !mobile,
-        cordova: typeof window.cordova !== undefined
+        cordova: window.cordova !== undefined
     };
 }());
 
