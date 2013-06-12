@@ -4,14 +4,14 @@
 /**
  * @constructor
  */
-Vectr.Button = function (text, font, textColor, backgroundColor, x, y) {
+Vectr.Button = function (x, y, text, font, color, backgroundColor) {
     // Button contains a label w/ a rectangle drawn around it
-    this.label = new Vectr.Label(text, font, textColor, x, y, "center");
+    this.label = new Vectr.Label(x, y, text, font, color, "center");
     this.position = {
         'x': x,
         'y': y
     };
-    this.backgroundColor = backgroundColor;
+    this.backgroundColor = backgroundColor || color;
     this.height = parseInt(font.split(" ").shift(), 10);
     this.active = true;
     this.solid = true;

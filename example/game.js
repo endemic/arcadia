@@ -9,11 +9,11 @@ var Game = function () {
         i;
 
     // Text/button that lets player try again
-    this.gameOverLabel = new Vectr.Label("GAME OVER", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4);
+    this.gameOverLabel = new Vectr.Label(Vectr.WIDTH / 2, Vectr.HEIGHT / 4, "GAME OVER", "40px monospace", "rgba(255, 255, 255, 0.8)");
     this.gameOverLabel.active = false;
     this.add(this.gameOverLabel);
 
-    this.tryAgainButton = new Vectr.Button("TRY AGAIN", "20px monospace", "rgba(255, 255, 255, 1)", "rgba(255, 255, 255, 1)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2);
+    this.tryAgainButton = new Vectr.Button(Vectr.WIDTH / 2, Vectr.HEIGHT / 2, "TRY AGAIN", "20px monospace", "rgba(255, 255, 255, 1)");
     this.tryAgainButton.solid = false;
     this.tryAgainButton.padding = 10;
     this.tryAgainButton.onUp = function () {
@@ -23,7 +23,7 @@ var Game = function () {
     this.add(this.tryAgainButton);
 
     // Score label
-    this.label = new Vectr.Label("Score: 0", "16px monospace", "rgba(255, 255, 255, 0.8)", 0, 20, "left");
+    this.label = new Vectr.Label(0, 20, "Score: 0", "16px monospace", "rgba(255, 255, 255, 0.8)", "left");
     this.add(this.label);
     this.score = 0;
 
@@ -63,11 +63,12 @@ var Game = function () {
 
     i = 5;
     while (i--) {
-        obj = new Vectr.Emitter(30, 0.5, 'circle', 4, 'rgba(255, 0, 0, 1)');
+        // shape, size, color, count, duration, fade
+        obj = new Vectr.Emitter('circle', 4, 'rgba(255, 0, 0, 1)', 30, 0.5);
         this.particles.add(obj);
     }
 
-    this.playerExplosion = new Vectr.Emitter(30, 0.5, 'circle', 4, 'rgba(255, 255, 255, 1)');
+    this.playerExplosion = new Vectr.Emitter('circle', 4, 'rgba(255, 255, 255, 1)', 30, 0.5);
     this.add(this.playerExplosion);
 
     // Add a starfield background

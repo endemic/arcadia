@@ -1,7 +1,7 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
-Vectr.Label = function (text, font, color, x, y, alignment) {
+Vectr.Label = function (x, y, text, font, color, alignment) {
     var tmp;
 
     this.text = text;

@@ -6,9 +6,11 @@ var Title = function () {
 
     this.clearColor = 'rgba(0, 0, 0, 0.15)';
 
-    this.add(new Vectr.Label("ARMADA", "40px monospace", "rgba(255, 255, 255, 0.8)", Vectr.WIDTH / 2, Vectr.HEIGHT / 4));
+    // x, y, text, font, color, alignment
+    this.add(new Vectr.Label(Vectr.WIDTH / 2, Vectr.HEIGHT / 4, "ARMADA", "40px monospace", "rgba(255, 255, 255, 0.8)"));
 
-    this.button = new Vectr.Button("START", "20px monospace", "rgba(255, 255, 255, 1)", "rgba(255, 255, 255, 1)", Vectr.WIDTH / 2, Vectr.HEIGHT / 2);
+    // x, y, text, font, color, background
+    this.button = new Vectr.Button(Vectr.WIDTH / 2, Vectr.HEIGHT / 2, "START", "20px monospace", "rgba(255, 255, 255, 1)");
     this.button.solid = false;
     this.button.padding = 10;
     this.button.onUp = function () {
