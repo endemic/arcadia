@@ -11,7 +11,7 @@
  * @param {string} [color='rgba(255, 255, 255, 1)'] Color of particles, 'rgba(x, x, x, x)' format
  * @param {boolean} [fade=false] Whether to fade the particles out when they are displayed
  */
-Vectr.Emitter = function (count, duration, shape, size, color, fade) {
+Vectr.Emitter = function (shape, size, color, count, duration, fade) {
     var particle,
         tmp;
 
