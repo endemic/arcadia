@@ -10,8 +10,11 @@ if (window.cancelAnimationFrame === undefined) {
 }
 
 var Vectr = {
-    'VERSION': '0.1',
+    'VERSION': '0.2',
     'Game': function (width, height, SceneClass, fitWindow) {
+        var i,
+            context;
+
         if (width === undefined) {
             width = 320;
         }
@@ -46,7 +49,27 @@ var Vectr = {
         this.canvas.setAttribute('height', height);
         this.context = this.canvas.getContext('2d');
 
+        // Scanline effect
+        this.scanlines = document.createElement('canvas');
+        this.scanlines.setAttribute('width', width);
+        this.scanlines.setAttribute('height', height);
+        this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1;');
+
+        context = this.scanlines.getContext('2d');
+        context.lineWidth = 0.5;
+        context.beginPath();
+
+        for (i = 0; i < height; i += 3) {
+            context.moveTo(0, i);
+            context.lineTo(width, i);
+        }
+
+        context.closePath();
+        context.strokeStyle = 'rgba(0, 0, 0, 0.75)';
+        context.stroke();
+
         this.element.appendChild(this.canvas);
+        this.element.appendChild(this.scanlines);
         document.body.appendChild(this.element);
 
         // Bind event handler callbacks
@@ -184,21 +207,50 @@ Vectr.Game.prototype.onKeyDown = function (event) {
     var key;
 
     switch (event.keyCode) {
-    case 37: key = 'left'; break;
-    case 38: key = 'up'; break;
-    case 39: key = 'right'; break;
-    case 40: key = 'down'; break;
-    case 87: key = 'w'; break;
-    case 65: key = 'a'; break;
-    case 83: key = 's'; break;
-    case 68: key = 'd'; break;
-    case 13: key = 'enter'; break;
-    case 27: key = 'escape'; break;
-    case 32: key = 'space'; break;
-    case 17: key = 'control'; break;
-    case 90: key = 'z'; break;
-    case 88: key = 'x'; break;
-    default: break;
+    case 37:
+        key = 'left';
+        break;
+    case 38:
+        key = 'up';
+        break;
+    case 39:
+        key = 'right';
+        break;
+    case 40:
+        key = 'down';
+        break;
+    case 87:
+        key = 'w';
+        break;
+    case 65:
+        key = 'a';
+        break;
+    case 83:
+        key = 's';
+        break;
+    case 68:
+        key = 'd';
+        break;
+    case 13:
+        key = 'enter';
+        break;
+    case 27:
+        key = 'escape';
+        break;
+    case 32:
+        key = 'space';
+        break;
+    case 17:
+        key = 'control';
+        break;
+    case 90:
+        key = 'z';
+        break;
+    case 88:
+        key = 'x';
+        break;
+    default:
+        break;
     }
 
     // Do nothing if key hasn't been released yet
@@ -220,21 +272,50 @@ Vectr.Game.prototype.onKeyUp = function (event) {
     var key;
 
     switch (event.keyCode) {
-    case 37: key = 'left'; break;
-    case 38: key = 'up'; break;
-    case 39: key = 'right'; break;
-    case 40: key = 'down'; break;
-    case 87: key = 'w'; break;
-    case 65: key = 'a'; break;
-    case 83: key = 's'; break;
-    case 68: key = 'd'; break;
-    case 13: key = 'enter'; break;
-    case 27: key = 'escape'; break;
-    case 32: key = 'space'; break;
-    case 17: key = 'control'; break;
-    case 90: key = 'z'; break;
-    case 88: key = 'x'; break;
-    default: break;
+    case 37:
+        key = 'left';
+        break;
+    case 38:
+        key = 'up';
+        break;
+    case 39:
+        key = 'right';
+        break;
+    case 40:
+        key = 'down';
+        break;
+    case 87:
+        key = 'w';
+        break;
+    case 65:
+        key = 'a';
+        break;
+    case 83:
+        key = 's';
+        break;
+    case 68:
+        key = 'd';
+        break;
+    case 13:
+        key = 'enter';
+        break;
+    case 27:
+        key = 'escape';
+        break;
+    case 32:
+        key = 'space';
+        break;
+    case 17:
+        key = 'control';
+        break;
+    case 90:
+        key = 'z';
+        break;
+    case 88:
+        key = 'x';
+        break;
+    default:
+        break;
     }
 
     this.input[key] = false; // Allow the keyDown event for this key to be sent again
@@ -254,7 +335,7 @@ Vectr.Game.prototype.start = function () {
 
     self = this;
 
-    if (typeof window.performance !== undefined) {
+    if (window.performance !== undefined) {
         previousDelta = window.performance.now();
     } else {
         previousDelta = Date.now();
@@ -292,7 +373,7 @@ Vectr.Game.prototype.update = function (delta) {
 /**
  * @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
  */
-Vectr.Game.prototype.onResize = function (e) {
+Vectr.Game.prototype.onResize = function () {
     var scaledWidth,
         scaledHeight,
         aspectRatio,
@@ -334,6 +415,7 @@ Vectr.Game.prototype.onResize = function (e) {
     this.element.setAttribute('style', 'position: relative; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px; margin: ' + margin);
     // this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px;');
     this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; -webkit-transform: scale(' + Vectr.SCALE + '); -webkit-transform-origin: 0 0;');
+    this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1; -webkit-transform: scale(' + Vectr.SCALE + '); -webkit-transform-origin: 0 0;');
 };
 
 /**
@@ -374,7 +456,7 @@ Vectr.changeScene = function (SceneClass) {
     }
 
     // Clean up previous scene
-    Vectr.instance.active.destroy();        
+    Vectr.instance.active.destroy();
 
     Vectr.instance.active = new SceneClass();
 };
@@ -423,7 +505,7 @@ Vectr.playSfx = function (id) {
         return;
     }
 
-    if (typeof Vectr.sounds[id] !== undefined && typeof Vectr.sounds[id].play === "function") {
+    if (Vectr.sounds[id] !== undefined && typeof Vectr.sounds[id].play === "function") {
         Vectr.sounds[id].play();
     }
 };
@@ -442,7 +524,7 @@ Vectr.playMusic = function (id) {
         return;
     }
 
-    if (typeof id === undefined && Vectr.currentMusic !== null) {
+    if (id === undefined && Vectr.currentMusic !== null) {
         id = Vectr.currentMusic;
     }
 
