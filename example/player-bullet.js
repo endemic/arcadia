@@ -5,7 +5,7 @@ var PlayerBullet = function () {
 	Vectr.Shape.apply(this, arguments);
 
 	this.shape = 'square';
-	this.size = 4;
+	this.size = 2;
 	this.color = {
 		'red': 255,
 		'blue': 255,
@@ -13,7 +13,7 @@ var PlayerBullet = function () {
 		'alpha': 1
 	};
 	this.lineWidth = 3;
-	this.speed = 300;
+	this.speed = 150;
 	this.velocity.y = -1;
 	this.active = false;
 };

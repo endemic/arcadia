@@ -4,9 +4,9 @@
 var Player = function (x, y) {
     Vectr.Shape.apply(this, arguments);
 
-    this.speed = 200;
+    this.speed = 100;
     this.shape = 'triangle';
-    this.size = 40;
+    this.size = 20;
     this.lineWidth = 3;
     this.rotation = 270 * Math.PI / 180;
 

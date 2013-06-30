@@ -77,7 +77,7 @@ var Game = function () {
 
     i = 50;
     while (i--) {
-        obj = new Vectr.Shape(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.random() * 3 + 0.5, 'rgba(255, 255, 155, 1.0)');
+        obj = new Vectr.Shape(Math.random() * Vectr.WIDTH, Math.random() * Vectr.HEIGHT, 'circle', Math.random() * 4 + 1, 'rgba(255, 255, 255, 1.0)');
         obj.solid = true;
         obj.velocity.y = 40 / obj.size;
         this.stars.add(obj);
