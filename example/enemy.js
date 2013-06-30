@@ -23,8 +23,8 @@ var Enemy = function (x, y, shape, size, color) {
         }
     };
 
-    this.speed = 80;
-    this.size = 40;
+    this.speed = 40;
+    this.size = 20;
     this.shape = 'triangle';
     this.active = false;
     this.bulletTimer = 0;
