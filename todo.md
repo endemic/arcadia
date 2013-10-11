@@ -10,6 +10,8 @@
 * [ ] Allow 'rectangle' shapes
 * [ ] Test mouse offset for buttons in Firefox
 * [ ] Test <canvas> scaling in Firefox
+* [ ] Write setter/getter for Shape color
+* [ ] Cull drawing of objects outwide viewport
 * [X] Change <canvas> scaling method to use CSS3 scale() instead of modifying width/height
 * [X] Test out implemeting custom label
 * [X] Re-lint source
