@@ -1,4 +1,5 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
+
 // point vendor-specific implementations to window.requestAnimationFrame
 if (window.requestAnimationFrame === undefined) {
     window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -9,8 +10,11 @@ if (window.cancelAnimationFrame === undefined) {
 }
 
 var Vectr = {
-    'VERSION': '0.1',
+    'VERSION': '0.2',
     'Game': function (width, height, SceneClass, fitWindow) {
+        var i,
+            context;
+
         if (width === undefined) {
             width = 320;
         }
@@ -45,7 +49,27 @@ var Vectr = {
         this.canvas.setAttribute('height', height);
         this.context = this.canvas.getContext('2d');
 
+        // Scanline effect
+        this.scanlines = document.createElement('canvas');
+        this.scanlines.setAttribute('width', width);
+        this.scanlines.setAttribute('height', height);
+        this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1;');
+
+        context = this.scanlines.getContext('2d');
+        context.lineWidth = 0.5;
+        context.beginPath();
+
+        for (i = 0; i < height; i += 3) {
+            context.moveTo(0, i);
+            context.lineTo(width, i);
+        }
+
+        context.closePath();
+        context.strokeStyle = 'rgba(0, 0, 0, 0.75)';
+        context.stroke();
+
         this.element.appendChild(this.canvas);
+        this.element.appendChild(this.scanlines);
         document.body.appendChild(this.element);
 
         // Bind event handler callbacks
@@ -183,21 +207,50 @@ Vectr.Game.prototype.onKeyDown = function (event) {
     var key;
 
     switch (event.keyCode) {
-    case 37: key = 'left'; break;
-    case 38: key = 'up'; break;
-    case 39: key = 'right'; break;
-    case 40: key = 'down'; break;
-    case 87: key = 'w'; break;
-    case 65: key = 'a'; break;
-    case 83: key = 's'; break;
-    case 68: key = 'd'; break;
-    case 13: key = 'enter'; break;
-    case 27: key = 'escape'; break;
-    case 32: key = 'space'; break;
-    case 17: key = 'control'; break;
-    case 90: key = 'z'; break;
-    case 88: key = 'x'; break;
-    default: break;
+    case 37:
+        key = 'left';
+        break;
+    case 38:
+        key = 'up';
+        break;
+    case 39:
+        key = 'right';
+        break;
+    case 40:
+        key = 'down';
+        break;
+    case 87:
+        key = 'w';
+        break;
+    case 65:
+        key = 'a';
+        break;
+    case 83:
+        key = 's';
+        break;
+    case 68:
+        key = 'd';
+        break;
+    case 13:
+        key = 'enter';
+        break;
+    case 27:
+        key = 'escape';
+        break;
+    case 32:
+        key = 'space';
+        break;
+    case 17:
+        key = 'control';
+        break;
+    case 90:
+        key = 'z';
+        break;
+    case 88:
+        key = 'x';
+        break;
+    default:
+        break;
     }
 
     // Do nothing if key hasn't been released yet
@@ -219,21 +272,50 @@ Vectr.Game.prototype.onKeyUp = function (event) {
     var key;
 
     switch (event.keyCode) {
-    case 37: key = 'left'; break;
-    case 38: key = 'up'; break;
-    case 39: key = 'right'; break;
-    case 40: key = 'down'; break;
-    case 87: key = 'w'; break;
-    case 65: key = 'a'; break;
-    case 83: key = 's'; break;
-    case 68: key = 'd'; break;
-    case 13: key = 'enter'; break;
-    case 27: key = 'escape'; break;
-    case 32: key = 'space'; break;
-    case 17: key = 'control'; break;
-    case 90: key = 'z'; break;
-    case 88: key = 'x'; break;
-    default: break;
+    case 37:
+        key = 'left';
+        break;
+    case 38:
+        key = 'up';
+        break;
+    case 39:
+        key = 'right';
+        break;
+    case 40:
+        key = 'down';
+        break;
+    case 87:
+        key = 'w';
+        break;
+    case 65:
+        key = 'a';
+        break;
+    case 83:
+        key = 's';
+        break;
+    case 68:
+        key = 'd';
+        break;
+    case 13:
+        key = 'enter';
+        break;
+    case 27:
+        key = 'escape';
+        break;
+    case 32:
+        key = 'space';
+        break;
+    case 17:
+        key = 'control';
+        break;
+    case 90:
+        key = 'z';
+        break;
+    case 88:
+        key = 'x';
+        break;
+    default:
+        break;
     }
 
     this.input[key] = false; // Allow the keyDown event for this key to be sent again
@@ -253,7 +335,7 @@ Vectr.Game.prototype.start = function () {
 
     self = this;
 
-    if (typeof window.performance !== undefined) {
+    if (window.performance !== undefined) {
         previousDelta = window.performance.now();
     } else {
         previousDelta = Date.now();
@@ -291,7 +373,7 @@ Vectr.Game.prototype.update = function (delta) {
 /**
  * @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
  */
-Vectr.Game.prototype.onResize = function (e) {
+Vectr.Game.prototype.onResize = function () {
     var scaledWidth,
         scaledHeight,
         aspectRatio,
@@ -331,8 +413,9 @@ Vectr.Game.prototype.onResize = function (e) {
     Vectr.OFFSET.x = (window.innerWidth - scaledWidth) / 2;
     Vectr.OFFSET.y = (window.innerHeight - scaledHeight) / 2;
     this.element.setAttribute('style', 'position: relative; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px; margin: ' + margin);
-    this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px;');
-    // this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; -webkit-transform: scale(' + Vectr.SCALE + ')');
+    // this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px;');
+    this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; -webkit-transform: scale(' + Vectr.SCALE + '); -webkit-transform-origin: 0 0;');
+    this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1; -webkit-transform: scale(' + Vectr.SCALE + '); -webkit-transform-origin: 0 0;');
 };
 
 /**
@@ -360,7 +443,7 @@ Vectr.env = (function () {
         firefox: firefox,
         mobile: mobile,
         desktop: !mobile,
-        cordova: typeof window.cordova !== undefined
+        cordova: window.cordova !== undefined
     };
 }());
 
@@ -373,7 +456,7 @@ Vectr.changeScene = function (SceneClass) {
     }
 
     // Clean up previous scene
-    Vectr.instance.active.destroy();        
+    Vectr.instance.active.destroy();
 
     Vectr.instance.active = new SceneClass();
 };
@@ -422,7 +505,7 @@ Vectr.playSfx = function (id) {
         return;
     }
 
-    if (typeof Vectr.sounds[id] !== undefined && typeof Vectr.sounds[id].play === "function") {
+    if (Vectr.sounds[id] !== undefined && typeof Vectr.sounds[id].play === "function") {
         Vectr.sounds[id].play();
     }
 };
@@ -441,7 +524,7 @@ Vectr.playMusic = function (id) {
         return;
     }
 
-    if (typeof id === undefined && Vectr.currentMusic !== null) {
+    if (id === undefined && Vectr.currentMusic !== null) {
         id = Vectr.currentMusic;
     }
 
@@ -469,108 +552,102 @@ Vectr.stopMusic = function () {
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
-(function (window) {
-	if (typeof window.Vectr === "undefined") {
-		window.Vectr = {};
-	}
+/**
+ * @constructor
+ */
+Vectr.Button = function (x, y, text, font, color, backgroundColor) {
+    // Button contains a label w/ a rectangle drawn around it
+    this.label = new Vectr.Label(x, y, text, font, color, "center");
+    this.position = {
+        'x': x,
+        'y': y
+    };
+    this.backgroundColor = backgroundColor || color;
+    this.height = parseInt(font.split(" ").shift(), 10);
+    this.active = true;
+    this.solid = true;
+    this.padding = 10;
 
-	/**
-	 * @constructor
-	 */
-	Vectr.Button = function (text, font, textColor, backgroundColor, x, y) {
-		// Button contains a label w/ a rectangle drawn around it
-		this.label = new Vectr.Label(text, font, textColor, x, y, "center");
-		this.position = {
-			'x': x,
-			'y': y
-		};
-		this.backgroundColor = backgroundColor;
-		this.height = parseInt(font.split(" ").shift(), 10);
-		this.active = true;
-		this.solid = true;
-		this.padding = 10;
+    // Attach event listeners
+    this.onPointEnd = this.onPointEnd.bind(this);
+    Vectr.instance.element.addEventListener('mouseup', this.onPointEnd, false);
+    Vectr.instance.element.addEventListener('touchend', this.onPointEnd, false);
+};
 
-		// Attach event listeners
-		this.onPointEnd = this.onPointEnd.bind(this);
-		Vectr.instance.element.addEventListener('mouseup', this.onPointEnd, false);
-		Vectr.instance.element.addEventListener('touchend', this.onPointEnd, false);
-	};
+/**
+ * @description Draw the button!
+ */
+Vectr.Button.prototype.draw = function (context) {
+    if (this.active === false) {
+        return;
+    }
 
-	/**
-	 * @description Draw the button!
-	 */
-	Vectr.Button.prototype.draw = function (context) {
-		if (this.active === false) {
-			return;
-		}
+    this.width = this.label.width(context);
 
-		this.width = this.label.width(context);
+    // Draw button background/border
+    context.save();
+    context.translate(this.position.x, this.position.y);
 
-		// Draw button background/border
-		context.save();
-		context.translate(this.position.x, this.position.y);
+    if (this.solid === true) {
+        context.fillStyle =  this.backgroundColor;
+        context.fillRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding, this.width + this.padding, this.height + this.padding);
+    } else {
+        context.strokeStyle = this.backgroundColor;
+        context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
+    }
+    context.restore();
 
-		if (this.solid === true) {
-			context.fillStyle =  this.backgroundColor;
-			context.fillRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding, this.width + this.padding, this.height + this.padding);
-		} else {
-			context.strokeStyle = this.backgroundColor;
-			context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
-		}
-		context.restore();
+    // Draw label
+    this.label.draw(context);
+};
 
-		// Draw label
-		this.label.draw(context);
-	};
+/**
+ * @description If touch/mouse end is inside button, execute the user-supplied callback
+ */
+Vectr.Button.prototype.onPointEnd = function (event) {
+    if (this.active === false || typeof this.onUp !== "function") {
+        return;
+    }
 
-	/**
-	 * @description If touch/mouse end is inside button, execute the user-supplied callback
-	 */
-	Vectr.Button.prototype.onPointEnd = function (event) {
-		if (this.active === false || typeof this.onUp !== "function") {
-			return;
-		}
+    Vectr.getPoints(event);
 
-		Vectr.getPoints(event);
+    if (event.type.indexOf('mouse') !== -1) {
+        if (this.containsPoint(Vectr.instance.points[0].x, Vectr.instance.points[0].y)) {
+            this.onUp();
+        }
+    } else {
+        var i = Vectr.instance.points.length;
+        while (i--) {
+            if (this.containsPoint(Vectr.instance.points[i].x, Vectr.instance.points[i].y)) {
+                this.onUp();
+                break;
+            }
+        }
+    }
+};
 
-		if (event.type.indexOf('mouse') !== -1) {
-			if (this.containsPoint(Vectr.instance.points[0].x, Vectr.instance.points[0].y)) {
-				this.onUp();
-			}
-		} else {
-			var i = Vectr.instance.points.length;
-			while (i--) {
-				if (this.containsPoint(Vectr.instance.points[i].x, Vectr.instance.points[i].y)) {
-					this.onUp();
-					break;
-				}
-			}
-		}
-	};
+/**
+ * @description Helper method to determine if mouse/touch is inside button graphic
+ */
+Vectr.Button.prototype.containsPoint = function (x, y) {
+    return x < this.position.x + this.width / 2 + this.padding / 2 &&
+        x > this.position.x - this.width / 2 - this.padding / 2 &&
+        y < this.position.y + this.height / 2 &&
+        y > this.position.y - this.height / 2 - this.padding;
+};
 
-	/**
-	 * @description Helper method to determine if mouse/touch is inside button graphic
-	 */
-	Vectr.Button.prototype.containsPoint = function (x, y) {
-		return x < this.position.x + this.width / 2 + this.padding / 2 &&
-			x > this.position.x - this.width / 2 - this.padding / 2 &&
-			y < this.position.y + this.height / 2 &&
-			y > this.position.y - this.height / 2 - this.padding;
-	};
+/**
+ * @description Clean up event listeners
+ */
+Vectr.Button.prototype.destroy = function () {
+    Vectr.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
+    Vectr.instance.element.removeEventListener('touchend', this.onPointEnd, false);
+};
 
-	/**
-	 * @description Clean up event listeners
-	 */
-	Vectr.Button.prototype.destroy = function () {
-		Vectr.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
-		Vectr.instance.element.removeEventListener('touchend', this.onPointEnd, false);
-	};
-
-	/**
-	 * @description Currently unused
-	 */
-	Vectr.Button.prototype.update = function (delta) { };
-}(window));
+/**
+ * @description Currently unused
+ */
+Vectr.Button.prototype.update = function (delta) { return; };
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
@@ -584,7 +661,7 @@ Vectr.stopMusic = function () {
  * @param {string} [color='rgba(255, 255, 255, 1)'] Color of particles, 'rgba(x, x, x, x)' format
  * @param {boolean} [fade=false] Whether to fade the particles out when they are displayed
  */
-Vectr.Emitter = function (count, duration, shape, size, color, fade) {
+Vectr.Emitter = function (shape, size, color, count, duration, fade) {
     var particle,
         tmp;
 
@@ -671,321 +748,307 @@ Vectr.Emitter.prototype.update = function (delta) {
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
-(function (window) {
-	if (typeof window.Vectr === "undefined") {
-		window.Vectr = {};
-	}
+Vectr.Label = function (x, y, text, font, color, alignment) {
+    var tmp;
 
-	Vectr.Label = function (text, font, color, x, y, alignment) {
-		var tmp;
+    this.text = text;
 
-		this.text = text;
+    // Default font
+    this.font = {
+        'size': '20px',
+        'family': 'monospaced'
+    };
 
-		// Default font
-		this.font = {
-			'size': '20px',
-			'family': 'monospaced'
-		};
+    if (typeof font === "string") {
+        tmp = font.split(' '); // e.g. context.font = "20pt Arial";
+        if (tmp.length === 2) {
+            this.font.size = tmp[0];
+            this.font.family = tmp[1];
+        }
+    }
 
-		if (typeof font === "string") {
-			tmp = font.split(' '); // e.g. context.font = "20pt Arial";
-			if (tmp.length === 2) {
-				this.font.size = tmp[0];
-				this.font.family = tmp[1];
-			}
-		}
+    // Default color - white w/ no alpha
+    this.color = {
+        'red': 255,
+        'green': 255,
+        'blue': 255,
+        'alpha': 1
+    };
 
-		// Default color - white w/ no alpha
-		this.color = {
-			'red': 255,
-			'green': 255,
-			'blue': 255,
-			'alpha': 1
-		};
+    if (typeof color === "string") {
+        tmp = color.split(',');
+        if (tmp.length === 4) {
+            this.color.red = parseInt(tmp[0].replace('rgba(', ''), 10);
+            this.color.green = parseInt(tmp[1], 10);
+            this.color.blue = parseInt(tmp[2], 10);
+            this.color.alpha = parseFloat(tmp[3].replace(')', ''), 10);
+        }
+    }
 
-		if (typeof color === "string") {
-			tmp = color.split(',');
-			if (tmp.length === 4) {
-				this.color.red = parseInt(tmp[0].replace('rgba(', ''), 10);
-				this.color.green = parseInt(tmp[1], 10);
-				this.color.blue = parseInt(tmp[2], 10);
-				this.color.alpha = parseFloat(tmp[3].replace(')', ''), 10);
-			}
-		}
+    this.alignment = "center";  // allowed values: "left" "right" "center" "start" "end"
+    if (typeof alignment === "string") {
+        this.alignment = alignment;
+    }
 
-		this.alignment = "center";	// allowed values: "left" "right" "center" "start" "end"
-		if (typeof alignment === "string") {
-			this.alignment = alignment;
-		}
+    this.scale = 1;
+    this.rotation = 0;
+    this.position = {
+        'x': x,
+        'y': y
+    };
+    this.active = true;
+    this.solid = true;
+};
 
-		this.scale = 1;
-		this.rotation = 0;
-		this.position = {
-			'x': x,
-			'y': y
-		};
-		this.active = true;
-		this.solid = true;
-	};
+Vectr.Label.prototype.draw = function (context) {
+    if (this.active === false) {
+        return;
+    }
 
-	Vectr.Label.prototype.draw = function (context) {
-		if (this.active === false) {
-			return;
-		}
+    context.save();
 
-		context.save();
+    context.font = this.font.size + ' ' + this.font.family;
+    context.textAlign = this.alignment;
 
-		context.font = this.font.size + ' ' + this.font.family;
-		context.textAlign = this.alignment;
+    context.translate(this.position.x, this.position.y + parseInt(this.font.size, 10) / 3);
 
-		context.translate(this.position.x, this.position.y + parseInt(this.font.size, 10) / 3);
+    if (this.scale !== 1) {
+        context.scale(this.scale, this.scale);
+    }
 
-		if (this.scale !== 1) {
-			context.scale(this.scale, this.scale);
-		}
+    if (this.rotation !== 0 && this.rotation !== 360) {
+        context.rotate(this.rotation);
+    }
 
-		if (this.rotation !== 0 && this.rotation !== 360) {
-			context.rotate(this.rotation);
-		}
+    if (this.solid === true) {
+        context.fillStyle = 'rgba(' + this.color.red + ', ' + this.color.green + ', ' + this.color.blue + ', ' + this.color.alpha + ')';
+        context.fillText(this.text, 0, 0, Vectr.WIDTH);
+    } else {
+        context.strokeStyle = 'rgba(' + this.color.red + ', ' + this.color.green + ', ' + this.color.blue + ', ' + this.color.alpha + ')';
+        context.strokeText(this.text, 0, 0, Vectr.WIDTH);
+    }
 
-		if (this.solid === true) {
-			context.fillStyle = 'rgba(' + this.color.red + ', ' + this.color.green + ', ' + this.color.blue + ', ' + this.color.alpha + ')';
-			context.fillText(this.text, 0, 0, Vectr.WIDTH);
-		} else {
-			context.strokeStyle = 'rgba(' + this.color.red + ', ' + this.color.green + ', ' + this.color.blue + ', ' + this.color.alpha + ')';
-			context.strokeText(this.text, 0, 0, Vectr.WIDTH);
-		}
+    context.restore();
+};
 
-		context.restore();
-	};
+Vectr.Label.prototype.update = function (delta) {
+    return;
+};
 
-	Vectr.Label.prototype.update = function (dt) {
-		return;
-	};
+Vectr.Label.prototype.width = function (context) {
+    var metrics;
 
-	Vectr.Label.prototype.width = function (context) {
-		var metrics;
+    context.save();
+    context.font = this.font.size + ' ' + this.font.family;
+    context.textAlign = this.alignment;
+    metrics = context.measureText(this.text);
+    context.restore();
 
-		context.save();
-		context.font = this.font.size + ' ' + this.font.family;
-		context.textAlign = this.alignment;
-		metrics = context.measureText(this.text);
-		context.restore();
-
-		return metrics.width;
-	};
-}(window));
+    return metrics.width;
+};
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
 /**
- * @description Object pool; kind of a hacky way to store recyclable objects
+* @description Object pool; kind of a hacky way to store recyclable objects
+*/
+Vectr.Pool = function () {
+    this.length = 0;
+    this.children = [];     // Active objects
+    this.inactive = [];     // Deadpool
+};
+
+/**
+ * @description Get the next "inactive" object in the Pool
  */
-(function (window) {
-	if (typeof window.Vectr === "undefined") {
-		window.Vectr = {};
-	}
+Vectr.Pool.prototype.activate = function () {
+    if (this.inactive.length === 0) {
+        return null;
+    }
 
-	Vectr.Pool = function () {
-		this.length = 0;
-		this.children = [];		// Active objects
-		this.inactive = [];		// Deadpool
-	};
+    var object = this.inactive.pop();
+    object.active = true;
+    this.children.push(object);
+    this.length += 1;
 
-	/**
-	 * @description Get the next "inactive" object in the Pool
-	 */
-	Vectr.Pool.prototype.activate = function () {
-		if (this.inactive.length === 0) {
-			return null;
-		}
+    return object;
+};
 
-		var object = this.inactive.pop();
-		object.active = true;
-		this.children.push(object);
-		this.length += 1;
+/**
+ * @description Activate all the objects in the pool
+ */
+Vectr.Pool.prototype.activateAll = function () {
+    var object;
 
-		return object;
-	};
+    while (this.inactive.length) {
+        object = this.inactive.pop();
+        object.active = true;
+        this.children.push(object);
+        this.length += 1;
+    }
+};
 
-	/**
-	 * @description Activate all the objects in the pool
-	 */
-	Vectr.Pool.prototype.activateAll = function () {
-		var object;
+/**
+ * @description Move object to the deadpool
+ */
+Vectr.Pool.prototype.deactivate = function (index) {
+    if (this.children[index] === undefined) {
+        return;
+    }
 
-		while (this.inactive.length) {
-			object = this.inactive.pop();
-			object.active = true;
-			this.children.push(object);
-			this.length += 1;
-		}
-	};
+    this.children[index].active = false;
+    this.inactive.push(this.children[index]);
 
-	/**
-	 * @description Move object to the deadpool
-	 */
-	Vectr.Pool.prototype.deactivate = function (index) {
-		if (typeof this.children[index] === "undefined") {
-			return;
-		}
+    var i,
+        length;
 
-		this.children[index].active = false;
-		this.inactive.push(this.children[index]);
+    // Shift array contents downward
+    for (i = index, length = this.children.length - 1; i < length; i += 1) {
+        this.children[i] = this.children[i + 1];
+    }
+    this.children.length = length;
+    this.length -= 1;
 
-		var i,
-			length;
+    if (this.length === 0) {
+        this.active = false;
+    }
+};
 
-		// Shift array contents downward
-		for (i = index, length = this.children.length - 1; i < length; i += 1) {
-			this.children[i] = this.children[i + 1];
-		}
-		this.children.length = length;
-		this.length -= 1;
+/**
+ * @description Move object to the deadpool
+ */
+Vectr.Pool.prototype.deactivateAll = function () {
+    var object;
 
-		if (this.length === 0) {
-			this.active = false;
-		}
-	};
+    while (this.children.length) {
+        object = this.children.pop();
+        object.active = false;
+        this.inactive.push(object);
+        this.length -= 1;
+    }
+};
 
-	/**
-	 * @description Move object to the deadpool
-	 */
-	Vectr.Pool.prototype.deactivateAll = function () {
-		var object;
+/**
+ * @description Convenience method to access a particular child index
+ */
+Vectr.Pool.prototype.at = function (index) {
+    return this.children[index] || null;
+};
 
-		while (this.children.length) {
-			object = this.children.pop();
-			object.active = false;
-			this.inactive.push(object);
-			this.length -= 1;
-		}
-	};
-
-	/**
-	 * @description Convenience method to access a particular child index
-	 */
-	Vectr.Pool.prototype.at = function (index) {
-		return this.children[index] || null;
-	};
-
-	/**
-	 * @description Add object to one of the lists
-	 */
-	Vectr.Pool.prototype.add = function (object) {
-		if (typeof object === "object" && object.active === true) {
-			this.children.push(object);
-			this.length += 1;
-		} else {
-			this.inactive.push(object);
-		}
-	};
+/**
+ * @description Add object to one of the lists
+ */
+Vectr.Pool.prototype.add = function (object) {
+    if (typeof object === "object" && object.active === true) {
+        this.children.push(object);
+        this.length += 1;
+    } else {
+        this.inactive.push(object);
+    }
+};
 
 
-	/**
-	 * @description "Passthrough" method which updates active child objects
-	 */
-	Vectr.Pool.prototype.update = function (delta) {
-		var i = this.children.length;
+/**
+ * @description "Passthrough" method which updates active child objects
+ */
+Vectr.Pool.prototype.update = function (delta) {
+    var i = this.children.length;
 
-		while (i--) {
-			this.children[i].update(delta);
+    while (i--) {
+        this.children[i].update(delta);
 
-			// If a child object is marked as "inactive," move it to the dead pool
-			if (this.children[i].active === false) {
-				this.deactivate(i);
-			}
-		}
-	};
+        // If a child object is marked as "inactive," move it to the dead pool
+        if (this.children[i].active === false) {
+            this.deactivate(i);
+        }
+    }
+};
 
-	/**
-	 * @description "Passthrough" method which draws active child objects
-	 */
-	Vectr.Pool.prototype.draw = function (context) {
-		var i = this.children.length;
+/**
+ * @description "Passthrough" method which draws active child objects
+ */
+Vectr.Pool.prototype.draw = function (context) {
+    var i = this.children.length;
 
-		while (i--) {
-			this.children[i].draw(context);
-		}
-	};
-}(window));
+    while (i--) {
+        this.children[i].draw(context);
+    }
+};
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
-(function (window) {
-	if (typeof window.Vectr === "undefined") {
-		window.Vectr = {};
-	}
+/**
+ * @constructor
+ */
+Vectr.Scene = function () {
+    // Store game objects
+    this.children = [];
+};
 
-	/**
-	 * @constructor
-	 */
-	Vectr.Scene = function () {
-		// Store game objects
-		this.children = [];
-	};
+/**
+ * @description Clear context, then re-draw all child objects
+ * @param {CanvasRenderingContext2D} context
+ */
+Vectr.Scene.prototype.draw = function (context) {
+    if (typeof this.clearColor === "string") {
+        // Clear w/ clear color
+        context.save();
+        context.fillStyle = this.clearColor;
+        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+        context.restore();
+    } else {
+        // Just erase
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+    }
 
-	/**
-	 * @description Clear context, then re-draw all child objects
-	 */
-	Vectr.Scene.prototype.draw = function (context) {
-		if (typeof this.clearColor === "string") {
-			// Clear w/ clear color
-			context.save();
-			context.fillStyle = this.clearColor;
-			context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-			context.restore();
-		} else {
-			// Just erase
-			context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-		}
+    var i = this.children.length;
+    while (i--) {
+        this.children[i].draw(context);
+    }
+};
 
-		var i = this.children.length;
-		while (i--) {
-			this.children[i].draw(context);
-		}
-	};
+/**
+ * @description Update all child objects
+ * @param {Number} delta Time since last update (in seconds)
+ */
+Vectr.Scene.prototype.update = function (delta) {
+    var i = this.children.length;
+    while (i--) {
+        this.children[i].update(delta);
+    }
+};
 
-	/**
-	 * @description Update all child objects
-	 */
-	Vectr.Scene.prototype.update = function (delta) {
-		var i = this.children.length;
-		while (i--) {
-			this.children[i].update(delta);
-		}
-	};
+/**
+ * @description Add an object to the draw/update loop
+ * @param {Shape} object
+ */
+Vectr.Scene.prototype.add = function (object) {
+    this.children.push(object);
+};
 
-	/**
-	 * @description Add an object to the draw/update loop
-	 */
-	Vectr.Scene.prototype.add = function (object) {
-		this.children.push(object);
-	};
+/**
+ * @description Remove a Shape object from the Scene
+ * @param {Shape} object Shape to be removed; consider setting shape.active = false; instead to re-use the shape later
+ */
+Vectr.Scene.prototype.remove = function (object) {
+    var index = this.children.indexOf(object);
 
-	/**
-	 * @description Remove a drawn/updated object
-	 */
-	Vectr.Scene.prototype.remove = function (object) {
-		var index = this.children.indexOf(object);
+    if (index !== -1) {
+        this.children.splice(index, 1);
+    }
+};
 
-		if (index !== -1) {
-			this.children.splice(index, 1);
-		}
-	};
-
-	/**
-	 * @description Clean up all child objects
-	 */
-	Vectr.Scene.prototype.destroy = function () {
-		var i = this.children.length;
-		while (i--) {
-			if (typeof this.children[i].destroy === "function") {
-				this.children[i].destroy();
-			}
-		}
-	};
-}(window));
+/**
+ * @description Clean up all child objects
+ */
+Vectr.Scene.prototype.destroy = function () {
+    var i = this.children.length;
+    while (i--) {
+        if (typeof this.children[i].destroy === "function") {
+            this.children[i].destroy();
+        }
+    }
+};
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
