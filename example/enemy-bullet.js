@@ -6,7 +6,7 @@ var EnemyBullet = function () {
 
     this.shape = 'circle';
     this.size = 4;
-    this.color = {
+    this._color = {
         'red': 0,
         'blue': 0,
         'green': 255,

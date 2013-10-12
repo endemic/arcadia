@@ -4,25 +4,14 @@
 var Enemy = function (x, y, shape, size, color) {
     Vectr.Shape.apply(this, arguments);
 
-    this.color = {
+    this._color = {
         'red': 255,
         'green': 0,
         'blue': 0,
         'alpha': 1
     };
 
-    this.shadow = {
-        'x': 0,
-        'y': 0,
-        'blur': 20,
-        'color': {
-            'red': 255,
-            'green': 0,
-            'blue': 0,
-            'alpha': 1
-        }
-    };
-
+    this.shadow = 20;
     this.speed = 40;
     this.size = 20;
     this.shape = 'triangle';
