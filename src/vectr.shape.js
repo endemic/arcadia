@@ -1,9 +1,14 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
-Vectr.Shape = function (x, y, shape, size, color, shadow) {
-    var tmp;
-
+/**
+ * @description Shape constructor
+ * @param {Number} x Position of shape on x-axis
+ * @param {Number} y Position of shape on y-axis
+ * @param {String} shape String representing what to draw
+ * @param {Number} size Size of shape in pixels
+ */
+Vectr.Shape = function (x, y, shape, size) {
     this.shape = shape || 'square';
     this.size = size || 10;
     this.lineWidth = 1;
@@ -23,44 +28,39 @@ Vectr.Shape = function (x, y, shape, size, color, shadow) {
     this.solid = false;
 
     // Default color - white w/ no alpha
-    this.color = {
+    this._color = {
         'red': 255,
         'green': 255,
         'blue': 255,
         'alpha': 1
     };
 
-    if (typeof color === "string" && (tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/))) {
-        this.color.red = parseInt(tmp[1], 10);
-        this.color.green = parseInt(tmp[2], 10);
-        this.color.blue = parseInt(tmp[3], 10);
-        this.color.alpha = parseFloat(tmp[4], 10);
-    }
-
-    // Default shadow - none
-    this.shadow = {
-        'x': 0,
-        'y': 0,
-        'blur': 0,
-        'color': {
-            'red': 255,
-            'green': 255,
-            'blue': 255,
-            'alpha': 1
-        }
-    };
-
-    if (typeof shadow === "string" && (tmp = shadow.match(/^(\d+(?:px)?)\s(\d+(?:px)?)\s(\d+(?:px)?)\srgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/))) {
-        this.shadow.x = parseInt(tmp[1], 10);
-        this.shadow.y = parseInt(tmp[2], 10);
-        this.shadow.blur = parseInt(tmp[3], 10);
-
-        this.shadow.color.red = parseInt(tmp[4], 10);
-        this.shadow.color.green = parseInt(tmp[5], 10);
-        this.shadow.color.blue = parseInt(tmp[6], 10);
-        this.shadow.color.alpha = parseFloat(tmp[7], 10);
-    }
+    // Default shadow size - none
+    this.shadow = 0;
 };
+
+/**
+ * @description Getter/setter for color value
+ */
+Object.defineProperty(Vectr.Shape.prototype, 'color', {
+    get: function () {
+        return 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
+    },
+    set: function (color) {
+        if (typeof color !== 'string') {
+            return;
+        }
+
+        var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
+
+        if (tmp.length === 5) {
+            this._color.red = parseInt(tmp[1], 10);
+            this._color.green = parseInt(tmp[2], 10);
+            this._color.blue = parseInt(tmp[3], 10);
+            this._color.alpha = parseFloat(tmp[4], 10);
+        }
+    }
+});
 
 Vectr.Shape.prototype.draw = function (context) {
 
@@ -87,11 +87,11 @@ Vectr.Shape.prototype.draw = function (context) {
         context.rotate(this.rotation);
     }
 
-    if (this.shadow.x > 0 || this.shadow.y > 0 || this.shadow.blur > 0) {
-        context.shadowOffsetX = this.shadow.x;
-        context.shadowOffsetY = this.shadow.y;
-        context.shadowBlur = this.shadow.blur;
-        context.shadowColor = 'rgba(' + this.shadow.color.red + ', ' + this.shadow.color.green + ', ' + this.shadow.color.blue + ', ' + this.shadow.color.alpha + ')';
+    if (this.shadow > 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = this.shadow;
+        context.shadowColor = 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
     }
 
     context.lineWidth = this.lineWidth;
@@ -123,10 +123,10 @@ Vectr.Shape.prototype.draw = function (context) {
         context.closePath();
 
         if (this.solid === true) {
-            context.fillStyle = 'rgba(' + this.color.red + ', ' + this.color.green + ', ' + this.color.blue + ', ' + this.color.alpha + ')';
+            context.fillStyle = 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
             context.fill();
         } else {
-            context.strokeStyle = 'rgba(' + this.color.red + ', ' + this.color.green + ', ' + this.color.blue + ', ' + this.color.alpha + ')';
+            context.strokeStyle = 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
             context.stroke();
         }
     }
