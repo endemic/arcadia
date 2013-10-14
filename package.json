@@ -1,6 +1,6 @@
 {
   "name": "vectr",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Minimalistic <canvas>-based game framework",
   "main": "Gruntfile.js",
   "directories": {
@@ -16,7 +16,8 @@
   "keywords": [
     "html5",
     "games",
-    "canvas"
+    "canvas",
+    "framework"
   ],
   "author": "Nathan Demick",
   "license": "MIT",
