@@ -10,7 +10,6 @@ if (window.cancelAnimationFrame === undefined) {
 }
 
 var Vectr = {
-    'VERSION': '0.2',
     'Game': function (width, height, SceneClass, fitWindow) {
         var i,
             context;
