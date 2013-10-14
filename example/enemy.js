@@ -1,28 +1,17 @@
 /*jslint sloppy: true, browser: true */
 /*globals Vectr */
 
-var Enemy = function (x, y, shape, size, color) {
+var Enemy = function () {
     Vectr.Shape.apply(this, arguments);
 
-    this.color = {
+    this.colors = {
         'red': 255,
         'green': 0,
         'blue': 0,
         'alpha': 1
     };
 
-    this.shadow = {
-        'x': 0,
-        'y': 0,
-        'blur': 20,
-        'color': {
-            'red': 255,
-            'green': 0,
-            'blue': 0,
-            'alpha': 1
-        }
-    };
-
+    this.glow = 20;
     this.speed = 40;
     this.size = 20;
     this.shape = 'triangle';

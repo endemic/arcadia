@@ -1,7 +1,7 @@
 /*jslint sloppy: true, browser: true */
 /*globals Vectr, Player */
 
-var Player = function (x, y) {
+var Player = function () {
     Vectr.Shape.apply(this, arguments);
 
     this.speed = 100;
@@ -9,18 +9,7 @@ var Player = function (x, y) {
     this.size = 20;
     this.lineWidth = 3;
     this.rotation = 270 * Math.PI / 180;
-
-    this.shadow = {
-        'x': 0,
-        'y': 0,
-        'blur': 20,
-        'color': {
-            'red': 255,
-            'green': 255,
-            'blue': 255,
-            'alpha': 1
-        }
-    };
+    this.glow = 20;
 };
 
 Player.prototype = new Vectr.Shape();
@@ -34,7 +23,7 @@ Player.prototype.customPath = function (context) {
     context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
     context.closePath();
 
-    context.strokeStyle = 'rgba(' + this.color.red + ', ' + this.color.green + ', ' + this.color.blue + ', ' + this.color.alpha + ')';
+    context.strokeStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
     context.stroke();
 };
 
