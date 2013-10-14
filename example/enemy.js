@@ -1,7 +1,7 @@
 /*jslint sloppy: true, browser: true */
 /*globals Vectr */
 
-var Enemy = function (x, y, shape, size, color) {
+var Enemy = function () {
     Vectr.Shape.apply(this, arguments);
 
     this.colors = {
@@ -11,7 +11,7 @@ var Enemy = function (x, y, shape, size, color) {
         'alpha': 1
     };
 
-    this.shadow = 20;
+    this.glow = 20;
     this.speed = 40;
     this.size = 20;
     this.shape = 'triangle';
