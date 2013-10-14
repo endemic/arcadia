@@ -22,7 +22,7 @@ Vectr.Emitter = function (shape, size, color, count, duration, fade) {
     this.speed = 200;
 
     if (tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/)) {
-        this.color = {
+        this.colors = {
             'red': parseInt(tmp[1], 10),
             'green': parseInt(tmp[2], 10),
             'blue': parseInt(tmp[3], 10)
@@ -58,10 +58,10 @@ Vectr.Emitter.prototype.start = function (x, y) {
         this.particles.at(i).velocity.x = Math.cos(direction);
         this.particles.at(i).velocity.y = Math.sin(direction);
         this.particles.at(i).speed = Math.random() * this.speed;
-        this.particles.at(i).color.red = this.color.red;
-        this.particles.at(i).color.green = this.color.green;
-        this.particles.at(i).color.blue = this.color.blue;
-        this.particles.at(i).color.alpha = 1;
+        this.particles.at(i).colors.red = this.colors.red;
+        this.particles.at(i).colors.green = this.colors.green;
+        this.particles.at(i).colors.blue = this.colors.blue;
+        this.particles.at(i).colors.alpha = 1;
     }
 
     this.timer = 0;
@@ -87,7 +87,7 @@ Vectr.Emitter.prototype.update = function (delta) {
         this.particles.at(i).update(delta);
 
         if (this.fade) {
-            this.particles.at(i).color.alpha -= delta / this.duration;
+            this.particles.at(i).colors.alpha -= delta / this.duration;
         }
 
         if (this.timer >= this.duration) {
