@@ -35,8 +35,8 @@ Vectr.Shape = function (x, y, shape, size) {
         'alpha': 1
     };
 
-    // Default shadow size - none
-    this.shadow = 0;
+    // Default glow size - none
+    this.glow = 0;
 };
 
 /**
@@ -87,10 +87,10 @@ Vectr.Shape.prototype.draw = function (context) {
         context.rotate(this.rotation);
     }
 
-    if (this.shadow > 0) {
+    if (this.glow > 0) {
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0;
-        context.shadowBlur = this.shadow;
+        context.shadowBlur = this.glow;
         context.shadowColor = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
     }
 

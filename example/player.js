@@ -1,7 +1,7 @@
 /*jslint sloppy: true, browser: true */
 /*globals Vectr, Player */
 
-var Player = function (x, y) {
+var Player = function () {
     Vectr.Shape.apply(this, arguments);
 
     this.speed = 100;
@@ -9,7 +9,7 @@ var Player = function (x, y) {
     this.size = 20;
     this.lineWidth = 3;
     this.rotation = 270 * Math.PI / 180;
-    this.shadow = 20;
+    this.glow = 20;
 };
 
 Player.prototype = new Vectr.Shape();
