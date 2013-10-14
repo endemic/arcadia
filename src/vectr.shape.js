@@ -28,7 +28,7 @@ Vectr.Shape = function (x, y, shape, size) {
     this.solid = false;
 
     // Default color - white w/ no alpha
-    this._color = {
+    this.colors = {
         'red': 255,
         'green': 255,
         'blue': 255,
@@ -44,7 +44,7 @@ Vectr.Shape = function (x, y, shape, size) {
  */
 Object.defineProperty(Vectr.Shape.prototype, 'color', {
     get: function () {
-        return 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
+        return 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
     },
     set: function (color) {
         if (typeof color !== 'string') {
@@ -54,10 +54,10 @@ Object.defineProperty(Vectr.Shape.prototype, 'color', {
         var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
 
         if (tmp.length === 5) {
-            this._color.red = parseInt(tmp[1], 10);
-            this._color.green = parseInt(tmp[2], 10);
-            this._color.blue = parseInt(tmp[3], 10);
-            this._color.alpha = parseFloat(tmp[4], 10);
+            this.colors.red = parseInt(tmp[1], 10);
+            this.colors.green = parseInt(tmp[2], 10);
+            this.colors.blue = parseInt(tmp[3], 10);
+            this.colors.alpha = parseFloat(tmp[4], 10);
         }
     }
 });
@@ -91,7 +91,7 @@ Vectr.Shape.prototype.draw = function (context) {
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0;
         context.shadowBlur = this.shadow;
-        context.shadowColor = 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
+        context.shadowColor = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
     }
 
     context.lineWidth = this.lineWidth;
@@ -123,10 +123,10 @@ Vectr.Shape.prototype.draw = function (context) {
         context.closePath();
 
         if (this.solid === true) {
-            context.fillStyle = 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
+            context.fillStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
             context.fill();
         } else {
-            context.strokeStyle = 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
+            context.strokeStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
             context.stroke();
         }
     }
