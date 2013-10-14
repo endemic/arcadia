@@ -4,7 +4,7 @@
 var Enemy = function (x, y, shape, size, color) {
     Vectr.Shape.apply(this, arguments);
 
-    this._color = {
+    this.colors = {
         'red': 255,
         'green': 0,
         'blue': 0,

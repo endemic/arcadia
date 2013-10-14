@@ -23,7 +23,7 @@ Player.prototype.customPath = function (context) {
     context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
     context.closePath();
 
-    context.strokeStyle = 'rgba(' + this._color.red + ', ' + this._color.green + ', ' + this._color.blue + ', ' + this._color.alpha + ')';
+    context.strokeStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
     context.stroke();
 };
 
