@@ -3,12 +3,22 @@
 
 Vectr.GameObject = function (x, y) {
     this.position = {
-        'x': x,
-        'y': y
+        'x': x || 0,
+        'y': y || 0
     };
 
     this.active = true;
+    this.scale = 1;
+    this.rotation = 0;
+    this.glow = 0;
+    this.colors = {
+        'red': 255,
+        'green': 255,
+        'blue': 255,
+        'alpha': 1
+    };
     this.children = [];
+    this.i = 0;
 };
 
 
@@ -29,9 +39,9 @@ Vectr.GameObject.prototype.draw = function (context, offsetX, offsetY) {
         offsetY = 0;
     }
 
-    var i = this.children.length;
-    while (i--) {
-        this.children[i].draw(context, offsetX - this.position.x, offsetY - this.position.y);
+    this.i = this.children.length;
+    while (this.i--) {
+        this.children[this.i].draw(context, offsetX - this.position.x, offsetY - this.position.y);
     }
 };
 
@@ -44,9 +54,9 @@ Vectr.GameObject.prototype.update = function (delta) {
         return;
     }
 
-    var i = this.children.length;
-    while (i--) {
-        this.children[i].update(delta);
+    this.i = this.children.length;
+    while (this.i--) {
+        this.children[this.i].update(delta);
     }
 };
 
@@ -63,9 +73,21 @@ Vectr.GameObject.prototype.add = function (object) {
  * @param {Shape} object Shape to be removed; consider setting shape.active = false; instead to re-use the shape later
  */
 Vectr.GameObject.prototype.remove = function (object) {
-    var index = this.children.indexOf(object);
+    this.i = this.children.indexOf(object);
 
-    if (index !== -1) {
-        this.children.splice(index, 1);
+    if (this.i !== -1) {
+        this.children.splice(this.i, 1);
+    }
+};
+
+/**
+ * @description Clean up all child objects
+ */
+Vectr.GameObject.prototype.destroy = function () {
+    this.i = this.children.length;
+    while (this.i--) {
+        if (typeof this.children[this.i].destroy === "function") {
+            this.children[this.i].destroy();
+        }
     }
 };

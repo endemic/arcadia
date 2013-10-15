@@ -4,16 +4,12 @@
 /**
  * @constructor
  */
-Vectr.Button = function (x, y, text, font, color, backgroundColor) {
-    // Button contains a label w/ a rectangle drawn around it
-    this.label = new Vectr.Label(x, y, text, font, color, "center");
-    this.position = {
-        'x': x,
-        'y': y
-    };
+Vectr.Button = function (x, y, text) {
+    Vectr.GameObject.apply(this, arguments);
+
+    this.label = new Vectr.Label(x, y, text, font);
     this.backgroundColor = backgroundColor || color;
-    this.height = parseInt(font.split(" ").shift(), 10);
-    this.active = true;
+    this.height = parseInt(this.label.fonts.size, 10);
     this.solid = true;
     this.padding = 10;
 
@@ -24,12 +20,21 @@ Vectr.Button = function (x, y, text, font, color, backgroundColor) {
 };
 
 /**
- * @description Draw the button!
+ * @description Set prototype
+ */
+Vectr.Button.prototype = new Vectr.GameObject();
+
+/**
+ * @description Draw object
+ * @param {CanvasRenderingContext2D} context
  */
 Vectr.Button.prototype.draw = function (context) {
     if (this.active === false) {
         return;
     }
+
+    // Draw child objects first, so they will be on the "bottom"
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
 
     this.width = this.label.width(context);
 
@@ -45,9 +50,19 @@ Vectr.Button.prototype.draw = function (context) {
         context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
     }
     context.restore();
+};
 
-    // Draw label
-    this.label.draw(context);
+/**
+ * @description Update object
+ * @param {Number} delta Time since last update (in seconds)
+ */
+Vectr.Label.prototype.update = function (delta) {
+    if (this.active === false) {
+        return;
+    }
+
+    // Update child objects
+    Vectr.GameObject.prototype.update.call(this, delta);
 };
 
 /**
@@ -92,8 +107,3 @@ Vectr.Button.prototype.destroy = function () {
     Vectr.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
     Vectr.instance.element.removeEventListener('touchend', this.onPointEnd, false);
 };
-
-/**
- * @description Currently unused
- */
-Vectr.Button.prototype.update = function (delta) { return; };

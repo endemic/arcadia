@@ -9,7 +9,8 @@
       as an offset (i.e. create "GameObject" class)
 * [ ] Allow 'rectangle' shapes
 * [ ] Cull drawing of objects outwide viewport
-* [X] Add "shadow" integer to shapes which controls size (0 == off). Color is inherited. 
+* [ ] Add "camera" object to scenes
+* [X] Add "shadow" integer to shapes which controls size (0 == off). Color is inherited.
 * [X] Test mouse offset for buttons in Firefox
 * [X] Test <canvas> scaling in Firefox
 * [X] Write setter/getter for Shape color
