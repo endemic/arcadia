@@ -6,8 +6,10 @@ var Title = function () {
 
     this.clearColor = 'rgba(0, 0, 0, 0.15)';
 
-    // x, y, text, font, color, alignment
-    this.add(new Vectr.Label(Vectr.WIDTH / 2, Vectr.HEIGHT / 4, "ARMADA", "40px monospace", "rgba(255, 255, 255, 0.8)"));
+    var title = new Vectr.Label(Vectr.WIDTH / 2, Vectr.HEIGHT / 4, "ARMADA");
+    title.font = '40px monospace';
+    title.color = 'rgba(255, 255, 255, 0.8)';
+    this.add(title);
 
     // x, y, text, font, color, background
     this.button = new Vectr.Button(Vectr.WIDTH / 2, Vectr.HEIGHT / 2, "START", "20px monospace", "rgba(255, 255, 255, 1)");
