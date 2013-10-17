@@ -8,8 +8,8 @@ Vectr.Label = function (x, y, text) {
 
     // Default font
     this.fonts = {
-        'size': '20px',
-        'family': 'monospaced'
+        'size': '10px',
+        'family': 'monospace'
     };
 
     //this.alignment = ["left", "right", "center", "start", "end"].indexOf(alignment) !== -1 ? alignment : "center";
@@ -21,49 +21,6 @@ Vectr.Label = function (x, y, text) {
  * @description Set prototype
  */
 Vectr.Label.prototype = new Vectr.GameObject();
-
-/**
- * @description Getter/setter for color value
- */
-Object.defineProperty(Vectr.Label.prototype, 'color', {
-    get: function () {
-        return 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
-    },
-    set: function (color) {
-        if (typeof color !== 'string') {
-            return;
-        }
-
-        var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
-
-        if (tmp.length === 5) {
-            this.colors.red = parseInt(tmp[1], 10);
-            this.colors.green = parseInt(tmp[2], 10);
-            this.colors.blue = parseInt(tmp[3], 10);
-            this.colors.alpha = parseFloat(tmp[4], 10);
-        }
-    }
-});
-
-/**
- * @description Getter/setter for font value
- */
-Object.defineProperty(Vectr.Label.prototype, 'font', {
-    get: function () {
-        return this.fonts.size + ' ' + this.fonts.family;
-    },
-    set: function (font) {
-        if (typeof font !== 'string') {
-            return;
-        }
-
-        var tmp = font.split(' '); // e.g. context.font = "20pt Arial";
-        if (tmp.length === 2) {
-            this.fonts.size = tmp[0];
-            this.fonts.family = tmp[1];
-        }
-    }
-});
 
 /**
  * @description Draw object
@@ -92,11 +49,18 @@ Vectr.Label.prototype.draw = function (context) {
         context.rotate(this.rotation);
     }
 
+    if (this.glow > 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = this.glow;
+        context.shadowColor = this.color;
+    }
+
     if (this.solid === true) {
-        context.fillStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+        context.fillStyle = this.color;
         context.fillText(this.text, 0, 0, Vectr.WIDTH);
     } else {
-        context.strokeStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+        context.strokeStyle = this.color;
         context.strokeText(this.text, 0, 0, Vectr.WIDTH);
     }
 
@@ -131,3 +95,23 @@ Vectr.Label.prototype.width = function (context) {
 
     return metrics.width;
 };
+
+/**
+ * @description Getter/setter for font value
+ */
+Object.defineProperty(Vectr.Label.prototype, 'font', {
+    get: function () {
+        return this.fonts.size + ' ' + this.fonts.family;
+    },
+    set: function (font) {
+        if (typeof font !== 'string') {
+            return;
+        }
+
+        var tmp = font.split(' '); // e.g. context.font = "20pt Arial";
+        if (tmp.length === 2) {
+            this.fonts.size = tmp[0];
+            this.fonts.family = tmp[1];
+        }
+    }
+});
