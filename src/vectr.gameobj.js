@@ -91,3 +91,26 @@ Vectr.GameObject.prototype.destroy = function () {
         }
     }
 };
+
+/**
+ * @description Getter/setter for color value
+ */
+Object.defineProperty(Vectr.GameObject.prototype, 'color', {
+    get: function () {
+        return 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+    },
+    set: function (color) {
+        if (typeof color !== 'string') {
+            return;
+        }
+
+        var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
+
+        if (tmp.length === 5) {
+            this.colors.red = parseInt(tmp[1], 10);
+            this.colors.green = parseInt(tmp[2], 10);
+            this.colors.blue = parseInt(tmp[3], 10);
+            this.colors.alpha = parseFloat(tmp[4], 10);
+        }
+    }
+});
