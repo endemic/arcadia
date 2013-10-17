@@ -29,29 +29,6 @@ Vectr.Shape = function (x, y, shape, size) {
 Vectr.Shape.prototype = new Vectr.GameObject();
 
 /**
- * @description Getter/setter for color value
- */
-Object.defineProperty(Vectr.Shape.prototype, 'color', {
-    get: function () {
-        return 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
-    },
-    set: function (color) {
-        if (typeof color !== 'string') {
-            return;
-        }
-
-        var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
-
-        if (tmp.length === 5) {
-            this.colors.red = parseInt(tmp[1], 10);
-            this.colors.green = parseInt(tmp[2], 10);
-            this.colors.blue = parseInt(tmp[3], 10);
-            this.colors.alpha = parseFloat(tmp[4], 10);
-        }
-    }
-});
-
-/**
  * @description Draw object
  * @param {CanvasRenderingContext2D} context
  */
@@ -78,7 +55,7 @@ Vectr.Shape.prototype.draw = function (context) {
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0;
         context.shadowBlur = this.glow;
-        context.shadowColor = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+        context.shadowColor = this.color;
     }
 
     context.lineWidth = this.lineWidth;
@@ -110,10 +87,10 @@ Vectr.Shape.prototype.draw = function (context) {
         context.closePath();
 
         if (this.solid === true) {
-            context.fillStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+            context.fillStyle = this.color;
             context.fill();
         } else {
-            context.strokeStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+            context.strokeStyle = this.color;
             context.stroke();
         }
     }
@@ -130,11 +107,11 @@ Vectr.Shape.prototype.update = function (delta) {
         return;
     }
 
-    // Update child objects
-    Vectr.GameObject.prototype.update.call(this, delta);
-
     this.position.x += this.velocity.x * this.speed * delta;
     this.position.y += this.velocity.y * this.speed * delta;
+
+    // Update child objects
+    Vectr.GameObject.prototype.update.call(this, delta);
 };
 
 /**

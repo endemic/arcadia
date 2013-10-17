@@ -2,10 +2,13 @@
 
 * [ ] More JSDoc comments
 * [ ] Re-write some Pool methods to use fewer variables (use ivar for iterators)
-* [ ] Add a "high perf" flag that removes drop shadows when on mobile
-* [ ] Add shadows to buttons/labels
+* [ ] Allow Pool to expand if necessary - i.e. don't splice its' internal arrays, allow them to grow 
+	  to contain more objects, but keep pointers to the last object for both "active" and "inactive" arrays
+* [ ] Rename Pool::children to Pool::active
+* [ ] Add a "high perf" flag that removes drop shadows (glow) when on mobile
+* [ ] Add glow to buttons - get glow to pass through button down to its' child label
 * [ ] Update particle emitter to have infinite particles; can turn on/off
-* [ ] Allow any shape to have children; recurively draw children using the parent's current position
+* [X] Allow any shape to have children; recurively draw children using the parent's current position
       as an offset (i.e. create "GameObject" class)
 * [ ] Allow 'rectangle' shapes
 * [ ] Cull drawing of objects outwide viewport
