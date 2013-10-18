@@ -14,13 +14,8 @@ var Vectr = {
         var i,
             context;
 
-        if (width === undefined) {
-            width = 320;
-        }
-
-        if (height === undefined) {
-            height = 480;
-        }
+        width = parseInt(width, 10) || 320;
+        height = parseInt(height, 10) || 480;
 
         if (typeof SceneClass !== "function") {
             throw 'Please provide a valid Scene object.';

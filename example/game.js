@@ -9,13 +9,18 @@ var Game = function () {
         i;
 
     // Text/button that lets player try again
-    this.gameOverLabel = new Vectr.Label(Vectr.WIDTH / 2, Vectr.HEIGHT / 4, "GAME OVER", "40px monospace", "rgba(255, 255, 255, 0.8)");
+    this.gameOverLabel = new Vectr.Label(Vectr.WIDTH / 2, Vectr.HEIGHT / 4, "GAME OVER");
+    this.gameOverLabel.font = '40px monospace';
+    this.gameOverLabel.color = 'rgba(255, 255, 255, 0.8)';
     this.gameOverLabel.active = false;
+    this.gameOverLabel.glow = 10;
     this.add(this.gameOverLabel);
 
-    this.tryAgainButton = new Vectr.Button(Vectr.WIDTH / 2, Vectr.HEIGHT / 2, "TRY AGAIN", "20px monospace", "rgba(255, 255, 255, 1)");
+    this.tryAgainButton = new Vectr.Button(Vectr.WIDTH / 2, Vectr.HEIGHT / 2, "TRY AGAIN");
+    this.tryAgainButton.font = '20px monospace';
     this.tryAgainButton.solid = false;
-    this.tryAgainButton.padding = 10;
+    this.tryAgainButton.padding = 20;
+    this.tryAgainButton.glow = 20;
     this.tryAgainButton.onUp = function () {
         Vectr.changeScene(Game);
     };
@@ -23,7 +28,10 @@ var Game = function () {
     this.add(this.tryAgainButton);
 
     // Score label
-    this.label = new Vectr.Label(0, 20, "Score: 0", "16px monospace", "rgba(255, 255, 255, 0.8)", "left");
+    this.label = new Vectr.Label(10, 20, "Score: 0");
+    this.label.font = '16px monospace';
+    this.label.alignment = 'left';
+    this.label.glow = 10;
     this.add(this.label);
     this.score = 0;
 
@@ -64,11 +72,15 @@ var Game = function () {
     i = 5;
     while (i--) {
         // shape, size, color, count, duration, fade
-        obj = new Vectr.Emitter('circle', 4, 'rgba(255, 0, 0, 1)', 30, 0.5);
+        obj = new Vectr.Emitter('circle', 4, 30);
+        obj.color = 'rgba(255, 0, 0, 1)';
+        obj.duration = 0.5;
         this.particles.add(obj);
     }
 
-    this.playerExplosion = new Vectr.Emitter('circle', 4, 'rgba(255, 255, 255, 1)', 30, 0.5);
+    this.playerExplosion = new Vectr.Emitter('circle', 4, 30);
+    this.playerExplosion.color = 'rgba(255, 255, 255, 1)';
+    this.playerExplosion.duration = 0.5;
     this.add(this.playerExplosion);
 
     // Add a starfield background
@@ -99,7 +111,7 @@ Game.prototype.update = function (delta) {
         j;
 
     // Update star positions
-    i = this.stars.children.length;
+    i = this.stars.length;
     while (i--) {
         star = this.stars.at(i);
         if (star.position.y > Vectr.HEIGHT) {

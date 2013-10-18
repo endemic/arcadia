@@ -4,38 +4,33 @@
 /**
  * @constructor
  * @description Basic particle emitter
- * @param {number} [count=25] The number of particles created for the system
- * @param {number} [duration=1] Length of time the particles appear (in seconds)
  * @param {string} [shape='square'] Shape of the particles. Accepts strings that are valid for Shapes (e.g. "circle", "triangle")
  * @param {number} [size=10] Size of the particles
- * @param {string} [color='rgba(255, 255, 255, 1)'] Color of particles, 'rgba(x, x, x, x)' format
- * @param {boolean} [fade=false] Whether to fade the particles out when they are displayed
+ * @param {number} [count=25] The number of particles created for the system
  */
-Vectr.Emitter = function (shape, size, color, count, duration, fade) {
-    var particle,
-        tmp;
+Vectr.Emitter = function (shape, size, count) {
+    Vectr.GameObject.apply(this, arguments);
 
-    count = count || 25;
-    this.duration = duration || 1;
-    this.fade = fade || false;
+    var particle;
+
     this.particles = new Vectr.Pool();
+    this.duration = 1;
+    this.fade = false;
     this.speed = 200;
-
-    if (tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/)) {
-        this.colors = {
-            'red': parseInt(tmp[1], 10),
-            'green': parseInt(tmp[2], 10),
-            'blue': parseInt(tmp[3], 10)
-        };
-    }
+    count = count || 25;
 
     while (count--) {
-        particle = new Vectr.Shape(0, 0, shape, size);
+        particle = new Vectr.Shape(0, 0, shape || 'square', size || 5);
         particle.active = false;
         particle.solid = true;
         this.particles.add(particle);
     }
 };
+
+/**
+ * @description Set prototype
+ */
+Vectr.Emitter.prototype = new Vectr.GameObject();
 
 /**
  * @description Activate a particle emitter
@@ -58,10 +53,7 @@ Vectr.Emitter.prototype.start = function (x, y) {
         this.particles.at(i).velocity.x = Math.cos(direction);
         this.particles.at(i).velocity.y = Math.sin(direction);
         this.particles.at(i).speed = Math.random() * this.speed;
-        this.particles.at(i).colors.red = this.colors.red;
-        this.particles.at(i).colors.green = this.colors.green;
-        this.particles.at(i).colors.blue = this.colors.blue;
-        this.particles.at(i).colors.alpha = 1;
+        this.particles.at(i).color = this.color;
     }
 
     this.timer = 0;

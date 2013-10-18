@@ -4,15 +4,23 @@
 var Title = function () {
     Vectr.Scene.apply(this, arguments);
 
+    var i,
+        star,
+        title;
+
     this.clearColor = 'rgba(0, 0, 0, 0.15)';
 
-    // x, y, text, font, color, alignment
-    this.add(new Vectr.Label(Vectr.WIDTH / 2, Vectr.HEIGHT / 4, "ARMADA", "40px monospace", "rgba(255, 255, 255, 0.8)"));
+    title = new Vectr.Label(Vectr.WIDTH / 2, Vectr.HEIGHT / 4, "ARMADA");
+    title.font = '40px monospace';
+    title.color = 'rgba(255, 255, 255, 0.8)';
+    title.glow = 10;
+    this.add(title);
 
-    // x, y, text, font, color, background
-    this.button = new Vectr.Button(Vectr.WIDTH / 2, Vectr.HEIGHT / 2, "START", "20px monospace", "rgba(255, 255, 255, 1)");
+    this.button = new Vectr.Button(Vectr.WIDTH / 2, Vectr.HEIGHT / 2, "START"); // x, y, text
+    this.button.font = '20px monospace';
     this.button.solid = false;
-    this.button.padding = 10;
+    this.button.padding = 20;
+    this.button.glow = 20;
     this.button.onUp = function () {
         Vectr.changeScene(Game);
     };
@@ -21,9 +29,6 @@ var Title = function () {
     // Add a starfield background
     this.stars = new Vectr.Pool();
     this.add(this.stars);
-
-    var i,
-        star;
 
     i = 50;
     while (i--) {
@@ -44,7 +49,7 @@ Title.prototype.update = function (delta) {
         star;
 
     // Reset star positions
-    i = this.stars.children.length;
+    i = this.stars.length;
     while (i--) {
         star = this.stars.at(i);
         if (star.position.y > Vectr.HEIGHT) {
