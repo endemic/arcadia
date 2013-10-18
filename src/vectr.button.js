@@ -4,16 +4,21 @@
 /**
  * @constructor
  */
-Vectr.Button = function (x, y, text, font, color, backgroundColor) {
-    // Button contains a label w/ a rectangle drawn around it
-    this.label = new Vectr.Label(x, y, text, font, color, "center");
-    this.position = {
-        'x': x,
-        'y': y
+Vectr.Button = function (x, y, text) {
+    Vectr.GameObject.apply(this, arguments);
+
+    this.label = new Vectr.Label(x, y, text);
+    this.add(this.label);
+
+    // Default border/background
+    this.backgroundColors = {
+        'red': 255,
+        'green': 255,
+        'blue': 255,
+        'alpha': 1
     };
-    this.backgroundColor = backgroundColor || color;
-    this.height = parseInt(font.split(" ").shift(), 10);
-    this.active = true;
+
+    this.height = parseInt(this.label.fonts.size, 10);
     this.solid = true;
     this.padding = 10;
 
@@ -24,7 +29,13 @@ Vectr.Button = function (x, y, text, font, color, backgroundColor) {
 };
 
 /**
- * @description Draw the button!
+ * @description Set prototype
+ */
+Vectr.Button.prototype = new Vectr.GameObject();
+
+/**
+ * @description Draw object
+ * @param {CanvasRenderingContext2D} context
  */
 Vectr.Button.prototype.draw = function (context) {
     if (this.active === false) {
@@ -37,17 +48,36 @@ Vectr.Button.prototype.draw = function (context) {
     context.save();
     context.translate(this.position.x, this.position.y);
 
+    if (this.glow > 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = this.glow;
+        context.shadowColor = this.color;
+    }
+
     if (this.solid === true) {
         context.fillStyle =  this.backgroundColor;
-        context.fillRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding, this.width + this.padding, this.height + this.padding);
+        context.fillRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
     } else {
         context.strokeStyle = this.backgroundColor;
         context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
     }
     context.restore();
 
-    // Draw label
-    this.label.draw(context);
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+};
+
+/**
+ * @description Update object
+ * @param {Number} delta Time since last update (in seconds)
+ */
+Vectr.Label.prototype.update = function (delta) {
+    if (this.active === false) {
+        return;
+    }
+
+    // Update child objects
+    Vectr.GameObject.prototype.update.call(this, delta);
 };
 
 /**
@@ -60,17 +90,11 @@ Vectr.Button.prototype.onPointEnd = function (event) {
 
     Vectr.getPoints(event);
 
-    if (event.type.indexOf('mouse') !== -1) {
-        if (this.containsPoint(Vectr.instance.points[0].x, Vectr.instance.points[0].y)) {
+    var i = Vectr.instance.points.length;
+    while (i--) {
+        if (this.containsPoint(Vectr.instance.points[i].x, Vectr.instance.points[i].y)) {
             this.onUp();
-        }
-    } else {
-        var i = Vectr.instance.points.length;
-        while (i--) {
-            if (this.containsPoint(Vectr.instance.points[i].x, Vectr.instance.points[i].y)) {
-                this.onUp();
-                break;
-            }
+            break;
         }
     }
 };
@@ -94,6 +118,53 @@ Vectr.Button.prototype.destroy = function () {
 };
 
 /**
- * @description Currently unused
+ * @description Getter/setter for background color value
  */
-Vectr.Button.prototype.update = function (delta) { return; };
+Object.defineProperty(Vectr.Button.prototype, 'backgroundColor', {
+    get: function () {
+        return 'rgba(' + this.backgroundColors.red + ', ' + this.backgroundColors.green + ', ' + this.backgroundColors.blue + ', ' + this.backgroundColors.alpha + ')';
+    },
+    set: function (color) {
+        if (typeof color !== 'string') {
+            return;
+        }
+
+        var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
+
+        if (tmp.length === 5) {
+            this.backgroundColors.red = parseInt(tmp[1], 10);
+            this.backgroundColors.green = parseInt(tmp[2], 10);
+            this.backgroundColors.blue = parseInt(tmp[3], 10);
+            this.backgroundColors.alpha = parseFloat(tmp[4], 10);
+        }
+    }
+});
+
+/**
+ * @description Getter/setter for font value
+ */
+Object.defineProperty(Vectr.Button.prototype, 'font', {
+    get: function () {
+        return this.label.font;
+    },
+    set: function (font) {
+        if (typeof font !== 'string') {
+            return;
+        }
+
+        this.label.font = font;
+    }
+});
+
+/**
+ * @description Getter/setter for glow value
+ */
+// Object.defineProperty(Vectr.Button.prototype, 'glow', {
+//     get: function () {
+//         return this.glow;
+//     },
+//     set: function (value) {
+//         this.glow = parseInt(value, 10);
+//         this.label.glow = this.glow;
+//     }
+// });

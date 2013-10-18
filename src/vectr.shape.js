@@ -9,75 +9,39 @@
  * @param {Number} size Size of shape in pixels
  */
 Vectr.Shape = function (x, y, shape, size) {
+    Vectr.GameObject.apply(this, arguments);
+
     this.shape = shape || 'square';
     this.size = size || 10;
     this.lineWidth = 1;
     this.lineJoin = 'round';            // miter, round, bevel
-    this.scale = 1;
     this.speed = 1;
-    this.rotation = 0;
-    this.position = {
-        'x': x,
-        'y': y
-    };
     this.velocity = {
         'x': 0,
         'y': 0
     };
-    this.active = true;
     this.solid = false;
-
-    // Default color - white w/ no alpha
-    this.colors = {
-        'red': 255,
-        'green': 255,
-        'blue': 255,
-        'alpha': 1
-    };
-
-    // Default glow size - none
-    this.glow = 0;
 };
 
 /**
- * @description Getter/setter for color value
+ * @description Set prototype
  */
-Object.defineProperty(Vectr.Shape.prototype, 'color', {
-    get: function () {
-        return 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
-    },
-    set: function (color) {
-        if (typeof color !== 'string') {
-            return;
-        }
+Vectr.Shape.prototype = new Vectr.GameObject();
 
-        var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
-
-        if (tmp.length === 5) {
-            this.colors.red = parseInt(tmp[1], 10);
-            this.colors.green = parseInt(tmp[2], 10);
-            this.colors.blue = parseInt(tmp[3], 10);
-            this.colors.alpha = parseFloat(tmp[4], 10);
-        }
-    }
-});
-
+/**
+ * @description Draw object
+ * @param {CanvasRenderingContext2D} context
+ */
 Vectr.Shape.prototype.draw = function (context) {
-
     if (this.active === false) {
         return;
     }
 
+    // Draw child objects first, so they will be on the "bottom"
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+
     context.save();
     context.translate(this.position.x, this.position.y);
-
-    // Debug anchor point
-    // context.fillStyle = 'rgb(0, 255, 0)';
-    // context.beginPath();
-    // context.arc(0, 0, 1, 360, false);
-    // context.closePath();
-    // context.fill();
-    // End debug anchor point
 
     if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
@@ -91,15 +55,15 @@ Vectr.Shape.prototype.draw = function (context) {
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0;
         context.shadowBlur = this.glow;
-        context.shadowColor = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+        context.shadowColor = this.color;
     }
 
     context.lineWidth = this.lineWidth;
     context.lineJoin = this.lineJoin;
 
     // Allow sprite objects to have custom draw functions
-    if (typeof this.customPath === "function") {
-        this.customPath(context);
+    if (typeof this.path === "function") {
+        this.path(context);
     } else {
         context.beginPath();
         switch (this.shape) {
@@ -123,10 +87,10 @@ Vectr.Shape.prototype.draw = function (context) {
         context.closePath();
 
         if (this.solid === true) {
-            context.fillStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+            context.fillStyle = this.color;
             context.fill();
         } else {
-            context.strokeStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+            context.strokeStyle = this.color;
             context.stroke();
         }
     }
@@ -134,15 +98,26 @@ Vectr.Shape.prototype.draw = function (context) {
     context.restore();
 };
 
-Vectr.Shape.prototype.update = function (dt) {
+/**
+ * @description Update object
+ * @param {Number} delta Time since last update (in seconds)
+ */
+Vectr.Shape.prototype.update = function (delta) {
     if (this.active === false) {
         return;
     }
 
-    this.position.x += this.velocity.x * this.speed * dt;
-    this.position.y += this.velocity.y * this.speed * dt;
+    this.position.x += this.velocity.x * this.speed * delta;
+    this.position.y += this.velocity.y * this.speed * delta;
+
+    // Update child objects
+    Vectr.GameObject.prototype.update.call(this, delta);
 };
 
+/**
+ * @description Basic collision detection
+ * @param {Shape} other Shape object to test collision with
+ */
 Vectr.Shape.prototype.collidesWith = function (other) {
     if (this.shape === 'square') {
         return Math.abs(this.position.x - other.position.x) < this.size / 2 + other.size / 2 && Math.abs(this.position.y - other.position.y) < this.size / 2 + other.size / 2;
