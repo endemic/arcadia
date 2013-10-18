@@ -6,6 +6,9 @@
  */
 Vectr.Scene = function () {
     Vectr.GameObject.apply(this, arguments);
+
+    // TODO: implement a camera view/drawing offset
+    this.camera = null;
 };
 
 /**

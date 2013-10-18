@@ -72,11 +72,15 @@ var Game = function () {
     i = 5;
     while (i--) {
         // shape, size, color, count, duration, fade
-        obj = new Vectr.Emitter('circle', 4, 'rgba(255, 0, 0, 1)', 30, 0.5);
+        obj = new Vectr.Emitter('circle', 4, 30);
+        obj.color = 'rgba(255, 0, 0, 1)';
+        obj.duration = 0.5;
         this.particles.add(obj);
     }
 
-    this.playerExplosion = new Vectr.Emitter('circle', 4, 'rgba(255, 255, 255, 1)', 30, 0.5);
+    this.playerExplosion = new Vectr.Emitter('circle', 4, 30);
+    this.playerExplosion.color = 'rgba(255, 255, 255, 1)';
+    this.playerExplosion.duration = 0.5;
     this.add(this.playerExplosion);
 
     // Add a starfield background
@@ -107,7 +111,7 @@ Game.prototype.update = function (delta) {
         j;
 
     // Update star positions
-    i = this.stars.children.length;
+    i = this.stars.length;
     while (i--) {
         star = this.stars.at(i);
         if (star.position.y > Vectr.HEIGHT) {

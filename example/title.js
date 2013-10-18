@@ -49,7 +49,7 @@ Title.prototype.update = function (delta) {
         star;
 
     // Reset star positions
-    i = this.stars.children.length;
+    i = this.stars.length;
     while (i--) {
         star = this.stars.at(i);
         if (star.position.y > Vectr.HEIGHT) {
