@@ -1,10 +1,11 @@
 # TODO
 
 * [ ] More JSDoc comments
-* [ ] Re-write some Pool methods to use fewer variables (use ivar for iterators)
-* [ ] Allow Pool to expand if necessary - i.e. don't splice its' internal arrays, allow them to grow 
-	  to contain more objects, but keep pointers to the last object for both "active" and "inactive" arrays
-* [ ] Rename Pool::children to Pool::active
+* [X] Re-write some Pool methods to use fewer variables (use ivar for iterators)
+* [ ] Add another data structure which is basically a static array that keeps track of 
+	  its' size (pointer to index of last object), and allocates more memory 
+	  (i.e. doubles in size) when necessary. 
+* [X] Rename Pool::children to Pool::active
 * [ ] Add a "high perf" flag that removes drop shadows (glow) when on mobile
 * [ ] Add glow to buttons - get glow to pass through button down to its' child label
 * [ ] Update particle emitter to have infinite particles; can turn on/off

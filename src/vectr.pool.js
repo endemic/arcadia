@@ -2,12 +2,13 @@
 /*globals Vectr */
 
 /**
-* @description Object pool; kind of a hacky way to store recyclable objects
+* @description Object pool; One possible way to store common recyclable objects
 */
 Vectr.Pool = function () {
     this.length = 0;
-    this.children = [];     // Active objects
+    this.children = [];       // Active objects
     this.inactive = [];     // Deadpool
+    this.i = 0;             // in-memory iterator/object storage
 };
 
 /**
@@ -18,24 +19,22 @@ Vectr.Pool.prototype.activate = function () {
         return null;
     }
 
-    var object = this.inactive.pop();
-    object.active = true;
-    this.children.push(object);
+    this.i = this.inactive.pop();
+    this.i.active = true;
+    this.children.push(this.i);
     this.length += 1;
 
-    return object;
+    return this.i;
 };
 
 /**
  * @description Activate all the objects in the pool
  */
 Vectr.Pool.prototype.activateAll = function () {
-    var object;
-
     while (this.inactive.length) {
-        object = this.inactive.pop();
-        object.active = true;
-        this.children.push(object);
+        this.i = this.inactive.pop();
+        this.i.active = true;
+        this.children.push(this.i);
         this.length += 1;
     }
 };
@@ -51,14 +50,12 @@ Vectr.Pool.prototype.deactivate = function (index) {
     this.children[index].active = false;
     this.inactive.push(this.children[index]);
 
-    var i,
-        length;
-
     // Shift array contents downward
-    for (i = index, length = this.children.length - 1; i < length; i += 1) {
-        this.children[i] = this.children[i + 1];
+    for (this.i = index; this.i < this.children.length - 1; this.i += 1) {
+        this.children[this.i] = this.children[this.i + 1];
     }
-    this.children.length = length;
+
+    this.children.length -= 1;
     this.length -= 1;
 
     if (this.length === 0) {
@@ -70,12 +67,10 @@ Vectr.Pool.prototype.deactivate = function (index) {
  * @description Move object to the deadpool
  */
 Vectr.Pool.prototype.deactivateAll = function () {
-    var object;
-
     while (this.children.length) {
-        object = this.children.pop();
-        object.active = false;
-        this.inactive.push(object);
+        this.i = this.children.pop();
+        this.i.active = false;
+        this.inactive.push(this.i);
         this.length -= 1;
     }
 };
@@ -104,14 +99,14 @@ Vectr.Pool.prototype.add = function (object) {
  * @description "Passthrough" method which updates active child objects
  */
 Vectr.Pool.prototype.update = function (delta) {
-    var i = this.children.length;
+    this.i = this.children.length;
 
-    while (i--) {
-        this.children[i].update(delta);
+    while (this.i--) {
+        this.children[this.i].update(delta);
 
         // If a child object is marked as "inactive," move it to the dead pool
-        if (this.children[i].active === false) {
-            this.deactivate(i);
+        if (this.children[this.i].active === false) {
+            this.deactivate(this.i);
         }
     }
 };
@@ -120,9 +115,9 @@ Vectr.Pool.prototype.update = function (delta) {
  * @description "Passthrough" method which draws active child objects
  */
 Vectr.Pool.prototype.draw = function (context) {
-    var i = this.children.length;
+    this.i = this.children.length;
 
-    while (i--) {
-        this.children[i].draw(context);
+    while (this.i--) {
+        this.children[this.i].draw(context);
     }
 };
