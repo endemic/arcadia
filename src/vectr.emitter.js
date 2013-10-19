@@ -60,14 +60,17 @@ Vectr.Emitter.prototype.start = function (x, y) {
 };
 
 Vectr.Emitter.prototype.draw = function (context) {
-    var i = this.particles.length;
-    while (i--) {
-        this.particles.at(i).draw(context);
+    if (this.active === false) {
+        return;
     }
+
+    this.particles.draw(context);
 };
 
 Vectr.Emitter.prototype.update = function (delta) {
-    this.timer += delta;
+    if (this.active === false) {
+        return;
+    }
 
     var i = this.particles.length;
 
@@ -75,8 +78,11 @@ Vectr.Emitter.prototype.update = function (delta) {
         this.active = false;
     }
 
+    this.particles.update(delta);
+
+    this.timer += delta;
+
     while (i--) {
-        this.particles.at(i).update(delta);
 
         if (this.fade) {
             this.particles.at(i).colors.alpha -= delta / this.duration;
