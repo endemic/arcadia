@@ -7,6 +7,7 @@ module.exports = function (grunt) {
             dist: {
                 src: [
                     'src/vectr.game.js',
+                    'src/vectr.gameobj.js',
                     'src/vectr.button.js',
                     'src/vectr.emitter.js',
                     'src/vectr.label.js',
