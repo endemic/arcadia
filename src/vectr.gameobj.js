@@ -1,6 +1,8 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 Vectr.GameObject = function (x, y) {
     this.position = {
         'x': x || 0,

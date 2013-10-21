@@ -1,6 +1,8 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 /**
  * @description Shape constructor
  * @param {Number} x Position of shape on x-axis
