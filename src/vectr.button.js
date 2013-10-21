@@ -1,6 +1,8 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 /**
  * @constructor
  */
@@ -71,7 +73,7 @@ Vectr.Button.prototype.draw = function (context) {
  * @description Update object
  * @param {Number} delta Time since last update (in seconds)
  */
-Vectr.Label.prototype.update = function (delta) {
+Vectr.Button.prototype.update = function (delta) {
     if (this.active === false) {
         return;
     }
