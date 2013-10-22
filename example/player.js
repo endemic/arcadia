@@ -1,5 +1,5 @@
 /*jslint sloppy: true, browser: true */
-/*globals Vectr, Player */
+/*globals Vectr: false */
 
 var Player = function () {
     Vectr.Shape.apply(this, arguments);
@@ -14,21 +14,8 @@ var Player = function () {
 
 Player.prototype = new Vectr.Shape();
 
-Player.prototype.customPath = function (context) {
-    context.beginPath();
-    context.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-    context.lineTo(this.size / 2 * Math.cos(120 * Math.PI / 180), this.size / 2 * Math.sin(120 * Math.PI / 180));
-    context.lineTo(-this.size / 10, 0);
-    context.lineTo(this.size / 2 * Math.cos(240 * Math.PI / 180), this.size / 2 * Math.sin(240 * Math.PI / 180));
-    context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-    context.closePath();
-
-    context.strokeStyle = 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
-    context.stroke();
-};
-
-Player.prototype.update = function (dt) {
-    Vectr.Shape.prototype.update.call(this, dt);
+Player.prototype.update = function (delta) {
+    Vectr.Shape.prototype.update.call(this, delta);
 
     if (this.position.x + this.size / 2 > Vectr.WIDTH) {
         this.position.x = Vectr.WIDTH - this.size / 2;
