@@ -31,17 +31,12 @@ Vectr.GameObject.prototype.draw = function (context, offsetX, offsetY) {
         return;
     }
 
-    if (offsetX === undefined) {
-        offsetX = 0;
-    }
-
-    if (offsetY === undefined) {
-        offsetY = 0;
-    }
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
 
     this.i = this.children.length;
     while (this.i--) {
-        this.children[this.i].draw(context, offsetX - this.position.x, offsetY - this.position.y);
+        this.children[this.i].draw(context, offsetX, offsetY);
     }
 };
 
