@@ -32,16 +32,16 @@ Vectr.Shape.prototype = new Vectr.GameObject();
  * @description Draw object
  * @param {CanvasRenderingContext2D} context
  */
-Vectr.Shape.prototype.draw = function (context) {
+Vectr.Shape.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
     }
 
     // Draw child objects first, so they will be on the "bottom"
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
 
     context.save();
-    context.translate(this.position.x, this.position.y);
+    context.translate(this.position.x + offsetX, this.position.y + offsetY);
 
     if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
@@ -74,7 +74,7 @@ Vectr.Shape.prototype.draw = function (context) {
             context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
             break;
         case 'circle':
-            context.arc(0, 0, this.size / 2, 360, false);
+            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
             break;
         case 'square':
             context.moveTo(this.size / 2, this.size / 2);
