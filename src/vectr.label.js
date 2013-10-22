@@ -36,7 +36,7 @@ Vectr.Label.prototype.draw = function (context) {
 
     context.save();
 
-    context.font = this.fonts.size + ' ' + this.fonts.family;
+    context.font = this.font;
     context.textAlign = this.alignment;
 
     context.translate(this.position.x, this.position.y + parseInt(this.fonts.size, 10) / 3);
