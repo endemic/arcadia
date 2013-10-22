@@ -1158,7 +1158,7 @@ Vectr.Pool.prototype.draw = function (context) {
     this.i = this.children.length;
 
     while (this.i--) {
-        this.children[this.i].draw(context);
+        this.children[this.i].draw(context, 0, 0);
     }
 };
 /*jslint sloppy: true, plusplus: true, browser: true */
