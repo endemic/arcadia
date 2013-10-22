@@ -576,17 +576,12 @@ Vectr.GameObject.prototype.draw = function (context, offsetX, offsetY) {
         return;
     }
 
-    if (offsetX === undefined) {
-        offsetX = 0;
-    }
-
-    if (offsetY === undefined) {
-        offsetY = 0;
-    }
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
 
     this.i = this.children.length;
     while (this.i--) {
-        this.children[this.i].draw(context, offsetX - this.position.x, offsetY - this.position.y);
+        this.children[this.i].draw(context, offsetX, offsetY);
     }
 };
 
@@ -733,7 +728,7 @@ Vectr.Button.prototype.draw = function (context) {
  * @description Update object
  * @param {Number} delta Time since last update (in seconds)
  */
-Vectr.Label.prototype.update = function (delta) {
+Vectr.Button.prototype.update = function (delta) {
     if (this.active === false) {
         return;
     }
@@ -963,7 +958,7 @@ Vectr.Label.prototype.draw = function (context) {
 
     context.save();
 
-    context.font = this.fonts.size + ' ' + this.fonts.family;
+    context.font = this.font;
     context.textAlign = this.alignment;
 
     context.translate(this.position.x, this.position.y + parseInt(this.fonts.size, 10) / 3);
@@ -1238,16 +1233,16 @@ Vectr.Shape.prototype = new Vectr.GameObject();
  * @description Draw object
  * @param {CanvasRenderingContext2D} context
  */
-Vectr.Shape.prototype.draw = function (context) {
+Vectr.Shape.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
     }
 
     // Draw child objects first, so they will be on the "bottom"
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
 
     context.save();
-    context.translate(this.position.x, this.position.y);
+    context.translate(this.position.x + offsetX, this.position.y + offsetY);
 
     if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
@@ -1280,7 +1275,7 @@ Vectr.Shape.prototype.draw = function (context) {
             context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
             break;
         case 'circle':
-            context.arc(0, 0, this.size / 2, 360, false);
+            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
             break;
         case 'square':
             context.moveTo(this.size / 2, this.size / 2);
