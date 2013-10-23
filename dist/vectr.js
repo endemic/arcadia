@@ -694,7 +694,7 @@ Vectr.Button.prototype = new Vectr.GameObject();
  * @description Draw object
  * @param {CanvasRenderingContext2D} context
  */
-Vectr.Button.prototype.draw = function (context) {
+Vectr.Button.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
     }
@@ -703,7 +703,7 @@ Vectr.Button.prototype.draw = function (context) {
 
     // Draw button background/border
     context.save();
-    context.translate(this.position.x, this.position.y);
+    context.translate(this.position.x + offsetX, this.position.y + offsetY);
 
     if (this.glow > 0) {
         context.shadowOffsetX = 0;
@@ -721,7 +721,8 @@ Vectr.Button.prototype.draw = function (context) {
     }
     context.restore();
 
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+    // Draw label
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
 };
 
 /**
@@ -825,6 +826,7 @@ Object.defineProperty(Vectr.Button.prototype, 'font', {
 //         this.label.glow = this.glow;
 //     }
 // });
+
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
@@ -948,20 +950,20 @@ Vectr.Label.prototype = new Vectr.GameObject();
  * @description Draw object
  * @param {CanvasRenderingContext2D} context
  */
-Vectr.Label.prototype.draw = function (context) {
+Vectr.Label.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
     }
 
     // Draw child objects first, so they will be on the "bottom"
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
 
     context.save();
 
     context.font = this.font;
     context.textAlign = this.alignment;
 
-    context.translate(this.position.x, this.position.y + parseInt(this.fonts.size, 10) / 3);
+    context.translate(this.position.x + offsetX, this.position.y + parseInt(this.fonts.size, 10) / 3 + offsetY);
 
     if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
@@ -1061,6 +1063,9 @@ Vectr.Pool.prototype.activate = function () {
 
     this.i = this.inactive.pop();
     this.i.active = true;
+    if (typeof this.i.activate === 'function') {
+      this.i.activate();
+    }
     this.children.push(this.i);
     this.length += 1;
 
@@ -1074,6 +1079,9 @@ Vectr.Pool.prototype.activateAll = function () {
     while (this.inactive.length) {
         this.i = this.inactive.pop();
         this.i.active = true;
+        if (typeof this.i.activate === 'function') {
+          this.i.activate();
+        }
         this.children.push(this.i);
         this.length += 1;
     }
@@ -1161,6 +1169,7 @@ Vectr.Pool.prototype.draw = function (context) {
         this.children[this.i].draw(context, 0, 0);
     }
 };
+
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
