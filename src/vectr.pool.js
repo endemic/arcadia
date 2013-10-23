@@ -21,6 +21,9 @@ Vectr.Pool.prototype.activate = function () {
 
     this.i = this.inactive.pop();
     this.i.active = true;
+    if (typeof this.i.activate === 'function') {
+      this.i.activate();
+    }
     this.children.push(this.i);
     this.length += 1;
 
@@ -34,6 +37,9 @@ Vectr.Pool.prototype.activateAll = function () {
     while (this.inactive.length) {
         this.i = this.inactive.pop();
         this.i.active = true;
+        if (typeof this.i.activate === 'function') {
+          this.i.activate();
+        }
         this.children.push(this.i);
         this.length += 1;
     }
