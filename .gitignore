@@ -1,5 +1,6 @@
 yajirushi.sh
 node_modules
+*.swp
 # OS generated files #
 ######################
 .DS_Store
