@@ -37,7 +37,7 @@ Vectr.Button.prototype = new Vectr.GameObject();
  * @description Draw object
  * @param {CanvasRenderingContext2D} context
  */
-Vectr.Button.prototype.draw = function (context) {
+Vectr.Button.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
     }
@@ -46,7 +46,7 @@ Vectr.Button.prototype.draw = function (context) {
 
     // Draw button background/border
     context.save();
-    context.translate(this.position.x, this.position.y);
+    context.translate(this.position.x + offsetX, this.position.y + offsetY);
 
     if (this.glow > 0) {
         context.shadowOffsetX = 0;
@@ -64,7 +64,8 @@ Vectr.Button.prototype.draw = function (context) {
     }
     context.restore();
 
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+    // Draw label
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
 };
 
 /**
