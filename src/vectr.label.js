@@ -26,20 +26,20 @@ Vectr.Label.prototype = new Vectr.GameObject();
  * @description Draw object
  * @param {CanvasRenderingContext2D} context
  */
-Vectr.Label.prototype.draw = function (context) {
+Vectr.Label.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
     }
 
     // Draw child objects first, so they will be on the "bottom"
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
 
     context.save();
 
     context.font = this.font;
     context.textAlign = this.alignment;
 
-    context.translate(this.position.x, this.position.y + parseInt(this.fonts.size, 10) / 3);
+    context.translate(this.position.x + offsetX, this.position.y + parseInt(this.fonts.size, 10) / 3 + offsetY);
 
     if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
