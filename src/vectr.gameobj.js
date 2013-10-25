@@ -33,13 +33,8 @@ Vectr.GameObject.prototype.draw = function (context, offsetX, offsetY) {
         return;
     }
 
-    if (offsetX === undefined) {
-        offsetX = 0;
-    }
-
-    if (offsetY === undefined) {
-        offsetY = 0;
-    }
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
 
     this.i = this.children.length;
     while (this.i--) {
@@ -67,6 +62,9 @@ Vectr.GameObject.prototype.update = function (delta) {
  * @param {Shape} object
  */
 Vectr.GameObject.prototype.add = function (object) {
+    if (typeof object !== "object" || object.active === undefined) {
+        throw "Can't add non-Vectr objects to a GameObject.";
+    }
     this.children.push(object);
 };
 
