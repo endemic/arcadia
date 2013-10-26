@@ -39,7 +39,7 @@ Vectr.Scene.prototype = new Vectr.GameObject();
  * @param {Number} delta
  */
 Vectr.Scene.prototype.update = function (delta) {
-    Vectr.Scene.prototype.update.call(this, delta);
+    Vectr.GameObject.prototype.update.call(this, delta);
 
     if (this.camera.target !== null) {
         // Follow the target, keeping it in the center of the screen
