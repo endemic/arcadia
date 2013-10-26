@@ -9,7 +9,7 @@ var Vectr = window.Vectr || {};
 Vectr.Button = function (x, y, text) {
     Vectr.GameObject.apply(this, arguments);
 
-    this.label = new Vectr.Label(x, y, text);
+    this.label = new Vectr.Label(0, 0, text);
     this.add(this.label);
 
     // Default border/background
