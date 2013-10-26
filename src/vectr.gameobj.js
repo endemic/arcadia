@@ -62,7 +62,7 @@ Vectr.GameObject.prototype.update = function (delta) {
  * @param {Shape} object
  */
 Vectr.GameObject.prototype.add = function (object) {
-    if (typeof object !== "object" || object.active === undefined) {
+    if (typeof object !== "object") {
         throw "Can't add non-Vectr objects to a GameObject.";
     }
     this.children.push(object);
