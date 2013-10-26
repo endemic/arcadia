@@ -38,6 +38,7 @@ var Game = function () {
     // Player
     this.player = new Player(Vectr.WIDTH / 2, Vectr.HEIGHT / 1.5);
     this.add(this.player);
+    this.camera.target = this.player;
 
     // Other game objects
     this.playerBullets = new Vectr.Pool();
