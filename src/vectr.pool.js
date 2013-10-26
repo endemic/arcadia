@@ -1,6 +1,8 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 /**
 * @description Object pool; One possible way to store common recyclable objects
 */
@@ -92,7 +94,11 @@ Vectr.Pool.prototype.at = function (index) {
  * @description Add object to one of the lists
  */
 Vectr.Pool.prototype.add = function (object) {
-    if (typeof object === "object" && object.active === true) {
+    if (typeof object !== "object" || object.active === undefined) {
+        throw "Can't add non-Vectr objects to a Pool.";
+    }
+
+    if (object.active === true) {
         this.children.push(object);
         this.length += 1;
     } else {

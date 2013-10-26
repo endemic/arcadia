@@ -28,11 +28,31 @@ module.exports = function (grunt) {
                 src: 'dist/<%= pkg.name %>.js',
                 dest: 'dist/<%= pkg.name %>.min.js'
             }
+        },
+        jasmine: {
+            customTemplate: {
+                src: [
+                    'src/vectr.game.js',
+                    'src/vectr.gameobj.js',
+                    'src/vectr.button.js',
+                    'src/vectr.emitter.js',
+                    'src/vectr.label.js',
+                    'src/vectr.pool.js',
+                    'src/vectr.scene.js',
+                    'src/vectr.shape.js'
+                ],
+                options: {
+                    specs: 'spec/*Spec.js'
+                    // template: 'custom.tmpl'
+                    // helpers: 'spec/*Helper.js'
+                }
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-jasmine');
 
     // Default task
     grunt.registerTask('default', ['concat', 'uglify']);

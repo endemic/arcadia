@@ -1,6 +1,8 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 Vectr.Label = function (x, y, text) {
     Vectr.GameObject.apply(this, arguments);
 
