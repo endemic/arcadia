@@ -1,6 +1,8 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 /**
  * @constructor
  * @description Basic particle emitter

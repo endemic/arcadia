@@ -9,125 +9,125 @@ if (window.cancelAnimationFrame === undefined) {
     window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
 }
 
-var Vectr = {
-    'Game': function (width, height, SceneClass, fitWindow) {
-        var i,
-            context;
+var Vectr = window.Vectr || {};
 
-        width = parseInt(width, 10) || 320;
-        height = parseInt(height, 10) || 480;
+Vectr.Game = function (width, height, SceneClass, fitWindow) {
+    var i,
+        context;
 
-        if (typeof SceneClass !== "function") {
-            throw 'Please provide a valid Scene object.';
-        }
+    width = parseInt(width, 10) || 320;
+    height = parseInt(height, 10) || 480;
 
-        if (fitWindow === undefined) {
-            fitWindow = true;
-        }
-
-        Vectr.WIDTH = width;
-        Vectr.HEIGHT = height;
-        Vectr.SCALE = 1;
-        Vectr.OFFSET = {
-            'x': 0,
-            'y': 0
-        };
-        Vectr.instance = this;
-
-        // Create the #vectr container, give it a size, etc.
-        this.element = document.createElement('div');
-        this.element.setAttribute('id', 'vectr');
-
-        this.canvas = document.createElement('canvas');
-        this.canvas.setAttribute('width', width);
-        this.canvas.setAttribute('height', height);
-        this.context = this.canvas.getContext('2d');
-
-        // Scanline effect
-        this.scanlines = document.createElement('canvas');
-        this.scanlines.setAttribute('width', width);
-        this.scanlines.setAttribute('height', height);
-        this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1;');
-
-        context = this.scanlines.getContext('2d');
-        context.lineWidth = 0.5;
-        context.beginPath();
-
-        for (i = 0; i < height; i += 3) {
-            context.moveTo(0, i);
-            context.lineTo(width, i);
-        }
-
-        context.closePath();
-        context.strokeStyle = 'rgba(0, 0, 0, 0.75)';
-        context.stroke();
-
-        this.element.appendChild(this.canvas);
-        this.element.appendChild(this.scanlines);
-        document.body.appendChild(this.element);
-
-        // Bind event handler callbacks
-        this.onResize = this.onResize.bind(this);
-        this.onPointStart = this.onPointStart.bind(this);
-        this.onPointMove = this.onPointMove.bind(this);
-        this.onPointEnd = this.onPointEnd.bind(this);
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.onKeyUp = this.onKeyUp.bind(this);
-        this.pause = this.pause.bind(this);
-        this.resume = this.resume.bind(this);
-
-        // Set up event listeners; Mouse and touch use the same ones
-        document.addEventListener('keydown', this.onKeyDown, false);
-        document.addEventListener('keyup', this.onKeyUp, false);
-        this.element.addEventListener('mousedown', this.onPointStart, false);
-        this.element.addEventListener('mouseup', this.onPointEnd, false);
-        this.element.addEventListener('touchstart', this.onPointStart, false);
-        this.element.addEventListener('touchmove', this.onPointMove, false);
-        this.element.addEventListener('touchend', this.onPointEnd, false);
-
-        // Prevent the page from scrolling
-        document.addEventListener('touchmove', function (e) {
-            e.preventDefault();
-        });
-
-        // Fit <canvas> to window
-        if (fitWindow === true) {
-            this.onResize();
-            window.addEventListener('resize', this.onResize, false);
-        }
-
-        if (window.cordova !== undefined) {
-            document.addEventListener('pause', this.pause, false);
-            document.addEventListener('resume', this.resume, false);
-        }
-
-        // Map of current input, used to prevent duplicate events being sent to handlers
-        this.input = {
-            'left': false,
-            'up': false,
-            'right': false,
-            'down': false,
-            'w': false,
-            'a': false,
-            's': false,
-            'd': false,
-            'enter': false,
-            'escape': false,
-            'space': false,
-            'control': false,
-            'z': false,
-            'x': false
-        };
-
-        // Stores objects representing mouse/touch input
-        this.points = [];
-
-        // Instantiate initial scene
-        this.active = new SceneClass();
-
-        // Start animation request
-        this.start();
+    if (typeof SceneClass !== "function") {
+        throw 'Please provide a valid Scene object.';
     }
+
+    if (fitWindow === undefined) {
+        fitWindow = true;
+    }
+
+    Vectr.WIDTH = width;
+    Vectr.HEIGHT = height;
+    Vectr.SCALE = 1;
+    Vectr.OFFSET = {
+        'x': 0,
+        'y': 0
+    };
+    Vectr.instance = this;
+
+    // Create the #vectr container, give it a size, etc.
+    this.element = document.createElement('div');
+    this.element.setAttribute('id', 'vectr');
+
+    this.canvas = document.createElement('canvas');
+    this.canvas.setAttribute('width', width);
+    this.canvas.setAttribute('height', height);
+    this.context = this.canvas.getContext('2d');
+
+    // Scanline effect
+    this.scanlines = document.createElement('canvas');
+    this.scanlines.setAttribute('width', width);
+    this.scanlines.setAttribute('height', height);
+    this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1;');
+
+    context = this.scanlines.getContext('2d');
+    context.lineWidth = 0.5;
+    context.beginPath();
+
+    for (i = 0; i < height; i += 3) {
+        context.moveTo(0, i);
+        context.lineTo(width, i);
+    }
+
+    context.closePath();
+    context.strokeStyle = 'rgba(0, 0, 0, 0.75)';
+    context.stroke();
+
+    this.element.appendChild(this.canvas);
+    this.element.appendChild(this.scanlines);
+    document.body.appendChild(this.element);
+
+    // Bind event handler callbacks
+    this.onResize = this.onResize.bind(this);
+    this.onPointStart = this.onPointStart.bind(this);
+    this.onPointMove = this.onPointMove.bind(this);
+    this.onPointEnd = this.onPointEnd.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.onKeyUp = this.onKeyUp.bind(this);
+    this.pause = this.pause.bind(this);
+    this.resume = this.resume.bind(this);
+
+    // Set up event listeners; Mouse and touch use the same ones
+    document.addEventListener('keydown', this.onKeyDown, false);
+    document.addEventListener('keyup', this.onKeyUp, false);
+    this.element.addEventListener('mousedown', this.onPointStart, false);
+    this.element.addEventListener('mouseup', this.onPointEnd, false);
+    this.element.addEventListener('touchstart', this.onPointStart, false);
+    this.element.addEventListener('touchmove', this.onPointMove, false);
+    this.element.addEventListener('touchend', this.onPointEnd, false);
+
+    // Prevent the page from scrolling
+    document.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+    });
+
+    // Fit <canvas> to window
+    if (fitWindow === true) {
+        this.onResize();
+        window.addEventListener('resize', this.onResize, false);
+    }
+
+    if (window.cordova !== undefined) {
+        document.addEventListener('pause', this.pause, false);
+        document.addEventListener('resume', this.resume, false);
+    }
+
+    // Map of current input, used to prevent duplicate events being sent to handlers
+    this.input = {
+        'left': false,
+        'up': false,
+        'right': false,
+        'down': false,
+        'w': false,
+        'a': false,
+        's': false,
+        'd': false,
+        'enter': false,
+        'escape': false,
+        'space': false,
+        'control': false,
+        'z': false,
+        'x': false
+    };
+
+    // Stores objects representing mouse/touch input
+    this.points = [];
+
+    // Instantiate initial scene
+    this.active = new SceneClass();
+
+    // Start animation request
+    this.start();
 };
 
 /**

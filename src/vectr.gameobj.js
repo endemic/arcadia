@@ -1,6 +1,8 @@
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 Vectr.GameObject = function (x, y) {
     this.position = {
         'x': x || 0,
@@ -60,6 +62,9 @@ Vectr.GameObject.prototype.update = function (delta) {
  * @param {Shape} object
  */
 Vectr.GameObject.prototype.add = function (object) {
+    if (typeof object !== "object" || object.active === undefined) {
+        throw "Can't add non-Vectr objects to a GameObject.";
+    }
     this.children.push(object);
 };
 
