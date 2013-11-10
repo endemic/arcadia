@@ -10,8 +10,8 @@ var Vectr = window.Vectr || {};
  * @param {String} shape String representing what to draw
  * @param {Number} size Size of shape in pixels
  */
-Vectr.Shape = function (x, y, shape, size) {
-    Vectr.GameObject.apply(this, arguments);
+Vectr.Shape = function Shape(x, y, shape, size) {
+    Vectr.GameObject.call(this, x, y);
 
     this.shape = shape || 'square';
     this.size = size || 10;
@@ -37,6 +37,10 @@ Vectr.Shape.prototype = new Vectr.GameObject();
 Vectr.Shape.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
+    }
+
+    if (this.fixed === true) {
+        offsetX = offsetY = 0;
     }
 
     // Draw child objects first, so they will be on the "bottom"
