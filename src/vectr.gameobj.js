@@ -10,6 +10,7 @@ Vectr.GameObject = function (x, y) {
     };
 
     this.active = true;
+    this.fixed = false;     // static positioning for UI elements
     this.scale = 1;
     this.rotation = 0;
     this.glow = 0;
@@ -35,6 +36,10 @@ Vectr.GameObject.prototype.draw = function (context, offsetX, offsetY) {
 
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
+
+    if (this.fixed === true) {
+        offsetX = offsetY = 0;
+    }
 
     this.i = this.children.length;
     while (this.i--) {
