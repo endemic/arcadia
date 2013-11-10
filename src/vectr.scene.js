@@ -13,8 +13,8 @@ Vectr.Scene = function () {
     this.camera = {
         target: null,
         viewport: {
-            x: Vectr.WIDTH,
-            y: Vectr.HEIGHT
+            width: Vectr.WIDTH,
+            height: Vectr.HEIGHT
         },
         bounds: {
             top: 0,
@@ -60,7 +60,7 @@ Vectr.Scene.prototype.update = function (delta) {
             this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.y / 2;
         }
     }
-    console.log(this.camera.position.x, this.camera.position.y);
+
     Vectr.GameObject.prototype.update.call(this, delta);
 };
 
@@ -81,5 +81,5 @@ Vectr.Scene.prototype.draw = function (context) {
     }
 
     // Draw child objects
-    Vectr.GameObject.prototype.draw.call(this, context, this.camera.position.x - this.camera.viewport.x / 2, this.camera.position.y - this.camera.viewport.y / 2);
+    Vectr.GameObject.prototype.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
 };
