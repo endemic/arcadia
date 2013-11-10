@@ -83,3 +83,21 @@ Vectr.Scene.prototype.draw = function (context) {
     // Draw child objects
     Vectr.GameObject.prototype.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
 };
+
+/**
+ * Getter/setter for camera target
+ */
+Object.defineProperty(Vectr.Scene.prototype, 'target', {
+    get: function () {
+        return this.camera.target;
+    },
+    set: function (shape) {
+        if (typeof shape !== 'object' || shape.position === undefined) {
+            return;
+        }
+
+        this.camera.target = shape;
+        this.camera.position.x = shape.position.x;
+        this.camera.position.y = shape.position.y;
+    }
+});
