@@ -9,7 +9,9 @@ var Vectr = window.Vectr || {};
 Vectr.Button = function (x, y, text) {
     Vectr.GameObject.apply(this, arguments);
 
-    this.label = new Vectr.Label(0, 0, text);
+    // Create label that goes inside button border
+    this.label = new Vectr.Label(x, y, text);
+    // this.label.fixed = false;
     this.add(this.label);
 
     // Default border/background
@@ -23,6 +25,7 @@ Vectr.Button = function (x, y, text) {
     this.height = parseInt(this.label.fonts.size, 10);
     this.solid = true;
     this.padding = 10;
+    this.fixed = true;
 
     // Attach event listeners
     this.onPointEnd = this.onPointEnd.bind(this);
@@ -42,6 +45,13 @@ Vectr.Button.prototype = new Vectr.GameObject();
 Vectr.Button.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
+    }
+
+    // Draw label
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+
+    if (this.fixed === true) {
+        offsetX = offsetY = 0;
     }
 
     this.width = this.label.width(context);
@@ -65,9 +75,6 @@ Vectr.Button.prototype.draw = function (context, offsetX, offsetY) {
         context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
     }
     context.restore();
-
-    // Draw label
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
 };
 
 /**
