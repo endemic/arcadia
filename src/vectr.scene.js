@@ -9,14 +9,60 @@ var Vectr = window.Vectr || {};
 Vectr.Scene = function () {
     Vectr.GameObject.apply(this, arguments);
 
-    // TODO: implement a camera view/drawing offset
-    this.camera = null;
+    // implement a camera view/drawing offset
+    this.camera = {
+        target: null,
+        viewport: {
+            width: Vectr.WIDTH,
+            height: Vectr.HEIGHT
+        },
+        bounds: {
+            top: 0,
+            bottom: Vectr.HEIGHT,
+            left: 0,
+            right: Vectr.WIDTH
+        },
+        position: {
+            x: Vectr.WIDTH / 2,
+            y: Vectr.HEIGHT / 2
+        }
+    };
 };
 
 /**
  * @description Set prototype
  */
 Vectr.Scene.prototype = new Vectr.GameObject();
+
+/**
+ * @description Update the camera if necessary
+ * @param {Number} delta
+ */
+Vectr.Scene.prototype.update = function (delta) {
+    if (this.camera.target !== null) {
+        // Follow the target, keeping it in the center of the screen
+        this.camera.position = this.camera.target.position;
+
+        // Unless it is too close to boundaries, in which case keep the cam steady
+        if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.x / 2) {
+            this.camera.position.x = this.camera.bounds.left + this.camera.viewport.x / 2;
+        }
+
+        if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.x / 2) {
+            this.camera.position.x = this.camera.bounds.right - this.camera.viewport.x / 2;
+        }
+
+        if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.y / 2) {
+            this.camera.position.y = this.camera.bounds.top + this.camera.viewport.y / 2;
+        }
+
+        if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.y / 2) {
+            this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.y / 2;
+        }
+    }
+
+    Vectr.GameObject.prototype.update.call(this, delta);
+};
 
 /**
  * @description Clear context, then re-draw all child objects
@@ -35,5 +81,23 @@ Vectr.Scene.prototype.draw = function (context) {
     }
 
     // Draw child objects
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+    Vectr.GameObject.prototype.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
 };
+
+/**
+ * Getter/setter for camera target
+ */
+Object.defineProperty(Vectr.Scene.prototype, 'target', {
+    get: function () {
+        return this.camera.target;
+    },
+    set: function (shape) {
+        if (typeof shape !== 'object' || shape.position === undefined) {
+            return;
+        }
+
+        this.camera.target = shape;
+        this.camera.position.x = shape.position.x;
+        this.camera.position.y = shape.position.y;
+    }
+});

@@ -7,6 +7,7 @@ Vectr.Label = function (x, y, text) {
     Vectr.GameObject.apply(this, arguments);
 
     this.text = text;
+    this.fixed = true;
 
     // Default font
     this.fonts = {
@@ -35,6 +36,10 @@ Vectr.Label.prototype.draw = function (context, offsetX, offsetY) {
 
     // Draw child objects first, so they will be on the "bottom"
     Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+
+    if (this.fixed === true) {
+        offsetX = offsetY = 0;
+    }
 
     context.save();
 
