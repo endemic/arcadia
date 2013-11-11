@@ -9,125 +9,125 @@ if (window.cancelAnimationFrame === undefined) {
     window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
 }
 
-var Vectr = {
-    'Game': function (width, height, SceneClass, fitWindow) {
-        var i,
-            context;
+var Vectr = window.Vectr || {};
 
-        width = parseInt(width, 10) || 320;
-        height = parseInt(height, 10) || 480;
+Vectr.Game = function (width, height, SceneClass, fitWindow) {
+    var i,
+        context;
 
-        if (typeof SceneClass !== "function") {
-            throw 'Please provide a valid Scene object.';
-        }
+    width = parseInt(width, 10) || 320;
+    height = parseInt(height, 10) || 480;
 
-        if (fitWindow === undefined) {
-            fitWindow = true;
-        }
-
-        Vectr.WIDTH = width;
-        Vectr.HEIGHT = height;
-        Vectr.SCALE = 1;
-        Vectr.OFFSET = {
-            'x': 0,
-            'y': 0
-        };
-        Vectr.instance = this;
-
-        // Create the #vectr container, give it a size, etc.
-        this.element = document.createElement('div');
-        this.element.setAttribute('id', 'vectr');
-
-        this.canvas = document.createElement('canvas');
-        this.canvas.setAttribute('width', width);
-        this.canvas.setAttribute('height', height);
-        this.context = this.canvas.getContext('2d');
-
-        // Scanline effect
-        this.scanlines = document.createElement('canvas');
-        this.scanlines.setAttribute('width', width);
-        this.scanlines.setAttribute('height', height);
-        this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1;');
-
-        context = this.scanlines.getContext('2d');
-        context.lineWidth = 0.5;
-        context.beginPath();
-
-        for (i = 0; i < height; i += 3) {
-            context.moveTo(0, i);
-            context.lineTo(width, i);
-        }
-
-        context.closePath();
-        context.strokeStyle = 'rgba(0, 0, 0, 0.75)';
-        context.stroke();
-
-        this.element.appendChild(this.canvas);
-        this.element.appendChild(this.scanlines);
-        document.body.appendChild(this.element);
-
-        // Bind event handler callbacks
-        this.onResize = this.onResize.bind(this);
-        this.onPointStart = this.onPointStart.bind(this);
-        this.onPointMove = this.onPointMove.bind(this);
-        this.onPointEnd = this.onPointEnd.bind(this);
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.onKeyUp = this.onKeyUp.bind(this);
-        this.pause = this.pause.bind(this);
-        this.resume = this.resume.bind(this);
-
-        // Set up event listeners; Mouse and touch use the same ones
-        document.addEventListener('keydown', this.onKeyDown, false);
-        document.addEventListener('keyup', this.onKeyUp, false);
-        this.element.addEventListener('mousedown', this.onPointStart, false);
-        this.element.addEventListener('mouseup', this.onPointEnd, false);
-        this.element.addEventListener('touchstart', this.onPointStart, false);
-        this.element.addEventListener('touchmove', this.onPointMove, false);
-        this.element.addEventListener('touchend', this.onPointEnd, false);
-
-        // Prevent the page from scrolling
-        document.addEventListener('touchmove', function (e) {
-            e.preventDefault();
-        });
-
-        // Fit <canvas> to window
-        if (fitWindow === true) {
-            this.onResize();
-            window.addEventListener('resize', this.onResize, false);
-        }
-
-        if (window.cordova !== undefined) {
-            document.addEventListener('pause', this.pause, false);
-            document.addEventListener('resume', this.resume, false);
-        }
-
-        // Map of current input, used to prevent duplicate events being sent to handlers
-        this.input = {
-            'left': false,
-            'up': false,
-            'right': false,
-            'down': false,
-            'w': false,
-            'a': false,
-            's': false,
-            'd': false,
-            'enter': false,
-            'escape': false,
-            'space': false,
-            'control': false,
-            'z': false,
-            'x': false
-        };
-
-        // Stores objects representing mouse/touch input
-        this.points = [];
-
-        // Instantiate initial scene
-        this.active = new SceneClass();
-
-        // Start animation request
-        this.start();
+    if (typeof SceneClass !== "function") {
+        throw 'Please provide a valid Scene object.';
     }
+
+    if (fitWindow === undefined) {
+        fitWindow = true;
+    }
+
+    Vectr.WIDTH = width;
+    Vectr.HEIGHT = height;
+    Vectr.SCALE = 1;
+    Vectr.OFFSET = {
+        'x': 0,
+        'y': 0
+    };
+    Vectr.instance = this;
+
+    // Create the #vectr container, give it a size, etc.
+    this.element = document.createElement('div');
+    this.element.setAttribute('id', 'vectr');
+
+    this.canvas = document.createElement('canvas');
+    this.canvas.setAttribute('width', width);
+    this.canvas.setAttribute('height', height);
+    this.context = this.canvas.getContext('2d');
+
+    // Scanline effect
+    this.scanlines = document.createElement('canvas');
+    this.scanlines.setAttribute('width', width);
+    this.scanlines.setAttribute('height', height);
+    this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1;');
+
+    context = this.scanlines.getContext('2d');
+    context.lineWidth = 0.5;
+    context.beginPath();
+
+    for (i = 0; i < height; i += 3) {
+        context.moveTo(0, i);
+        context.lineTo(width, i);
+    }
+
+    context.closePath();
+    context.strokeStyle = 'rgba(0, 0, 0, 0.75)';
+    context.stroke();
+
+    this.element.appendChild(this.canvas);
+    this.element.appendChild(this.scanlines);
+    document.body.appendChild(this.element);
+
+    // Bind event handler callbacks
+    this.onResize = this.onResize.bind(this);
+    this.onPointStart = this.onPointStart.bind(this);
+    this.onPointMove = this.onPointMove.bind(this);
+    this.onPointEnd = this.onPointEnd.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.onKeyUp = this.onKeyUp.bind(this);
+    this.pause = this.pause.bind(this);
+    this.resume = this.resume.bind(this);
+
+    // Set up event listeners; Mouse and touch use the same ones
+    document.addEventListener('keydown', this.onKeyDown, false);
+    document.addEventListener('keyup', this.onKeyUp, false);
+    this.element.addEventListener('mousedown', this.onPointStart, false);
+    this.element.addEventListener('mouseup', this.onPointEnd, false);
+    this.element.addEventListener('touchstart', this.onPointStart, false);
+    this.element.addEventListener('touchmove', this.onPointMove, false);
+    this.element.addEventListener('touchend', this.onPointEnd, false);
+
+    // Prevent the page from scrolling
+    document.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+    });
+
+    // Fit <canvas> to window
+    if (fitWindow === true) {
+        this.onResize();
+        window.addEventListener('resize', this.onResize, false);
+    }
+
+    if (window.cordova !== undefined) {
+        document.addEventListener('pause', this.pause, false);
+        document.addEventListener('resume', this.resume, false);
+    }
+
+    // Map of current input, used to prevent duplicate events being sent to handlers
+    this.input = {
+        'left': false,
+        'up': false,
+        'right': false,
+        'down': false,
+        'w': false,
+        'a': false,
+        's': false,
+        'd': false,
+        'enter': false,
+        'escape': false,
+        'space': false,
+        'control': false,
+        'z': false,
+        'x': false
+    };
+
+    // Stores objects representing mouse/touch input
+    this.points = [];
+
+    // Instantiate initial scene
+    this.active = new SceneClass();
+
+    // Start animation request
+    this.start();
 };
 
 /**
@@ -546,6 +546,8 @@ Vectr.stopMusic = function () {
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 Vectr.GameObject = function (x, y) {
     this.position = {
         'x': x || 0,
@@ -553,6 +555,7 @@ Vectr.GameObject = function (x, y) {
     };
 
     this.active = true;
+    this.fixed = false;     // static positioning for UI elements
     this.scale = 1;
     this.rotation = 0;
     this.glow = 0;
@@ -658,12 +661,15 @@ Object.defineProperty(Vectr.GameObject.prototype, 'color', {
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 /**
  * @constructor
  */
 Vectr.Button = function (x, y, text) {
-    Vectr.GameObject.apply(this, arguments);
+    Vectr.GameObject.call(this, x, y);
 
+    // Create label that goes inside button border
     this.label = new Vectr.Label(x, y, text);
     this.add(this.label);
 
@@ -678,6 +684,7 @@ Vectr.Button = function (x, y, text) {
     this.height = parseInt(this.label.fonts.size, 10);
     this.solid = true;
     this.padding = 10;
+    this.fixed = true;
 
     // Attach event listeners
     this.onPointEnd = this.onPointEnd.bind(this);
@@ -697,6 +704,13 @@ Vectr.Button.prototype = new Vectr.GameObject();
 Vectr.Button.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
+    }
+
+    // Draw label
+    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+
+    if (this.fixed === true) {
+        offsetX = offsetY = 0;
     }
 
     this.width = this.label.width(context);
@@ -720,9 +734,6 @@ Vectr.Button.prototype.draw = function (context, offsetX, offsetY) {
         context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
     }
     context.restore();
-
-    // Draw label
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
 };
 
 /**
@@ -763,8 +774,8 @@ Vectr.Button.prototype.onPointEnd = function (event) {
 Vectr.Button.prototype.containsPoint = function (x, y) {
     return x < this.position.x + this.width / 2 + this.padding / 2 &&
         x > this.position.x - this.width / 2 - this.padding / 2 &&
-        y < this.position.y + this.height / 2 &&
-        y > this.position.y - this.height / 2 - this.padding;
+        y < this.position.y + this.height / 2 + this.padding / 2 &&
+        y > this.position.y - this.height / 2 - this.padding / 2;
 };
 
 /**
@@ -830,6 +841,8 @@ Object.defineProperty(Vectr.Button.prototype, 'font', {
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 /**
  * @constructor
  * @description Basic particle emitter
@@ -873,6 +886,9 @@ Vectr.Emitter.prototype.start = function (x, y) {
     var direction,
         i = this.particles.length;
 
+    this.position.x = x;
+    this.position.y = y;
+
     while (i--) {
         this.particles.at(i).position.x = x;
         this.particles.at(i).position.y = y;
@@ -888,12 +904,15 @@ Vectr.Emitter.prototype.start = function (x, y) {
     this.timer = 0;
 };
 
-Vectr.Emitter.prototype.draw = function (context) {
+Vectr.Emitter.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
     }
 
-    this.particles.draw(context);
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
+
+    this.particles.draw(context, offsetX, offsetY);
 };
 
 Vectr.Emitter.prototype.update = function (delta) {
@@ -925,10 +944,13 @@ Vectr.Emitter.prototype.update = function (delta) {
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 Vectr.Label = function (x, y, text) {
     Vectr.GameObject.apply(this, arguments);
 
     this.text = text;
+    this.fixed = true;
 
     // Default font
     this.fonts = {
@@ -957,6 +979,10 @@ Vectr.Label.prototype.draw = function (context, offsetX, offsetY) {
 
     // Draw child objects first, so they will be on the "bottom"
     Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+
+    if (this.fixed === true) {
+        offsetX = offsetY = 0;
+    }
 
     context.save();
 
@@ -1043,6 +1069,8 @@ Object.defineProperty(Vectr.Label.prototype, 'font', {
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
 
+var Vectr = window.Vectr || {};
+
 /**
 * @description Object pool; One possible way to store common recyclable objects
 */
@@ -1064,7 +1092,7 @@ Vectr.Pool.prototype.activate = function () {
     this.i = this.inactive.pop();
     this.i.active = true;
     if (typeof this.i.activate === 'function') {
-      this.i.activate();
+        this.i.activate();
     }
     this.children.push(this.i);
     this.length += 1;
@@ -1080,7 +1108,7 @@ Vectr.Pool.prototype.activateAll = function () {
         this.i = this.inactive.pop();
         this.i.active = true;
         if (typeof this.i.activate === 'function') {
-          this.i.activate();
+            this.i.activate();
         }
         this.children.push(this.i);
         this.length += 1;
@@ -1134,7 +1162,11 @@ Vectr.Pool.prototype.at = function (index) {
  * @description Add object to one of the lists
  */
 Vectr.Pool.prototype.add = function (object) {
-    if (typeof object === "object" && object.active === true) {
+    if (typeof object !== "object" || object.active === undefined) {
+        throw "Can't add non-Vectr objects to a Pool.";
+    }
+
+    if (object.active === true) {
         this.children.push(object);
         this.length += 1;
     } else {
@@ -1162,16 +1194,21 @@ Vectr.Pool.prototype.update = function (delta) {
 /**
  * @description "Passthrough" method which draws active child objects
  */
-Vectr.Pool.prototype.draw = function (context) {
+Vectr.Pool.prototype.draw = function (context, offsetX, offsetY) {
     this.i = this.children.length;
 
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
+
     while (this.i--) {
-        this.children[this.i].draw(context, 0, 0);
+        this.children[this.i].draw(context, offsetX, offsetY);
     }
 };
 
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
+
+var Vectr = window.Vectr || {};
 
 /**
  * @constructor
@@ -1179,14 +1216,60 @@ Vectr.Pool.prototype.draw = function (context) {
 Vectr.Scene = function () {
     Vectr.GameObject.apply(this, arguments);
 
-    // TODO: implement a camera view/drawing offset
-    this.camera = null;
+    // implement a camera view/drawing offset
+    this.camera = {
+        target: null,
+        viewport: {
+            width: Vectr.WIDTH,
+            height: Vectr.HEIGHT
+        },
+        bounds: {
+            top: 0,
+            bottom: Vectr.HEIGHT,
+            left: 0,
+            right: Vectr.WIDTH
+        },
+        position: {
+            x: Vectr.WIDTH / 2,
+            y: Vectr.HEIGHT / 2
+        }
+    };
 };
 
 /**
  * @description Set prototype
  */
 Vectr.Scene.prototype = new Vectr.GameObject();
+
+/**
+ * @description Update the camera if necessary
+ * @param {Number} delta
+ */
+Vectr.Scene.prototype.update = function (delta) {
+    if (this.camera.target !== null) {
+        // Follow the target, keeping it in the center of the screen
+        this.camera.position = this.camera.target.position;
+
+        // Unless it is too close to boundaries, in which case keep the cam steady
+        if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.x / 2) {
+            this.camera.position.x = this.camera.bounds.left + this.camera.viewport.x / 2;
+        }
+
+        if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.x / 2) {
+            this.camera.position.x = this.camera.bounds.right - this.camera.viewport.x / 2;
+        }
+
+        if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.y / 2) {
+            this.camera.position.y = this.camera.bounds.top + this.camera.viewport.y / 2;
+        }
+
+        if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.y / 2) {
+            this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.y / 2;
+        }
+    }
+
+    Vectr.GameObject.prototype.update.call(this, delta);
+};
 
 /**
  * @description Clear context, then re-draw all child objects
@@ -1205,11 +1288,31 @@ Vectr.Scene.prototype.draw = function (context) {
     }
 
     // Draw child objects
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x, this.position.y);
+    Vectr.GameObject.prototype.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
 };
+
+/**
+ * Getter/setter for camera target
+ */
+Object.defineProperty(Vectr.Scene.prototype, 'target', {
+    get: function () {
+        return this.camera.target;
+    },
+    set: function (shape) {
+        if (typeof shape !== 'object' || shape.position === undefined) {
+            return;
+        }
+
+        this.camera.target = shape;
+        this.camera.position.x = shape.position.x;
+        this.camera.position.y = shape.position.y;
+    }
+});
 
 /*jslint sloppy: true, plusplus: true, browser: true */
 /*globals Vectr */
+
+var Vectr = window.Vectr || {};
 
 /**
  * @description Shape constructor
@@ -1218,8 +1321,8 @@ Vectr.Scene.prototype.draw = function (context) {
  * @param {String} shape String representing what to draw
  * @param {Number} size Size of shape in pixels
  */
-Vectr.Shape = function (x, y, shape, size) {
-    Vectr.GameObject.apply(this, arguments);
+Vectr.Shape = function Shape(x, y, shape, size) {
+    Vectr.GameObject.call(this, x, y);
 
     this.shape = shape || 'square';
     this.size = size || 10;
@@ -1245,6 +1348,10 @@ Vectr.Shape.prototype = new Vectr.GameObject();
 Vectr.Shape.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
+    }
+
+    if (this.fixed === true) {
+        offsetX = offsetY = 0;
     }
 
     // Draw child objects first, so they will be on the "bottom"
