@@ -7,11 +7,10 @@ var Vectr = window.Vectr || {};
  * @constructor
  */
 Vectr.Button = function (x, y, text) {
-    Vectr.GameObject.apply(this, arguments);
+    Vectr.GameObject.call(this, x, y);
 
     // Create label that goes inside button border
     this.label = new Vectr.Label(x, y, text);
-    // this.label.fixed = false;
     this.add(this.label);
 
     // Default border/background
@@ -115,8 +114,8 @@ Vectr.Button.prototype.onPointEnd = function (event) {
 Vectr.Button.prototype.containsPoint = function (x, y) {
     return x < this.position.x + this.width / 2 + this.padding / 2 &&
         x > this.position.x - this.width / 2 - this.padding / 2 &&
-        y < this.position.y + this.height / 2 &&
-        y > this.position.y - this.height / 2 - this.padding;
+        y < this.position.y + this.height / 2 + this.padding / 2 &&
+        y > this.position.y - this.height / 2 - this.padding / 2;
 };
 
 /**
