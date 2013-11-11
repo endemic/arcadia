@@ -46,6 +46,9 @@ Vectr.Emitter.prototype.start = function (x, y) {
     var direction,
         i = this.particles.length;
 
+    this.position.x = x;
+    this.position.y = y;
+
     while (i--) {
         this.particles.at(i).position.x = x;
         this.particles.at(i).position.y = y;
@@ -61,12 +64,15 @@ Vectr.Emitter.prototype.start = function (x, y) {
     this.timer = 0;
 };
 
-Vectr.Emitter.prototype.draw = function (context) {
+Vectr.Emitter.prototype.draw = function (context, offsetX, offsetY) {
     if (this.active === false) {
         return;
     }
 
-    this.particles.draw(context);
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
+
+    this.particles.draw(context, offsetX, offsetY);
 };
 
 Vectr.Emitter.prototype.update = function (delta) {

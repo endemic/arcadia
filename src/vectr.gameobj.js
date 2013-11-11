@@ -10,6 +10,7 @@ Vectr.GameObject = function (x, y) {
     };
 
     this.active = true;
+    this.fixed = false;     // static positioning for UI elements
     this.scale = 1;
     this.rotation = 0;
     this.glow = 0;
@@ -62,9 +63,6 @@ Vectr.GameObject.prototype.update = function (delta) {
  * @param {Shape} object
  */
 Vectr.GameObject.prototype.add = function (object) {
-    if (typeof object !== "object") {
-        throw "Can't add non-Vectr objects to a GameObject.";
-    }
     this.children.push(object);
 };
 

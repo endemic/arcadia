@@ -24,7 +24,7 @@ Vectr.Pool.prototype.activate = function () {
     this.i = this.inactive.pop();
     this.i.active = true;
     if (typeof this.i.activate === 'function') {
-      this.i.activate();
+        this.i.activate();
     }
     this.children.push(this.i);
     this.length += 1;
@@ -40,7 +40,7 @@ Vectr.Pool.prototype.activateAll = function () {
         this.i = this.inactive.pop();
         this.i.active = true;
         if (typeof this.i.activate === 'function') {
-          this.i.activate();
+            this.i.activate();
         }
         this.children.push(this.i);
         this.length += 1;
@@ -126,10 +126,13 @@ Vectr.Pool.prototype.update = function (delta) {
 /**
  * @description "Passthrough" method which draws active child objects
  */
-Vectr.Pool.prototype.draw = function (context) {
+Vectr.Pool.prototype.draw = function (context, offsetX, offsetY) {
     this.i = this.children.length;
 
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
+
     while (this.i--) {
-        this.children[this.i].draw(context, 0, 0);
+        this.children[this.i].draw(context, offsetX, offsetY);
     }
 };

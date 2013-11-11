@@ -17,18 +17,10 @@ describe('Vectr.GameObject', function () {
         expect(gameobj.color).toBe('rgba(0, 0, 0, 1)');
     });
 
-    it('can have Vectr objects added to it', function () {
+    it('can have objects added to it', function () {
         var shape = new Vectr.Shape(0, 0, 'circle', 25);
         gameobj.add(shape);
         expect(gameobj.children.length).toBe(1);
-    });
-
-    it("can't have non-Vectr objects added to it", function () {
-        var obj = {
-            property: "fgsfds"
-        };
-
-        expect(function () { gameobj.add(obj); }).toThrow();
     });
 
     it("updates its' active child objects", function () {
