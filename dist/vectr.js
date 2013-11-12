@@ -1246,29 +1246,26 @@ Vectr.Scene.prototype = new Vectr.GameObject();
  * @param {Number} delta
  */
 Vectr.Scene.prototype.update = function (delta) {
+    Vectr.GameObject.prototype.update.call(this, delta);
+
     if (this.camera.target !== null) {
-        // Follow the target, keeping it in the center of the screen
-        this.camera.position = this.camera.target.position;
+        // Follow the target, keeping it in the center of the screen...
+        this.camera.position.x = this.camera.target.position.x;
+        this.camera.position.y = this.camera.target.position.y;
 
         // Unless it is too close to boundaries, in which case keep the cam steady
-        if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.x / 2) {
-            this.camera.position.x = this.camera.bounds.left + this.camera.viewport.x / 2;
+        if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.width / 2) {
+            this.camera.position.x = this.camera.bounds.left + this.camera.viewport.width / 2;
+        } else if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.width / 2) {
+            this.camera.position.x = this.camera.bounds.right - this.camera.viewport.width / 2;
         }
 
-        if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.x / 2) {
-            this.camera.position.x = this.camera.bounds.right - this.camera.viewport.x / 2;
-        }
-
-        if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.y / 2) {
-            this.camera.position.y = this.camera.bounds.top + this.camera.viewport.y / 2;
-        }
-
-        if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.y / 2) {
-            this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.y / 2;
+        if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.height / 2) {
+            this.camera.position.y = this.camera.bounds.top + this.camera.viewport.height / 2;
+        } else if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.height / 2) {
+            this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.height / 2;
         }
     }
-
-    Vectr.GameObject.prototype.update.call(this, delta);
 };
 
 /**
