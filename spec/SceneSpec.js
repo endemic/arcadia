@@ -21,6 +21,23 @@ describe('Vectr.Scene', function () {
         var shape = new Vectr.Shape();
 
         expect(function () { scene.add(shape); }).not.toThrow();
+        expect(scene.children.length).toBe(1);
+    });
+
+    it('gives child object a link back to parent', function () {
+        var shape = new Vectr.Shape();
+        scene.add(shape);
+
+        expect(shape.parent).toBe(scene);
+    });
+
+    it('can remove child objects', function () {
+        var shape = new Vectr.Shape();
+        scene.add(shape);
+        expect(scene.children.length).toBe(1);
+
+        scene.remove(shape);
+        expect(scene.children.length).toBe(0);
     });
 
     it("updates its' child objects", function () {
