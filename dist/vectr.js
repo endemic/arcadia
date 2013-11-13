@@ -609,6 +609,7 @@ Vectr.GameObject.prototype.update = function (delta) {
  */
 Vectr.GameObject.prototype.add = function (object) {
     this.children.push(object);
+    object.parent = this;
 };
 
 /**
@@ -619,6 +620,7 @@ Vectr.GameObject.prototype.remove = function (object) {
     this.i = this.children.indexOf(object);
 
     if (this.i !== -1) {
+        delete object.parent;
         this.children.splice(this.i, 1);
     }
 };
