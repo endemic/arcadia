@@ -1,16 +1,29 @@
 class Game
-  constructor: (width, height, scaleToFit) ->
-    width = parseInt(width, 10) || 320
+  ###
+   * @constructor
+   * @description Main "game" object; sets up screens, input, etc.
+   * @param {String} [width=640] Width of game view
+   * @param {Number} [height=480] Height of game view
+   * @param {Boolean} [scaleToFit=true] Full screen or not
+  ###
+  constructor: (width, height, SceneClass, scaleToFit) ->
+    width = parseInt(width, 10) || 640
     height = parseInt(height, 10) || 480
 
     scaleToFit = scaleToFit || true
 
     Vectr.WIDTH = width
     Vectr.HEIGHT = height
+
+    # If game is scaled up/down, clicks/touches need to be scaled
     Vectr.SCALE = 1
+
+    # If game element is not at (0, 0), clicks/touches need to be offset
     Vectr.OFFSET =
-        'x': 0
-        'y': 0
+        x: 0
+        y: 0
+
+    # Static reference to current game instance
     Vectr.instance = @
 
     @element = document.createElement 'div'
@@ -43,9 +56,8 @@ class Game
     @element.addEventListener('touchmove', @onPointMove, false)
     @element.addEventListener('touchend', @onPointEnd, false)
 
-    # Prevent the page from scrolling
-    @element.addEventListener 'touchmove', (e) ->
-        e.preventDefault()
+    # Prevent the page from scrolling when touching game element
+    @element.addEventListener 'touchmove', (e) -> e.preventDefault()
 
     # Fit <canvas> to window
     if scaleToFit == true
@@ -57,6 +69,7 @@ class Game
         document.addEventListener('resume', @resume, false)
 
     # Map of current input, used to prevent duplicate events being sent to handlers
+    # ("keydown" events fire continuously while a key is held)
     @input =
         'left': false
         'up': false
@@ -133,21 +146,7 @@ class Game
   @description Keyboard event callback
   ###
   onKeyDown: (event) ->
-    switch event.keyCode
-      when 37 then key = 'left'
-      when 38 then key = 'up'
-      when 39 then key = 'right'
-      when 40 then key = 'down'
-      when 87 then key = 'w'
-      when 65 then key = 'a'
-      when 83 then key = 's'
-      when 68 then key = 'd'
-      when 13 then key = 'enter'
-      when 27 then key = 'escape'
-      when 32 then key = 'space'
-      when 17 then key = 'control'
-      when 90 then key = 'z'
-      when 88 then key = 'x'
+    key = @getKey event.keyCode
 
     # Do nothing if key hasn't been released yet
     return if @input[key]
@@ -161,26 +160,32 @@ class Game
   @description Keyboard event callback
   ###
   onKeyUp: (event) ->
-    switch event.keyCode
-      when 37 then key = 'left'
-      when 38 then key = 'up'
-      when 39 then key = 'right'
-      when 40 then key = 'down'
-      when 87 then key = 'w'
-      when 65 then key = 'a'
-      when 83 then key = 's'
-      when 68 then key = 'd'
-      when 13 then key = 'enter'
-      when 27 then key = 'escape'
-      when 32 then key = 'space'
-      when 17 then key = 'control'
-      when 90 then key = 'z'
-      when 88 then key = 'x'
+    key = @getKey event.keyCode
 
     @input[key] = false # Allow the keyDown event for this key to be sent again
 
     if typeof @active.onKeyUp == "function"
         @active.onKeyUp key
+
+  ###
+  @description Translate a keyboard event code into a meaningful string
+  ###
+  getKey: (keyCode) ->
+    switch keyCode
+      when 37 then return 'left'
+      when 38 then return 'up'
+      when 39 then return 'right'
+      when 40 then return 'down'
+      when 87 then return 'w'
+      when 65 then return 'a'
+      when 83 then return 's'
+      when 68 then return 'd'
+      when 13 then return 'enter'
+      when 27 then return 'escape'
+      when 32 then return 'space'
+      when 17 then return 'control'
+      when 90 then return 'z'
+      when 88 then return 'x'
 
   ###
    * @description Start the event/animation loops
@@ -226,7 +231,7 @@ class Game
     if width > height
       orientation = "landscape"
       aspectRatio = Vectr.WIDTH / Vectr.HEIGHT
-    else 
+    else
       orientation = "portrait"
       aspectRatio = Vectr.HEIGHT / Vectr.WIDTH
 

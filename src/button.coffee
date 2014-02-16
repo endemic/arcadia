@@ -2,6 +2,8 @@ GameObject = require './gameobject'
 
 class Button extends GameObject
   constructor: (x, y, text) ->
+    super
+
     # Create label that goes inside button border
     @label = new Vectr.Label(x, y, text)
     @add(@label)
@@ -72,7 +74,7 @@ class Button extends GameObject
   ###
   onPointEnd: (event) ->
     return if not @active or typeof @onUp != 'function'
-      
+
     Vectr.getPoints event
 
     i = Vectr.instance.points.length

@@ -1,7 +1,8 @@
-# point vendor-specific implementations to window.requestAnimationFrame
+# Normalize requestAnimationFrame
 if window.requestAnimationFrame == undefined
   window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame
 
+# Normalize cancelAnimationFrame
 if window.cancelAnimationFrame == undefined
   window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame
 
@@ -18,10 +19,7 @@ Vectr =
   Scene: require('./scene')
   Shape: require('./shape')
 
-if typeof module != undefined
-  module.exports = Vectr
-else
-  window.Vectr = Vectr
+module.exports = Vectr
 
 ###
 @description Get information about the current environment
