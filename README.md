@@ -1,12 +1,13 @@
-Arkadia
-=====
+# Arcadia.js
 
-Minimal &lt;canvas> game framework
+Minimalist &lt;canvas> game framework, inspired by classic 80s arcade titles.
 
 ## Build Requirements
 
-Uses NodeJS and Grunt to concatenate/minify. Install NodeJS and NPM, then install
-Grunt globally with `npm install -g grunt`. Execute Grunt with `grunt`.
+Requires [Node.js](http://nodejs.org/download/). 
+
+`npm install`
+`npm install -g browserify`
 
 `browserify --standalone Vectr -t coffeeify --extension=".coffee" src/vectr.coffee > dist/vectr.js`
 
