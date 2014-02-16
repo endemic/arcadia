@@ -182,40 +182,31 @@ class Game
     if typeof @active.onKeyUp == "function"
         @active.onKeyUp key
 
-/**
- * @description Start the event/animation loops
- */
-Vectr.Game.prototype.start = function () {
-    var previousDelta,
-        self,
-        update
+  ###
+   * @description Start the event/animation loops
+  ###
+  start: ->
+    if window.performance != undefined
+      previousDelta = window.performance.now()
+    else
+      previousDelta = Date.now()
 
-    self = this
+    update = (currentDelta) =>
+      delta = currentDelta - previousDelta
 
-    if (window.performance !== undefined) {
-        previousDelta = window.performance.now()
-    } else {
-        previousDelta = Date.now()
-    }
+      previousDelta = currentDelta
 
-    update = function (currentDelta) {
-        var delta = currentDelta - previousDelta
+      this.update(delta / 1000)
 
-        previousDelta = currentDelta
-
-        self.update(delta / 1000)
-
-        self.updateId = window.requestAnimationFrame(update)
-    }
+      this.updateId = window.requestAnimationFrame update
 
     # Start game loop
-    @updateId = window.requestAnimationFrame(update)
-}
+    @updateId = window.requestAnimationFrame update
 
   ###
   @description Cancel draw/update loops
   ###
-  stop = ->
+  stop: ->
     window.cancelAnimationFrame @updateId
 
   ###
@@ -243,7 +234,7 @@ Vectr.Game.prototype.start = function () {
       if width / aspectRatio > height  # Too wide
         width = height * aspectRatio
         margin = '0 ' + ((window.innerWidth - width) / 2) + 'px'
-      else if width / aspectRatio < height)  # Too high
+      else if width / aspectRatio < height  # Too high
         height = width / aspectRatio
         margin = ((window.innerHeight - height) / 2) + 'px 0'
     else if orientation == "portrait"
@@ -259,3 +250,5 @@ Vectr.Game.prototype.start = function () {
     Vectr.OFFSET.y = (window.innerHeight - height) / 2
     @element.setAttribute "style", "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
     @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Vectr.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Vectr.SCALE}); transform-origin: 0 0;"
+
+module.exports = Game

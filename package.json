@@ -30,7 +30,8 @@
     "browserify": "~3.3.0",
     "watchify": "~0.6.1",
     "coffeeify": "~0.6.0",
-    "gulp": "~3.4.0",
-    "gulp-util": "~2.2.14"
+    "gulp": "~3.5.2",
+    "gulp-util": "~2.2.14",
+    "gulp-browserify": "~0.4.4"
   }
 }

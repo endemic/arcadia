@@ -1,73 +1,286 @@
-/*jslint sloppy: true, plusplus: true, browser: true */
+;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var Button, GameObject,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-// point vendor-specific implementations to window.requestAnimationFrame
-if (window.requestAnimationFrame === undefined) {
-    window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-}
+GameObject = require('./gameobject');
 
-if (window.cancelAnimationFrame === undefined) {
-    window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
-}
+Button = (function(_super) {
+  __extends(Button, _super);
 
-var Vectr = window.Vectr || {};
+  function Button(x, y, text) {
+    this.label = new Vectr.Label(x, y, text);
+    this.add(this.label);
+    this.backgroundColors = {
+      'red': 255,
+      'green': 255,
+      'blue': 255,
+      'alpha': 1
+    };
+    this.height = parseInt(this.label.fonts.size, 10);
+    this.solid = true;
+    this.padding = 10;
+    this.fixed = true;
+    this.onPointEnd = this.onPointEnd.bind(this);
+    Vectr.instance.element.addEventListener('mouseup', this.onPointEnd, false);
+    Vectr.instance.element.addEventListener('touchend', this.onPointEnd, false);
+  }
 
-Vectr.Game = function (width, height, SceneClass, fitWindow) {
-    var i,
-        context;
 
+  /*
+   * @description Draw object
+   * @param {CanvasRenderingContext2D} context
+   */
+
+  Button.prototype.draw = function(context, offsetX, offsetY) {
+    if (!this.active) {
+      return;
+    }
+    Button.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+    if (this.fixed) {
+      offsetX = offsetY = 0;
+    }
+    this.width = this.label.width(context);
+    context.save();
+    context.translate(this.position.x + offsetX, this.position.y + offsetY);
+    if (this.glow > 0) {
+      context.shadowOffsetX = 0;
+      context.shadowOffsetY = 0;
+      context.shadowBlur = this.glow;
+      context.shadowColor = this.color;
+    }
+    if (this.solid === true) {
+      context.fillStyle = this.backgroundColor;
+      context.fillRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
+    } else {
+      context.strokeStyle = this.backgroundColor;
+      context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
+    }
+    return context.restore();
+  };
+
+
+  /*
+   * @description Update object
+   * @param {Number} delta Time since last update (in seconds)
+   * TODO: Can this just use the parent method?
+   */
+
+  Button.prototype.update = function(delta) {
+    if (!this.active) {
+      return;
+    }
+    return Button.__super__.update.call(this, delta);
+  };
+
+
+  /*
+   * @description If touch/mouse end is inside button, execute the user-supplied callback
+   */
+
+  Button.prototype.onPointEnd = function(event) {
+    var i;
+    if (!this.active || typeof this.onUp !== 'function') {
+      return;
+    }
+    Vectr.getPoints(event);
+    i = Vectr.instance.points.length;
+    while (i--) {
+      if (this.containsPoint(Vectr.instance.points[i].x, Vectr.instance.points[i].y)) {
+        this.onUp();
+        return true;
+      }
+    }
+    return false;
+  };
+
+
+  /*
+   * @description Helper method to determine if mouse/touch is inside button graphic
+   */
+
+  Button.prototype.containsPoint = function(x, y) {
+    return x < this.position.x + this.width / 2 + this.padding / 2 && x > this.position.x - this.width / 2 - this.padding / 2 && y < this.position.y + this.height / 2 + this.padding / 2 && y > this.position.y - this.height / 2 - this.padding / 2;
+  };
+
+
+  /*
+   * @description Clean up event listeners
+   */
+
+  Button.prototype.destroy = function() {
+    Vectr.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
+    return Vectr.instance.element.removeEventListener('touchend', this.onPointEnd, false);
+  };
+
+
+  /*
+   * @description Getter/setter for background color value
+   */
+
+  Button.property('backgroundColor', {
+    get: function() {
+      return "rgba(" + this.backgroundColors.red + ", " + this.backgroundColors.green + ", " + this.backgroundColors.blue + ", " + this.backgroundColors.alpha + ")";
+    },
+    set: function(color) {
+      var tmp;
+      tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
+      if (tmp.length === 5) {
+        this.backgroundColors.red = parseInt(tmp[1], 10);
+        this.backgroundColors.green = parseInt(tmp[2], 10);
+        this.backgroundColors.blue = parseInt(tmp[3], 10);
+        return this.backgroundColors.alpha = parseFloat(tmp[4], 10);
+      }
+    }
+  });
+
+
+  /*
+   * @description Getter/setter for font value
+   */
+
+  Button.property('font', {
+    get: function() {
+      return this.label.font;
+    },
+    set: function(font) {
+      return this.label.font = font;
+    }
+  });
+
+  return Button;
+
+})(GameObject);
+
+module.exports = Button;
+
+
+},{"./gameobject":4}],2:[function(require,module,exports){
+var Emitter, GameObject,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+GameObject = require('./gameobject');
+
+Emitter = (function(_super) {
+  __extends(Emitter, _super);
+
+
+  /*
+   * @constructor
+   * @description Basic particle emitter
+   * @param {string} [shape='square'] Shape of the particles. Accepts strings that are valid for Shapes (e.g. "circle", "triangle")
+   * @param {number} [size=10] Size of the particles
+   * @param {number} [count=25] The number of particles created for the system
+   */
+
+  function Emitter(shape, size, count) {
+    var particle;
+    Emitter.__super__.constructor.apply(this, arguments);
+    this.particles = new Vectr.Pool();
+    this.duration = 1;
+    this.fade = false;
+    this.speed = 200;
+    count = count || 25;
+    while (count--) {
+      particle = new Vectr.Shape(0, 0, shape || 'square', size || 5);
+      particle.active = false;
+      particle.solid = true;
+      this.particles.add(particle);
+    }
+  }
+
+
+  /*
+   * @description Activate a particle emitter
+   * @param {number} x Position of emitter on x-axis
+   * @param {number} y Position of emitter on y-axis
+   */
+
+  Emitter.prototype.start = function(x, y) {
+    var direction, i;
+    this.particles.activateAll();
+    this.active = true;
+    this.position.x = x;
+    this.position.y = y;
+    i = this.particles.length;
+    while (i--) {
+      this.particles.at(i).position.x = x;
+      this.particles.at(i).position.y = y;
+      direction = Math.random() * 2 * Math.PI;
+      this.particles.at(i).velocity.x = Math.cos(direction);
+      this.particles.at(i).velocity.y = Math.sin(direction);
+      this.particles.at(i).speed = Math.random() * this.speed;
+      this.particles.at(i).color = this.color;
+    }
+    return this.timer = 0;
+  };
+
+  Emitter.prototype.draw = function(context, offsetX, offsetY) {
+    if (!this.active) {
+      return;
+    }
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
+    return this.particles.draw(context, offsetX, offsetY);
+  };
+
+  Emitter.prototype.update = function(delta) {
+    var i, _results;
+    if (!this.active) {
+      return;
+    }
+    i = this.particles.length;
+    if (i === 0) {
+      this.active = false;
+    }
+    this.particles.update(delta);
+    this.timer += delta;
+    _results = [];
+    while (i--) {
+      if (this.fade) {
+        this.particles.at(i).colors.alpha -= delta / this.duration;
+      }
+      if (this.timer >= this.duration) {
+        _results.push(this.particles.deactivate(i));
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
+  };
+
+  return Emitter;
+
+})(GameObject);
+
+module.exports = Emitter;
+
+
+},{"./gameobject":4}],3:[function(require,module,exports){
+var Game;
+
+Game = (function() {
+  function Game(width, height, scaleToFit) {
     width = parseInt(width, 10) || 320;
     height = parseInt(height, 10) || 480;
-
-    if (typeof SceneClass !== "function") {
-        throw 'Please provide a valid Scene object.';
-    }
-
-    if (fitWindow === undefined) {
-        fitWindow = true;
-    }
-
+    scaleToFit = scaleToFit || true;
     Vectr.WIDTH = width;
     Vectr.HEIGHT = height;
     Vectr.SCALE = 1;
     Vectr.OFFSET = {
-        'x': 0,
-        'y': 0
+      'x': 0,
+      'y': 0
     };
     Vectr.instance = this;
-
-    // Create the #vectr container, give it a size, etc.
     this.element = document.createElement('div');
     this.element.setAttribute('id', 'vectr');
-
     this.canvas = document.createElement('canvas');
     this.canvas.setAttribute('width', width);
     this.canvas.setAttribute('height', height);
     this.context = this.canvas.getContext('2d');
-
-    // Scanline effect
-    this.scanlines = document.createElement('canvas');
-    this.scanlines.setAttribute('width', width);
-    this.scanlines.setAttribute('height', height);
-    this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1;');
-
-    context = this.scanlines.getContext('2d');
-    context.lineWidth = 0.5;
-    context.beginPath();
-
-    for (i = 0; i < height; i += 3) {
-        context.moveTo(0, i);
-        context.lineTo(width, i);
-    }
-
-    context.closePath();
-    context.strokeStyle = 'rgba(0, 0, 0, 0.75)';
-    context.stroke();
-
     this.element.appendChild(this.canvas);
-    this.element.appendChild(this.scanlines);
     document.body.appendChild(this.element);
-
-    // Bind event handler callbacks
     this.onResize = this.onResize.bind(this);
     this.onPointStart = this.onPointStart.bind(this);
     this.onPointMove = this.onPointMove.bind(this);
@@ -76,8 +289,6 @@ Vectr.Game = function (width, height, SceneClass, fitWindow) {
     this.onKeyUp = this.onKeyUp.bind(this);
     this.pause = this.pause.bind(this);
     this.resume = this.resume.bind(this);
-
-    // Set up event listeners; Mouse and touch use the same ones
     document.addEventListener('keydown', this.onKeyDown, false);
     document.addEventListener('keyup', this.onKeyUp, false);
     this.element.addEventListener('mousedown', this.onPointStart, false);
@@ -85,1358 +296,1128 @@ Vectr.Game = function (width, height, SceneClass, fitWindow) {
     this.element.addEventListener('touchstart', this.onPointStart, false);
     this.element.addEventListener('touchmove', this.onPointMove, false);
     this.element.addEventListener('touchend', this.onPointEnd, false);
-
-    // Prevent the page from scrolling
-    document.addEventListener('touchmove', function (e) {
-        e.preventDefault();
+    this.element.addEventListener('touchmove', function(e) {
+      return e.preventDefault();
     });
-
-    // Fit <canvas> to window
-    if (fitWindow === true) {
-        this.onResize();
-        window.addEventListener('resize', this.onResize, false);
+    if (scaleToFit === true) {
+      this.onResize();
+      window.addEventListener('resize', this.onResize, false);
     }
-
-    if (window.cordova !== undefined) {
-        document.addEventListener('pause', this.pause, false);
-        document.addEventListener('resume', this.resume, false);
+    if (window.cordova !== void 0) {
+      document.addEventListener('pause', this.pause, false);
+      document.addEventListener('resume', this.resume, false);
     }
-
-    // Map of current input, used to prevent duplicate events being sent to handlers
     this.input = {
-        'left': false,
-        'up': false,
-        'right': false,
-        'down': false,
-        'w': false,
-        'a': false,
-        's': false,
-        'd': false,
-        'enter': false,
-        'escape': false,
-        'space': false,
-        'control': false,
-        'z': false,
-        'x': false
+      'left': false,
+      'up': false,
+      'right': false,
+      'down': false,
+      'w': false,
+      'a': false,
+      's': false,
+      'd': false,
+      'enter': false,
+      'escape': false,
+      'space': false,
+      'control': false,
+      'z': false,
+      'x': false
     };
-
-    // Stores objects representing mouse/touch input
     this.points = [];
-
-    // Instantiate initial scene
     this.active = new SceneClass();
-
-    // Start animation request
     this.start();
-};
+  }
 
-/**
- * @description Pause active scene if it has a pause method
- */
-Vectr.Game.prototype.pause = function () {
+
+  /*
+  @description Pause active scene if it has a pause method
+   */
+
+  Game.prototype.pause = function() {
     this.pausedMusic = this.currentMusic;
     Vectr.stopMusic();
-
     if (typeof this.active.pause === "function") {
-        this.active.pause();
+      return this.active.pause();
     }
-};
+  };
 
-/**
- * @description Resume active scene if it has a pause method
- */
-Vectr.Game.prototype.resume = function () {
+
+  /*
+  @description Resume active scene if it has a pause method
+   */
+
+  Game.prototype.resume = function() {
     Vectr.playMusic(this.pausedMusic);
-
     if (typeof this.active.resume === "function") {
-        this.active.resume();
+      return this.active.resume();
     }
-};
+  };
 
-/**
- * @description Mouse/touch event callback
- */
-Vectr.Game.prototype.onPointStart = function (event) {
+
+  /*
+  @description Mouse/touch event callback
+   */
+
+  Game.prototype.onPointStart = function(event) {
     Vectr.getPoints(event);
-
     if (event.type.indexOf('mouse') !== -1) {
-        this.element.addEventListener('mousemove', this.onPointMove, false);
+      this.element.addEventListener('mousemove', this.onPointMove, false);
     }
-
     if (typeof this.active.onPointStart === "function") {
-        this.active.onPointStart(this.points);
+      return this.active.onPointStart(this.points);
     }
-};
+  };
 
-/**
- * @description Mouse/touch event callback
- */
-Vectr.Game.prototype.onPointMove = function (event) {
+
+  /*
+  @description Mouse/touch event callback
+   */
+
+  Game.prototype.onPointMove = function(event) {
     Vectr.getPoints(event);
-
     if (typeof this.active.onPointMove === "function") {
-        this.active.onPointMove(this.points);
+      return this.active.onPointMove(this.points);
     }
-};
+  };
 
-/**
- * @description Mouse/touch event callback
- */
-Vectr.Game.prototype.onPointEnd = function (event) {
+
+  /*
+  @description Mouse/touch event callback
+   */
+
+  Game.prototype.onPointEnd = function(event) {
     Vectr.getPoints(event);
-
     if (event.type.indexOf('mouse') !== -1) {
-        this.element.removeEventListener('mousemove', this.onPointMove, false);
+      this.element.removeEventListener('mousemove', this.onPointMove, false);
     }
-
     if (typeof this.active.onPointEnd === "function") {
-        this.active.onPointEnd(this.points);
+      return this.active.onPointEnd(this.points);
     }
-};
+  };
 
-/**
- * @description Keyboard event callback
- */
-Vectr.Game.prototype.onKeyDown = function (event) {
+
+  /*
+  @description Keyboard event callback
+   */
+
+  Game.prototype.onKeyDown = function(event) {
     var key;
-
     switch (event.keyCode) {
-    case 37:
+      case 37:
         key = 'left';
         break;
-    case 38:
+      case 38:
         key = 'up';
         break;
-    case 39:
+      case 39:
         key = 'right';
         break;
-    case 40:
+      case 40:
         key = 'down';
         break;
-    case 87:
+      case 87:
         key = 'w';
         break;
-    case 65:
+      case 65:
         key = 'a';
         break;
-    case 83:
+      case 83:
         key = 's';
         break;
-    case 68:
+      case 68:
         key = 'd';
         break;
-    case 13:
+      case 13:
         key = 'enter';
         break;
-    case 27:
+      case 27:
         key = 'escape';
         break;
-    case 32:
+      case 32:
         key = 'space';
         break;
-    case 17:
+      case 17:
         key = 'control';
         break;
-    case 90:
+      case 90:
         key = 'z';
         break;
-    case 88:
+      case 88:
         key = 'x';
-        break;
-    default:
-        break;
     }
-
-    // Do nothing if key hasn't been released yet
-    if (this.input[key] === true) {
-        return;
+    if (this.input[key]) {
+      return;
     }
-
     this.input[key] = true;
-
     if (typeof this.active.onKeyDown === "function") {
-        this.active.onKeyDown(key);
+      return this.active.onKeyDown(key);
     }
-};
+  };
 
-/**
- * @description Keyboard event callback
- */
-Vectr.Game.prototype.onKeyUp = function (event) {
+
+  /*
+  @description Keyboard event callback
+   */
+
+  Game.prototype.onKeyUp = function(event) {
     var key;
-
     switch (event.keyCode) {
-    case 37:
+      case 37:
         key = 'left';
         break;
-    case 38:
+      case 38:
         key = 'up';
         break;
-    case 39:
+      case 39:
         key = 'right';
         break;
-    case 40:
+      case 40:
         key = 'down';
         break;
-    case 87:
+      case 87:
         key = 'w';
         break;
-    case 65:
+      case 65:
         key = 'a';
         break;
-    case 83:
+      case 83:
         key = 's';
         break;
-    case 68:
+      case 68:
         key = 'd';
         break;
-    case 13:
+      case 13:
         key = 'enter';
         break;
-    case 27:
+      case 27:
         key = 'escape';
         break;
-    case 32:
+      case 32:
         key = 'space';
         break;
-    case 17:
+      case 17:
         key = 'control';
         break;
-    case 90:
+      case 90:
         key = 'z';
         break;
-    case 88:
+      case 88:
         key = 'x';
-        break;
-    default:
-        break;
     }
-
-    this.input[key] = false; // Allow the keyDown event for this key to be sent again
-
+    this.input[key] = false;
     if (typeof this.active.onKeyUp === "function") {
-        this.active.onKeyUp(key);
+      return this.active.onKeyUp(key);
     }
-};
+  };
 
-/**
- * @description Start the event/animation loops
- */
-Vectr.Game.prototype.start = function () {
-    var previousDelta,
-        self,
-        update;
 
-    self = this;
+  /*
+   * @description Start the event/animation loops
+   */
 
-    if (window.performance !== undefined) {
-        previousDelta = window.performance.now();
+  Game.prototype.start = function() {
+    var previousDelta, update;
+    if (window.performance !== void 0) {
+      previousDelta = window.performance.now();
     } else {
-        previousDelta = Date.now();
+      previousDelta = Date.now();
     }
-
-    update = function (currentDelta) {
-        var delta = currentDelta - previousDelta;
-
+    update = (function(_this) {
+      return function(currentDelta) {
+        var delta;
+        delta = currentDelta - previousDelta;
         previousDelta = currentDelta;
+        _this.update(delta / 1000);
+        return _this.updateId = window.requestAnimationFrame(update);
+      };
+    })(this);
+    return this.updateId = window.requestAnimationFrame(update);
+  };
 
-        self.update(delta / 1000);
 
-        self.updateId = window.requestAnimationFrame(update);
-    };
+  /*
+  @description Cancel draw/update loops
+   */
 
-    // Start game loop
-    this.updateId = window.requestAnimationFrame(update);
-};
+  Game.prototype.stop = function() {
+    return window.cancelAnimationFrame(this.updateId);
+  };
 
-/**
- * @description Cancel draw/update loops
- */
-Vectr.Game.prototype.stop = function () {
-    window.cancelAnimationFrame(this.updateId);
-};
 
-/**
- * @description Update callback
- */
-Vectr.Game.prototype.update = function (delta) {
+  /*
+  @description Update callback
+   */
+
+  Game.prototype.update = function(delta) {
     this.active.draw(this.context);
-    this.active.update(delta);
-};
+    return this.active.update(delta);
+  };
 
-/**
- * @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
- */
-Vectr.Game.prototype.onResize = function () {
-    var scaledWidth,
-        scaledHeight,
-        aspectRatio,
-        orientation,
-        margin;
 
-    scaledWidth = window.innerWidth;
-    scaledHeight = window.innerHeight;
+  /*
+  @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
+   */
 
-    if (scaledWidth > scaledHeight) {
-        orientation = "landscape";
-        aspectRatio = Vectr.WIDTH / Vectr.HEIGHT;
+  Game.prototype.onResize = function() {
+    var aspectRatio, height, margin, orientation, width;
+    width = window.innerWidth;
+    height = window.innerHeight;
+    if (width > height) {
+      orientation = "landscape";
+      aspectRatio = Vectr.WIDTH / Vectr.HEIGHT;
     } else {
-        orientation = "portrait";
-        aspectRatio = Vectr.HEIGHT / Vectr.WIDTH;
+      orientation = "portrait";
+      aspectRatio = Vectr.HEIGHT / Vectr.WIDTH;
     }
-
     if (orientation === "landscape") {
-        if (scaledWidth / aspectRatio > scaledHeight) { // Too wide
-            scaledWidth = scaledHeight * aspectRatio;
-            margin = '0 ' + ((window.innerWidth - scaledWidth) / 2) + 'px';
-        } else if (scaledWidth / aspectRatio < scaledHeight) {  // Too high
-            scaledHeight = scaledWidth / aspectRatio;
-            margin = ((window.innerHeight - scaledHeight) / 2) + 'px 0';
-        }
+      if (width / aspectRatio > height) {
+        width = height * aspectRatio;
+        margin = '0 ' + ((window.innerWidth - width) / 2) + 'px';
+      } else if (width / aspectRatio < height) {
+        height = width / aspectRatio;
+        margin = ((window.innerHeight - height) / 2) + 'px 0';
+      }
     } else if (orientation === "portrait") {
-        if (scaledHeight / aspectRatio > scaledWidth) {     // Too high
-            scaledHeight = scaledWidth * aspectRatio;
-            margin = ((window.innerHeight - scaledHeight) / 2) + 'px 0';
-        } else if (scaledHeight / aspectRatio < scaledWidth) {  // Too wide
-            scaledWidth = scaledHeight / aspectRatio;
-            margin = '0 ' + ((window.innerWidth - scaledWidth) / 2) + 'px';
-        }
+      if (height / aspectRatio > width) {
+        height = width * aspectRatio;
+        margin = ((window.innerHeight - height) / 2) + 'px 0';
+      } else if (height / aspectRatio < width) {
+        width = height / aspectRatio;
+        margin = '0 ' + ((window.innerWidth - width) / 2) + 'px';
+      }
     }
+    Vectr.SCALE = height / Vectr.HEIGHT;
+    Vectr.OFFSET.x = (window.innerWidth - width) / 2;
+    Vectr.OFFSET.y = (window.innerHeight - height) / 2;
+    this.element.setAttribute("style", "position: relative; width: " + width + "px; height: " + height + "px; margin: " + margin + ";");
+    return this.canvas.setAttribute("style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Vectr.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Vectr.SCALE + "); transform-origin: 0 0;");
+  };
 
-    Vectr.SCALE = scaledHeight / Vectr.HEIGHT;
-    Vectr.OFFSET.x = (window.innerWidth - scaledWidth) / 2;
-    Vectr.OFFSET.y = (window.innerHeight - scaledHeight) / 2;
-    this.element.setAttribute('style', 'position: relative; width: ' + scaledWidth + 'px; height: ' + scaledHeight + 'px; margin: ' + margin);
-    this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; -webkit-transform: scale(' + Vectr.SCALE + '); -webkit-transform-origin: 0 0; transform: scale(' + Vectr.SCALE + '); transform-origin: 0 0;');
-    this.scanlines.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 1; -webkit-transform: scale(' + Vectr.SCALE + '); -webkit-transform-origin: 0 0; transform: scale(' + Vectr.SCALE + '); transform-origin: 0 0;');
-};
+  return Game;
 
-/**
- * @description Try to get some info about the current runtime environment
- */
-Vectr.env = (function () {
-    var agent,
-        android,
-        ios,
-        firefox,
-        mobile;
+})();
 
-    agent = navigator.userAgent.toLowerCase();
+module.exports = Game;
 
-    android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false;
-    ios = (agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length) > 0 || false;
-    firefox = (agent.match(/firefox/i) && agent.match(/firefox/i).length > 0) || false;
 
-    // "mobile" here refers to a touchscreen - this is pretty janky
-    mobile = ((agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || false) || android;
+},{}],4:[function(require,module,exports){
+var GameObject;
 
-    return {
-        android: android,
-        ios: ios,
-        firefox: firefox,
-        mobile: mobile,
-        desktop: !mobile,
-        cordova: window.cordova !== undefined
-    };
-}());
-
-/**
- * @description Change the active scene being displayed
- */
-Vectr.changeScene = function (SceneClass) {
-    if (typeof SceneClass !== "function") {
-        throw "Trying to change to an invalid scene.";
-    }
-
-    // Clean up previous scene
-    Vectr.instance.active.destroy();
-
-    Vectr.instance.active = new SceneClass();
-};
-
-/**
- * @description Static method to translate mouse/touch input to coordinates the game will understand
- * Takes the <canvas> offset and scale into account
- */
-Vectr.getPoints = function (event) {
-    var i = 0,
-        length;
-
-    // Truncate existing "points" array
-    Vectr.instance.points.length = 0;
-
-    if (event.type.indexOf('mouse') !== -1) {
-        Vectr.instance.points.push({
-            'x': (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE,
-            'y': (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
-        });
-    } else {
-        length = event.touches.length;
-        while (i < length) {
-            Vectr.instance.points.push({
-                'x': (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE,
-                'y': (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE
-            });
-
-            i += 1;
-        }
-    }
-};
-
-/* Static variables used to store music/sound effects */
-Vectr.music = {};
-Vectr.sounds = {};
-Vectr.currentMusic = null;
-
-/**
- * @description Static method to play sound effects.
- * Assumes you have an instance property 'sounds' filled with Buzz sound objects.
- * Otherwise you can override this method to use whatever sound library you like.
- */
-Vectr.playSfx = function (id) {
-    if (localStorage.getItem('playSfx') === "false") {
-        return;
-    }
-
-    if (Vectr.sounds[id] !== undefined && typeof Vectr.sounds[id].play === "function") {
-        Vectr.sounds[id].play();
-    }
-};
-
-/**
- * @description Static method to play music.
- * Assumes you have an instance property 'music' filled with Buzz sound objects.
- * Otherwise you can override this method to use whatever sound library you like.
- */
-Vectr.playMusic = function (id) {
-    if (localStorage.getItem('playMusic') === "false") {
-        return;
-    }
-
-    if (Vectr.currentMusic === id) {
-        return;
-    }
-
-    if (id === undefined && Vectr.currentMusic !== null) {
-        id = Vectr.currentMusic;
-    }
-
-    if (Vectr.currentMusic !== null) {
-        Vectr.music[Vectr.currentMusic].stop();
-    }
-
-    Vectr.music[id].play();
-    Vectr.currentMusic = id;
-};
-
-/**
- * @description Static method to stop music.
- * Assumes you have an instance property 'music' filled with Buzz sound objects.
- * Otherwise you can override this method to use whatever sound library you like.
- */
-Vectr.stopMusic = function () {
-    if (Vectr.currentMusic === null) {
-        return;
-    }
-
-    Vectr.music[Vectr.currentMusic].stop();
-    Vectr.currentMusic = null;
-};
-
-/*jslint sloppy: true, plusplus: true, browser: true */
-/*globals Vectr */
-
-var Vectr = window.Vectr || {};
-
-Vectr.GameObject = function (x, y) {
+GameObject = (function() {
+  function GameObject(x, y) {
     this.position = {
-        'x': x || 0,
-        'y': y || 0
+      'x': x || 0,
+      'y': y || 0
     };
-
     this.active = true;
-    this.fixed = false;     // static positioning for UI elements
+    this.fixed = false;
     this.scale = 1;
     this.rotation = 0;
     this.glow = 0;
     this.colors = {
-        'red': 255,
-        'green': 255,
-        'blue': 255,
-        'alpha': 1
+      'red': 255,
+      'green': 255,
+      'blue': 255,
+      'alpha': 1
     };
     this.children = [];
     this.i = 0;
-};
+  }
 
 
-/**
- * @description Draw child objects
- * @param {CanvasRenderingContext2D} context
- */
-Vectr.GameObject.prototype.draw = function (context, offsetX, offsetY) {
-    if (this.active === false) {
-        return;
+  /*
+   * @description Draw child objects
+   * @param {CanvasRenderingContext2D} context
+   */
+
+  GameObject.prototype.draw = function(context, offsetX, offsetY) {
+    var _results;
+    if (!this.active) {
+      return;
     }
-
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
-
     this.i = this.children.length;
+    _results = [];
     while (this.i--) {
-        this.children[this.i].draw(context, offsetX, offsetY);
+      _results.push(this.children[this.i].draw(context, offsetX, offsetY));
     }
-};
+    return _results;
+  };
 
-/**
- * @description Update all child objects
- * @param {Number} delta Time since last update (in seconds)
- */
-Vectr.GameObject.prototype.update = function (delta) {
-    if (this.active === false) {
-        return;
+
+  /*
+   * @description Update all child objects
+   * @param {Number} delta Time since last update (in seconds)
+   */
+
+  GameObject.prototype.update = function(delta) {
+    var _results;
+    if (!this.active) {
+      return;
     }
-
     this.i = this.children.length;
+    _results = [];
     while (this.i--) {
-        this.children[this.i].update(delta);
+      _results.push(this.children[this.i].update(delta));
     }
-};
+    return _results;
+  };
 
-/**
- * @description Add an object to the draw/update loop
- * @param {Shape} object
- */
-Vectr.GameObject.prototype.add = function (object) {
+
+  /*
+   * @description Add an object to the draw/update loop
+   * @param {Shape} object
+   */
+
+  GameObject.prototype.add = function(object) {
     this.children.push(object);
-    object.parent = this;
-};
+    return object.parent = this;
+  };
 
-/**
- * @description Remove a Shape object from the GameObject
- * @param {Shape} object Shape to be removed; consider setting shape.active = false; instead to re-use the shape later
- */
-Vectr.GameObject.prototype.remove = function (object) {
+
+  /*
+   * @description Remove a Shape object from the GameObject
+   * @param {Shape} object Shape to be removed consider setting shape.active = false instead to re-use the shape later
+   */
+
+  GameObject.prototype.remove = function(object) {
     this.i = this.children.indexOf(object);
-
     if (this.i !== -1) {
-        delete object.parent;
-        this.children.splice(this.i, 1);
+      delete object.parent;
+      return this.children.splice(this.i, 1);
     }
-};
+  };
 
-/**
- * @description Clean up all child objects
- */
-Vectr.GameObject.prototype.destroy = function () {
+
+  /*
+   * @description Clean up all child objects
+   */
+
+  GameObject.prototype.destroy = function() {
+    var _results;
     this.i = this.children.length;
+    _results = [];
     while (this.i--) {
-        if (typeof this.children[this.i].destroy === "function") {
-            this.children[this.i].destroy();
-        }
+      if (typeof this.children[this.i].destroy === "function") {
+        _results.push(this.children[this.i].destroy());
+      } else {
+        _results.push(void 0);
+      }
     }
-};
+    return _results;
+  };
 
-/**
- * @description Getter/setter for color value
- */
-Object.defineProperty(Vectr.GameObject.prototype, 'color', {
-    get: function () {
-        return 'rgba(' + this.colors.red + ', ' + this.colors.green + ', ' + this.colors.blue + ', ' + this.colors.alpha + ')';
+
+  /*
+   * @description Getter/setter for color value
+   */
+
+  GameObject.property('color', {
+    get: function() {
+      return "rgba(" + this.colors.red + ", " + this.colors.green + ", " + this.colors.blue + ", " + this.colors.alpha + ")";
     },
-    set: function (color) {
-        if (typeof color !== 'string') {
-            return;
-        }
-
-        var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
-
-        if (tmp.length === 5) {
-            this.colors.red = parseInt(tmp[1], 10);
-            this.colors.green = parseInt(tmp[2], 10);
-            this.colors.blue = parseInt(tmp[3], 10);
-            this.colors.alpha = parseFloat(tmp[4], 10);
-        }
+    set: function(color) {
+      var tmp;
+      tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
+      if (tmp.length === 5) {
+        this.colors.red = parseInt(tmp[1], 10);
+        this.colors.green = parseInt(tmp[2], 10);
+        this.colors.blue = parseInt(tmp[3], 10);
+        return this.colors.alpha = parseFloat(tmp[4], 10);
+      }
     }
-});
+  });
 
-/*jslint sloppy: true, plusplus: true, browser: true */
-/*globals Vectr */
+  return GameObject;
 
-var Vectr = window.Vectr || {};
+})();
 
-/**
- * @constructor
- */
-Vectr.Button = function (x, y, text) {
-    Vectr.GameObject.call(this, x, y);
+module.exports = GameObject;
 
-    // Create label that goes inside button border
-    this.label = new Vectr.Label(x, y, text);
-    this.add(this.label);
 
-    // Default border/background
-    this.backgroundColors = {
-        'red': 255,
-        'green': 255,
-        'blue': 255,
-        'alpha': 1
-    };
+},{}],5:[function(require,module,exports){
+var GameObject, Label,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-    this.height = parseInt(this.label.fonts.size, 10);
-    this.solid = true;
-    this.padding = 10;
-    this.fixed = true;
+GameObject = require('./gameobject');
 
-    // Attach event listeners
-    this.onPointEnd = this.onPointEnd.bind(this);
-    Vectr.instance.element.addEventListener('mouseup', this.onPointEnd, false);
-    Vectr.instance.element.addEventListener('touchend', this.onPointEnd, false);
-};
+Label = (function(_super) {
+  __extends(Label, _super);
 
-/**
- * @description Set prototype
- */
-Vectr.Button.prototype = new Vectr.GameObject();
-
-/**
- * @description Draw object
- * @param {CanvasRenderingContext2D} context
- */
-Vectr.Button.prototype.draw = function (context, offsetX, offsetY) {
-    if (this.active === false) {
-        return;
-    }
-
-    // Draw label
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-
-    if (this.fixed === true) {
-        offsetX = offsetY = 0;
-    }
-
-    this.width = this.label.width(context);
-
-    // Draw button background/border
-    context.save();
-    context.translate(this.position.x + offsetX, this.position.y + offsetY);
-
-    if (this.glow > 0) {
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0;
-        context.shadowBlur = this.glow;
-        context.shadowColor = this.color;
-    }
-
-    if (this.solid === true) {
-        context.fillStyle =  this.backgroundColor;
-        context.fillRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
-    } else {
-        context.strokeStyle = this.backgroundColor;
-        context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
-    }
-    context.restore();
-};
-
-/**
- * @description Update object
- * @param {Number} delta Time since last update (in seconds)
- */
-Vectr.Button.prototype.update = function (delta) {
-    if (this.active === false) {
-        return;
-    }
-
-    // Update child objects
-    Vectr.GameObject.prototype.update.call(this, delta);
-};
-
-/**
- * @description If touch/mouse end is inside button, execute the user-supplied callback
- */
-Vectr.Button.prototype.onPointEnd = function (event) {
-    if (this.active === false || typeof this.onUp !== "function") {
-        return;
-    }
-
-    Vectr.getPoints(event);
-
-    var i = Vectr.instance.points.length;
-    while (i--) {
-        if (this.containsPoint(Vectr.instance.points[i].x, Vectr.instance.points[i].y)) {
-            this.onUp();
-            break;
-        }
-    }
-};
-
-/**
- * @description Helper method to determine if mouse/touch is inside button graphic
- */
-Vectr.Button.prototype.containsPoint = function (x, y) {
-    return x < this.position.x + this.width / 2 + this.padding / 2 &&
-        x > this.position.x - this.width / 2 - this.padding / 2 &&
-        y < this.position.y + this.height / 2 + this.padding / 2 &&
-        y > this.position.y - this.height / 2 - this.padding / 2;
-};
-
-/**
- * @description Clean up event listeners
- */
-Vectr.Button.prototype.destroy = function () {
-    Vectr.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
-    Vectr.instance.element.removeEventListener('touchend', this.onPointEnd, false);
-};
-
-/**
- * @description Getter/setter for background color value
- */
-Object.defineProperty(Vectr.Button.prototype, 'backgroundColor', {
-    get: function () {
-        return 'rgba(' + this.backgroundColors.red + ', ' + this.backgroundColors.green + ', ' + this.backgroundColors.blue + ', ' + this.backgroundColors.alpha + ')';
-    },
-    set: function (color) {
-        if (typeof color !== 'string') {
-            return;
-        }
-
-        var tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
-
-        if (tmp.length === 5) {
-            this.backgroundColors.red = parseInt(tmp[1], 10);
-            this.backgroundColors.green = parseInt(tmp[2], 10);
-            this.backgroundColors.blue = parseInt(tmp[3], 10);
-            this.backgroundColors.alpha = parseFloat(tmp[4], 10);
-        }
-    }
-});
-
-/**
- * @description Getter/setter for font value
- */
-Object.defineProperty(Vectr.Button.prototype, 'font', {
-    get: function () {
-        return this.label.font;
-    },
-    set: function (font) {
-        if (typeof font !== 'string') {
-            return;
-        }
-
-        this.label.font = font;
-    }
-});
-
-/**
- * @description Getter/setter for glow value
- */
-// Object.defineProperty(Vectr.Button.prototype, 'glow', {
-//     get: function () {
-//         return this.glow;
-//     },
-//     set: function (value) {
-//         this.glow = parseInt(value, 10);
-//         this.label.glow = this.glow;
-//     }
-// });
-
-/*jslint sloppy: true, plusplus: true, browser: true */
-/*globals Vectr */
-
-var Vectr = window.Vectr || {};
-
-/**
- * @constructor
- * @description Basic particle emitter
- * @param {string} [shape='square'] Shape of the particles. Accepts strings that are valid for Shapes (e.g. "circle", "triangle")
- * @param {number} [size=10] Size of the particles
- * @param {number} [count=25] The number of particles created for the system
- */
-Vectr.Emitter = function (shape, size, count) {
-    Vectr.GameObject.apply(this, arguments);
-
-    var particle;
-
-    this.particles = new Vectr.Pool();
-    this.duration = 1;
-    this.fade = false;
-    this.speed = 200;
-    count = count || 25;
-
-    while (count--) {
-        particle = new Vectr.Shape(0, 0, shape || 'square', size || 5);
-        particle.active = false;
-        particle.solid = true;
-        this.particles.add(particle);
-    }
-};
-
-/**
- * @description Set prototype
- */
-Vectr.Emitter.prototype = new Vectr.GameObject();
-
-/**
- * @description Activate a particle emitter
- * @param {number} x Position of emitter on x-axis
- * @param {number} y Position of emitter on y-axis
- */
-Vectr.Emitter.prototype.start = function (x, y) {
-    this.particles.activateAll();
-    this.active = true;
-
-    var direction,
-        i = this.particles.length;
-
-    this.position.x = x;
-    this.position.y = y;
-
-    while (i--) {
-        this.particles.at(i).position.x = x;
-        this.particles.at(i).position.y = y;
-
-        // Set random velocity/speed
-        direction = Math.random() * 2 * Math.PI;
-        this.particles.at(i).velocity.x = Math.cos(direction);
-        this.particles.at(i).velocity.y = Math.sin(direction);
-        this.particles.at(i).speed = Math.random() * this.speed;
-        this.particles.at(i).color = this.color;
-    }
-
-    this.timer = 0;
-};
-
-Vectr.Emitter.prototype.draw = function (context, offsetX, offsetY) {
-    if (this.active === false) {
-        return;
-    }
-
-    offsetX = offsetX || 0;
-    offsetY = offsetY || 0;
-
-    this.particles.draw(context, offsetX, offsetY);
-};
-
-Vectr.Emitter.prototype.update = function (delta) {
-    if (this.active === false) {
-        return;
-    }
-
-    var i = this.particles.length;
-
-    if (i === 0) {
-        this.active = false;
-    }
-
-    this.particles.update(delta);
-
-    this.timer += delta;
-
-    while (i--) {
-
-        if (this.fade) {
-            this.particles.at(i).colors.alpha -= delta / this.duration;
-        }
-
-        if (this.timer >= this.duration) {
-            this.particles.deactivate(i);
-        }
-    }
-};
-/*jslint sloppy: true, plusplus: true, browser: true */
-/*globals Vectr */
-
-var Vectr = window.Vectr || {};
-
-Vectr.Label = function (x, y, text) {
-    Vectr.GameObject.apply(this, arguments);
-
+  function Label(x, y, text) {
+    Label.__super__.constructor.apply(this, arguments);
     this.text = text;
     this.fixed = true;
-
-    // Default font
     this.fonts = {
-        'size': '10px',
-        'family': 'monospace'
+      size: '10px',
+      family: 'monospace'
     };
-
-    //this.alignment = ["left", "right", "center", "start", "end"].indexOf(alignment) !== -1 ? alignment : "center";
     this.alignment = 'center';
     this.solid = true;
-};
+  }
 
-/**
- * @description Set prototype
- */
-Vectr.Label.prototype = new Vectr.GameObject();
 
-/**
- * @description Draw object
- * @param {CanvasRenderingContext2D} context
- */
-Vectr.Label.prototype.draw = function (context, offsetX, offsetY) {
-    if (this.active === false) {
-        return;
+  /*
+   * @description Draw object
+   * @param {CanvasRenderingContext2D} context
+   */
+
+  Label.prototype.draw = function(context, offsetX, offsetY) {
+    if (!this.active) {
+      return;
     }
-
-    // Draw child objects first, so they will be on the "bottom"
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-
-    if (this.fixed === true) {
-        offsetX = offsetY = 0;
+    Label.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+    if (this.fixed) {
+      offsetX = offsetY = 0;
     }
-
     context.save();
-
     context.font = this.font;
     context.textAlign = this.alignment;
-
     context.translate(this.position.x + offsetX, this.position.y + parseInt(this.fonts.size, 10) / 3 + offsetY);
-
     if (this.scale !== 1) {
-        context.scale(this.scale, this.scale);
+      context.scale(this.scale, this.scale);
     }
-
     if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
-        context.rotate(this.rotation);
+      context.rotate(this.rotation);
     }
-
     if (this.glow > 0) {
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0;
-        context.shadowBlur = this.glow;
-        context.shadowColor = this.color;
+      context.shadowOffsetX = 0;
+      context.shadowOffsetY = 0;
+      context.shadowBlur = this.glow;
+      context.shadowColor = this.color;
     }
-
-    if (this.solid === true) {
-        context.fillStyle = this.color;
-        context.fillText(this.text, 0, 0, Vectr.WIDTH);
+    if (this.solid) {
+      context.fillStyle = this.color;
+      context.fillText(this.text, 0, 0, Vectr.WIDTH);
     } else {
-        context.strokeStyle = this.color;
-        context.strokeText(this.text, 0, 0, Vectr.WIDTH);
+      context.strokeStyle = this.color;
+      context.strokeText(this.text, 0, 0, Vectr.WIDTH);
     }
+    return context.restore();
+  };
 
-    context.restore();
-};
 
-/**
- * @description Update object
- * @param {Number} delta Time since last update (in seconds)
- */
-Vectr.Label.prototype.update = function (delta) {
-    if (this.active === false) {
-        return;
+  /*
+   * @description Update object
+   * @param {Number} delta Time since last update (in seconds)
+   */
+
+  Label.prototype.update = function(delta) {
+    if (!this.active) {
+      return;
     }
+    return Label.__super__.update.call(this, delta);
+  };
 
-    // Update child objects
-    Vectr.GameObject.prototype.update.call(this, delta);
-};
 
-/**
- * @description Utility function to determine the width of the label
- * @param {CanvasRenderingContext2D} context
- */
-Vectr.Label.prototype.width = function (context) {
+  /*
+   * @description Utility function to determine the width of the label
+   * @param {CanvasRenderingContext2D} context
+   */
+
+  Label.prototype.width = function(context) {
     var metrics;
-
     context.save();
     context.font = this.fonts.size + ' ' + this.fonts.family;
     context.textAlign = this.alignment;
     metrics = context.measureText(this.text);
     context.restore();
-
     return metrics.width;
-};
+  };
 
-/**
- * @description Getter/setter for font value
- */
-Object.defineProperty(Vectr.Label.prototype, 'font', {
-    get: function () {
-        return this.fonts.size + ' ' + this.fonts.family;
+
+  /*
+   * @description Getter/setter for font value
+   */
+
+  Label.property('font', {
+    get: function() {
+      return "" + this.fonts.size + " " + this.fonts.family;
     },
-    set: function (font) {
-        if (typeof font !== 'string') {
-            return;
-        }
-
-        var tmp = font.split(' '); // e.g. context.font = "20pt Arial";
-        if (tmp.length === 2) {
-            this.fonts.size = tmp[0];
-            this.fonts.family = tmp[1];
-        }
+    set: function(font) {
+      var tmp;
+      tmp = font.split(' ');
+      if (tmp.length === 2) {
+        this.fonts.size = tmp[0];
+        return this.fonts.family = tmp[1];
+      }
     }
-});
+  });
 
-/*jslint sloppy: true, plusplus: true, browser: true */
-/*globals Vectr */
+  return Label;
 
-var Vectr = window.Vectr || {};
+})(GameObject);
 
-/**
-* @description Object pool; One possible way to store common recyclable objects
-*/
-Vectr.Pool = function () {
-    this.length = 0;
-    this.children = [];       // Active objects
-    this.inactive = [];     // Deadpool
-    this.i = 0;             // in-memory iterator/object storage
-};
+module.exports = Label;
 
-/**
- * @description Get the next "inactive" object in the Pool
+
+},{"./gameobject":4}],6:[function(require,module,exports){
+
+/*
+* @description Object pool One possible way to store common recyclable objects
  */
-Vectr.Pool.prototype.activate = function () {
-    if (this.inactive.length === 0) {
-        return null;
-    }
+var Pool;
 
+Pool = (function() {
+  function Pool() {
+    this.length = 0;
+    this.children = [];
+    this.inactive = [];
+    this.i = 0;
+  }
+
+
+  /*
+   * @description Get the next "inactive" object in the Pool
+   */
+
+  Pool.prototype.activate = function() {
+    if (this.inactive.length === 0) {
+      return null;
+    }
     this.i = this.inactive.pop();
     this.i.active = true;
     if (typeof this.i.activate === 'function') {
-        this.i.activate();
+      this.i.activate();
     }
     this.children.push(this.i);
     this.length += 1;
-
     return this.i;
-};
+  };
 
-/**
- * @description Activate all the objects in the pool
- */
-Vectr.Pool.prototype.activateAll = function () {
+
+  /*
+   * @description Activate all the objects in the pool
+   */
+
+  Pool.prototype.activateAll = function() {
+    var _results;
+    _results = [];
     while (this.inactive.length) {
-        this.i = this.inactive.pop();
-        this.i.active = true;
-        if (typeof this.i.activate === 'function') {
-            this.i.activate();
-        }
-        this.children.push(this.i);
-        this.length += 1;
+      this.i = this.inactive.pop();
+      this.i.active = true;
+      if (typeof this.i.activate === 'function') {
+        this.i.activate();
+      }
+      this.children.push(this.i);
+      _results.push(this.length += 1);
     }
-};
+    return _results;
+  };
 
-/**
- * @description Move object to the deadpool
- */
-Vectr.Pool.prototype.deactivate = function (index) {
-    if (this.children[index] === undefined) {
-        return;
+
+  /*
+   * @description Move object to the deadpool
+   */
+
+  Pool.prototype.deactivate = function(index) {
+    if (this.children[index] === void 0) {
+      return;
     }
-
     this.children[index].active = false;
     this.inactive.push(this.children[index]);
-
-    // Shift array contents downward
-    for (this.i = index; this.i < this.children.length - 1; this.i += 1) {
-        this.children[this.i] = this.children[this.i + 1];
+    this.i = index;
+    while (this.i < this.children.length - 1) {
+      this.children[this.i] = this.children[this.i + 1];
+      this.i += 1;
     }
-
     this.children.length -= 1;
     this.length -= 1;
-
     if (this.length === 0) {
-        this.active = false;
+      return this.active = false;
     }
-};
+  };
 
-/**
- * @description Move object to the deadpool
- */
-Vectr.Pool.prototype.deactivateAll = function () {
+
+  /*
+   * @description Move object to the deadpool
+   */
+
+  Pool.prototype.deactivateAll = function() {
+    var _results;
+    _results = [];
     while (this.children.length) {
-        this.i = this.children.pop();
-        this.i.active = false;
-        this.inactive.push(this.i);
-        this.length -= 1;
+      this.i = this.children.pop();
+      this.i.active = false;
+      this.inactive.push(this.i);
+      _results.push(this.length -= 1);
     }
-};
+    return _results;
+  };
 
-/**
- * @description Convenience method to access a particular child index
- */
-Vectr.Pool.prototype.at = function (index) {
+
+  /*
+   * @description Convenience method to access a particular child index
+   */
+
+  Pool.prototype.at = function(index) {
     return this.children[index] || null;
-};
+  };
 
-/**
- * @description Add object to one of the lists
- */
-Vectr.Pool.prototype.add = function (object) {
-    if (typeof object !== "object" || object.active === undefined) {
-        throw "Can't add non-Vectr objects to a Pool.";
+
+  /*
+   * @description Add object to one of the lists
+   */
+
+  Pool.prototype.add = function(object) {
+    if (object.active === void 0) {
+      throw "Pool objects need an 'active' property.";
     }
-
-    if (object.active === true) {
-        this.children.push(object);
-        this.length += 1;
+    if (object.active) {
+      this.children.push(object);
+      return this.length += 1;
     } else {
-        this.inactive.push(object);
+      return this.inactive.push(object);
     }
-};
+  };
 
 
-/**
- * @description "Passthrough" method which updates active child objects
- */
-Vectr.Pool.prototype.update = function (delta) {
+  /*
+   * @description "Passthrough" method which updates active child objects
+   */
+
+  Pool.prototype.update = function(delta) {
+    var _results;
     this.i = this.children.length;
-
+    _results = [];
     while (this.i--) {
-        this.children[this.i].update(delta);
-
-        // If a child object is marked as "inactive," move it to the dead pool
-        if (this.children[this.i].active === false) {
-            this.deactivate(this.i);
-        }
+      this.children[this.i].update(delta);
+      if (!this.children[this.i].active) {
+        _results.push(this.deactivate(this.i));
+      } else {
+        _results.push(void 0);
+      }
     }
-};
+    return _results;
+  };
 
-/**
- * @description "Passthrough" method which draws active child objects
- */
-Vectr.Pool.prototype.draw = function (context, offsetX, offsetY) {
+
+  /*
+   * @description "Passthrough" method which draws active child objects
+   */
+
+  Pool.prototype.draw = function(context, offsetX, offsetY) {
+    var _results;
     this.i = this.children.length;
-
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
-
+    _results = [];
     while (this.i--) {
-        this.children[this.i].draw(context, offsetX, offsetY);
+      _results.push(this.children[this.i].draw(context, offsetX, offsetY));
     }
-};
+    return _results;
+  };
 
-/*jslint sloppy: true, plusplus: true, browser: true */
-/*globals Vectr */
+  return Pool;
 
-var Vectr = window.Vectr || {};
+})();
 
-/**
- * @constructor
- */
-Vectr.Scene = function () {
-    Vectr.GameObject.apply(this, arguments);
+module.exports = Pool;
 
-    // implement a camera view/drawing offset
+
+},{}],7:[function(require,module,exports){
+var GameObject, Scene,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+GameObject = require('./gameobject');
+
+Scene = (function(_super) {
+  __extends(Scene, _super);
+
+  function Scene() {
+    Scene.__super__.constructor.apply(this, arguments);
     this.camera = {
-        target: null,
-        viewport: {
-            width: Vectr.WIDTH,
-            height: Vectr.HEIGHT
-        },
-        bounds: {
-            top: 0,
-            bottom: Vectr.HEIGHT,
-            left: 0,
-            right: Vectr.WIDTH
-        },
-        position: {
-            x: Vectr.WIDTH / 2,
-            y: Vectr.HEIGHT / 2
-        }
+      target: null,
+      viewport: {
+        width: Vectr.WIDTH,
+        height: Vectr.HEIGHT
+      },
+      bounds: {
+        top: 0,
+        bottom: Vectr.HEIGHT,
+        left: 0,
+        right: Vectr.WIDTH
+      },
+      position: {
+        x: Vectr.WIDTH / 2,
+        y: Vectr.HEIGHT / 2
+      }
     };
-};
+  }
 
-/**
- * @description Set prototype
- */
-Vectr.Scene.prototype = new Vectr.GameObject();
 
-/**
- * @description Update the camera if necessary
- * @param {Number} delta
- */
-Vectr.Scene.prototype.update = function (delta) {
-    Vectr.GameObject.prototype.update.call(this, delta);
+  /*
+   * @description Update the camera if necessary
+   * @param {Number} delta
+   */
 
+  Scene.prototype.update = function(delta) {
+    Scene.__super__.update.call(this, delta);
     if (this.camera.target !== null) {
-        // Follow the target, keeping it in the center of the screen...
-        this.camera.position.x = this.camera.target.position.x;
-        this.camera.position.y = this.camera.target.position.y;
-
-        // Unless it is too close to boundaries, in which case keep the cam steady
-        if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.width / 2) {
-            this.camera.position.x = this.camera.bounds.left + this.camera.viewport.width / 2;
-        } else if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.width / 2) {
-            this.camera.position.x = this.camera.bounds.right - this.camera.viewport.width / 2;
-        }
-
-        if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.height / 2) {
-            this.camera.position.y = this.camera.bounds.top + this.camera.viewport.height / 2;
-        } else if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.height / 2) {
-            this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.height / 2;
-        }
+      this.camera.position.x = this.camera.target.position.x;
+      this.camera.position.y = this.camera.target.position.y;
+      if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.width / 2) {
+        this.camera.position.x = this.camera.bounds.left + this.camera.viewport.width / 2;
+      } else if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.width / 2) {
+        this.camera.position.x = this.camera.bounds.right - this.camera.viewport.width / 2;
+      }
+      if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.height / 2) {
+        return this.camera.position.y = this.camera.bounds.top + this.camera.viewport.height / 2;
+      } else if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.height / 2) {
+        return this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.height / 2;
+      }
     }
-};
+  };
 
-/**
- * @description Clear context, then re-draw all child objects
- * @param {CanvasRenderingContext2D} context
- */
-Vectr.Scene.prototype.draw = function (context) {
+
+  /*
+   * @description Clear context, then re-draw all child objects
+   * @param {CanvasRenderingContext2D} context
+   */
+
+  Scene.prototype.draw = function(context) {
     if (typeof this.clearColor === "string") {
-        // Clear w/ clear color
-        context.save();
-        context.fillStyle = this.clearColor;
-        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-        context.restore();
+      context.save();
+      context.fillStyle = this.clearColor;
+      context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+      context.restore();
     } else {
-        // Just erase
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     }
+    return Scene.__super__.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
+  };
 
-    // Draw child objects
-    Vectr.GameObject.prototype.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
-};
 
-/**
- * Getter/setter for camera target
- */
-Object.defineProperty(Vectr.Scene.prototype, 'target', {
-    get: function () {
-        return this.camera.target;
+  /*
+   * Getter/setter for camera target
+   */
+
+  Scene.property('target', {
+    get: function() {
+      return this.camera.target;
     },
-    set: function (shape) {
-        if (typeof shape !== 'object' || shape.position === undefined) {
-            return;
-        }
-
-        this.camera.target = shape;
-        this.camera.position.x = shape.position.x;
-        this.camera.position.y = shape.position.y;
+    set: function(shape) {
+      if (!(shape != null ? shape.position : void 0)) {
+        return;
+      }
+      this.camera.target = shape;
+      this.camera.position.x = shape.position.x;
+      return this.camera.position.y = shape.position.y;
     }
-});
+  });
 
-/*jslint sloppy: true, plusplus: true, browser: true */
-/*globals Vectr */
+  return Scene;
 
-var Vectr = window.Vectr || {};
+})(GameObject);
 
-/**
- * @description Shape constructor
- * @param {Number} x Position of shape on x-axis
- * @param {Number} y Position of shape on y-axis
- * @param {String} shape String representing what to draw
- * @param {Number} size Size of shape in pixels
- */
-Vectr.Shape = function Shape(x, y, shape, size) {
-    Vectr.GameObject.call(this, x, y);
+module.exports = Scene;
 
+
+},{"./gameobject":4}],8:[function(require,module,exports){
+var GameObject, Shape,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+GameObject = require('./gameobject');
+
+Shape = (function(_super) {
+  __extends(Shape, _super);
+
+
+  /*
+   * @description Shape constructor
+   * @param {Number} x Position of shape on x-axis
+   * @param {Number} y Position of shape on y-axis
+   * @param {String} shape String representing what to draw
+   * @param {Number} size Size of shape in pixels
+   */
+
+  function Shape(x, y, shape, size) {
+    Shape.__super__.constructor.call(this, x, y);
     this.shape = shape || 'square';
     this.size = size || 10;
     this.lineWidth = 1;
-    this.lineJoin = 'round';            // miter, round, bevel
+    this.lineJoin = 'round';
     this.speed = 1;
     this.velocity = {
-        'x': 0,
-        'y': 0
+      x: 0,
+      y: 0
     };
     this.solid = false;
-};
+  }
 
-/**
- * @description Set prototype
- */
-Vectr.Shape.prototype = new Vectr.GameObject();
 
-/**
- * @description Draw object
- * @param {CanvasRenderingContext2D} context
- */
-Vectr.Shape.prototype.draw = function (context, offsetX, offsetY) {
-    if (this.active === false) {
-        return;
+  /*
+   * @description Draw object
+   * @param {CanvasRenderingContext2D} context
+   */
+
+  Shape.prototype.draw = function(context, offsetX, offsetY) {
+    if (!this.active) {
+      return;
     }
-
-    if (this.fixed === true) {
-        offsetX = offsetY = 0;
+    if (this.fixed) {
+      offsetX = offsetY = 0;
     }
-
-    // Draw child objects first, so they will be on the "bottom"
-    Vectr.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-
+    Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
     context.save();
     context.translate(this.position.x + offsetX, this.position.y + offsetY);
-
     if (this.scale !== 1) {
-        context.scale(this.scale, this.scale);
+      context.scale(this.scale, this.scale);
     }
-
     if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
-        context.rotate(this.rotation);
+      context.rotate(this.rotation);
     }
-
     if (this.glow > 0) {
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0;
-        context.shadowBlur = this.glow;
-        context.shadowColor = this.color;
+      context.shadowOffsetX = 0;
+      context.shadowOffsetY = 0;
+      context.shadowBlur = this.glow;
+      context.shadowColor = this.color;
     }
-
     context.lineWidth = this.lineWidth;
     context.lineJoin = this.lineJoin;
-
-    // Allow sprite objects to have custom draw functions
     if (typeof this.path === "function") {
-        this.path(context);
+      this.path(context);
     } else {
-        context.beginPath();
-        switch (this.shape) {
+      context.beginPath();
+      switch (this.shape) {
         case 'triangle':
-            context.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-            context.lineTo(this.size / 2 * Math.cos(120 * Math.PI / 180), this.size / 2 * Math.sin(120 * Math.PI / 180));
-            context.lineTo(this.size / 2 * Math.cos(240 * Math.PI / 180), this.size / 2 * Math.sin(240 * Math.PI / 180));
-            context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-            break;
+          context.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
+          context.lineTo(this.size / 2 * Math.cos(120 * Math.PI / 180), this.size / 2 * Math.sin(120 * Math.PI / 180));
+          context.lineTo(this.size / 2 * Math.cos(240 * Math.PI / 180), this.size / 2 * Math.sin(240 * Math.PI / 180));
+          context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
+          break;
         case 'circle':
-            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
-            break;
+          context.arc(0, 0, this.size / 2, Math.PI * 2, false);
+          break;
         case 'square':
-            context.moveTo(this.size / 2, this.size / 2);
-            context.lineTo(this.size / 2, -this.size / 2);
-            context.lineTo(-this.size / 2, -this.size / 2);
-            context.lineTo(-this.size / 2, this.size / 2);
-            context.lineTo(this.size / 2, this.size / 2);
-            break;
-        }
-        context.closePath();
-
-        if (this.solid === true) {
-            context.fillStyle = this.color;
-            context.fill();
-        } else {
-            context.strokeStyle = this.color;
-            context.stroke();
-        }
+          context.moveTo(this.size / 2, this.size / 2);
+          context.lineTo(this.size / 2, -this.size / 2);
+          context.lineTo(-this.size / 2, -this.size / 2);
+          context.lineTo(-this.size / 2, this.size / 2);
+          context.lineTo(this.size / 2, this.size / 2);
+      }
+      context.closePath();
+      if (this.solid) {
+        context.fillStyle = this.color;
+        context.fill();
+      } else {
+        context.strokeStyle = this.color;
+        context.stroke();
+      }
     }
+    return context.restore();
+  };
 
-    context.restore();
-};
 
-/**
- * @description Update object
- * @param {Number} delta Time since last update (in seconds)
- */
-Vectr.Shape.prototype.update = function (delta) {
-    if (this.active === false) {
-        return;
+  /*
+   * @description Update object
+   * @param {Number} delta Time since last update (in seconds)
+   */
+
+  Shape.prototype.update = function(delta) {
+    if (!this.active) {
+      return;
     }
-
     this.position.x += this.velocity.x * this.speed * delta;
     this.position.y += this.velocity.y * this.speed * delta;
+    return Shape.__super__.update.call(this, delta);
+  };
 
-    // Update child objects
-    Vectr.GameObject.prototype.update.call(this, delta);
-};
 
-/**
- * @description Basic collision detection
- * @param {Shape} other Shape object to test collision with
- */
-Vectr.Shape.prototype.collidesWith = function (other) {
+  /*
+   * @description Basic collision detection
+   * @param {Shape} other Shape object to test collision with
+   */
+
+  Shape.prototype.collidesWith = function(other) {
     if (this.shape === 'square') {
-        return Math.abs(this.position.x - other.position.x) < this.size / 2 + other.size / 2 && Math.abs(this.position.y - other.position.y) < this.size / 2 + other.size / 2;
+      return Math.abs(this.position.x - other.position.x) < this.size / 2 + other.size / 2 && Math.abs(this.position.y - other.position.y) < this.size / 2 + other.size / 2;
+    } else {
+      return Math.sqrt(Math.pow(other.position.x - this.position.x, 2) + Math.pow(other.position.y - this.position.y, 2)) < this.size / 2 + other.size / 2;
     }
-    return Math.sqrt(Math.pow(other.position.x - this.position.x, 2) + Math.pow(other.position.y - this.position.y, 2)) < this.size / 2 + other.size / 2;
+  };
+
+  return Shape;
+
+})(GameObject);
+
+module.exports = Shape;
+
+
+},{"./gameobject":4}],9:[function(require,module,exports){
+var Vectr;
+
+if (window.requestAnimationFrame === void 0) {
+  window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+}
+
+if (window.cancelAnimationFrame === void 0) {
+  window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
+}
+
+Function.prototype.property = function(prop, desc) {
+  return Object.defineProperty(this.prototype, prop, desc);
 };
+
+Vectr = {
+  Game: require('./game'),
+  Button: require('./button'),
+  Emitter: require('./emitter'),
+  GameObject: require('./gameobject'),
+  Label: require('./label'),
+  Pool: require('./pool'),
+  Scene: require('./scene'),
+  Shape: require('./shape')
+};
+
+if (typeof module !== void 0) {
+  module.exports = Vectr;
+} else {
+  window.Vectr = Vectr;
+}
+
+
+/*
+@description Get information about the current environment
+ */
+
+Vectr.env = (function() {
+  var agent, android, firefox, ios, mobile;
+  agent = navigator.userAgent.toLowerCase();
+  android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false;
+  ios = (agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length) > 0 || false;
+  firefox = (agent.match(/firefox/i) && agent.match(/firefox/i).length > 0) || false;
+  mobile = ((agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || false) || android;
+  return {
+    android: android,
+    ios: ios,
+    firefox: firefox,
+    mobile: mobile,
+    desktop: !mobile,
+    cordova: window.cordova !== void 0
+  };
+})();
+
+
+/*
+@description Change the active scene being displayed
+ */
+
+Vectr.changeScene = function(SceneClass) {
+  if (typeof SceneClass !== "function") {
+    throw "Invalid scene!";
+  }
+  Vectr.instance.active.destroy();
+  return Vectr.instance.active = new SceneClass();
+};
+
+
+/*
+@description Static method to translate mouse/touch input to coordinates the game will understand
+Takes the <canvas> offset and scale into account
+ */
+
+Vectr.getPoints = function(event) {
+  var i, length, _results;
+  Vectr.instance.points.length = 0;
+  if (event.type.indexOf('mouse') !== -1) {
+    return Vectr.instance.points.push({
+      'x': (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE,
+      'y': (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
+    });
+  } else {
+    length = event.touches.length;
+    i = 0;
+    _results = [];
+    while (i < length) {
+      Vectr.instance.points.push({
+        x: (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE,
+        y: (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE
+      });
+      _results.push(i += 1);
+    }
+    return _results;
+  }
+};
+
+
+/*
+@description Static variables used to store music/sound effects
+ */
+
+Vectr.music = {};
+
+Vectr.sounds = {};
+
+Vectr.currentMusic = null;
+
+
+/*/**
+@description Static method to play sound effects.
+             Assumes you have an instance property 'sounds' filled with Buzz sound objects.
+             Otherwise you can override this method to use whatever sound library you like.
+ */
+
+Vectr.playSfx = function(id) {
+  if (localStorage.getItem('playSfx') === "false") {
+    return;
+  }
+  if (Vectr.sounds[id] !== void 0 && typeof Vectr.sounds[id].play === "function") {
+    return Vectr.sounds[id].play();
+  }
+};
+
+
+/*
+ * @description Static method to play music.
+ * Assumes you have an instance property 'music' filled with Buzz sound objects.
+ * Otherwise you can override this method to use whatever sound library you like.
+ */
+
+Vectr.playMusic = function(id) {
+  var _ref, _ref1;
+  if (localStorage.getItem('playMusic') === "false") {
+    return;
+  }
+  if (Vectr.currentMusic === id) {
+    return;
+  }
+  if (id === void 0 && Vectr.currentMusic !== null) {
+    id = Vectr.currentMusic;
+  }
+  if (Vectr.currentMusic !== null) {
+    if ((_ref = Vectr.music[Vectr.currentMusic]) != null) {
+      _ref.stop();
+    }
+  }
+  if ((_ref1 = Vectr.music[id]) != null) {
+    _ref1.play();
+  }
+  return Vectr.currentMusic = id;
+};
+
+
+/*
+@description Static method to stop music.
+             Assumes you have an instance property 'music' filled with Buzz sound objects.
+             Otherwise you can override this method to use whatever sound library you like.
+ */
+
+Vectr.stopMusic = function() {
+  var _ref;
+  if (Vectr.currentMusic === null) {
+    return;
+  }
+  if ((_ref = Vectr.music[Vectr.currentMusic]) != null) {
+    _ref.stop();
+  }
+  return Vectr.currentMusic = null;
+};
+
+
+},{"./button":1,"./emitter":2,"./game":3,"./gameobject":4,"./label":5,"./pool":6,"./scene":7,"./shape":8}]},{},[9])
+;
