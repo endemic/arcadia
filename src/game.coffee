@@ -87,7 +87,20 @@ class Game
         'x': false
 
     # Stores objects representing mouse/touch input
-    @points = []
+    @points =
+      length: 0
+      coordinates: [
+        { x: null, y: null }
+        { x: null, y: null }
+        { x: null, y: null }
+        { x: null, y: null }
+        { x: null, y: null }
+        { x: null, y: null }
+        { x: null, y: null }
+        { x: null, y: null }
+        { x: null, y: null }
+        { x: null, y: null }
+      ]
 
     # Instantiate initial scene
     @active = new SceneClass()
@@ -153,8 +166,8 @@ class Game
 
     @input[key] = true
 
-    if typeof @active.onKeyDown == "function"
-        @active.onKeyDown(key)
+    # Call current screen's "onKeyUp" method
+    @active.onKeyDown key if typeof @active.onKeyDown == "function"
 
   ###
   @description Keyboard event callback
@@ -164,8 +177,8 @@ class Game
 
     @input[key] = false # Allow the keyDown event for this key to be sent again
 
-    if typeof @active.onKeyUp == "function"
-        @active.onKeyUp key
+    # Call current screen's "onKeyUp" method
+    @active.onKeyUp key if typeof @active.onKeyUp == "function"
 
   ###
   @description Translate a keyboard event code into a meaningful string
@@ -201,9 +214,9 @@ class Game
 
       previousDelta = currentDelta
 
-      this.update(delta / 1000)
+      @update(delta / 1000)
 
-      this.updateId = window.requestAnimationFrame update
+      @updateId = window.requestAnimationFrame update
 
     # Start game loop
     @updateId = window.requestAnimationFrame update

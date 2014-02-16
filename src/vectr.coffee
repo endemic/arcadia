@@ -61,19 +61,17 @@ Takes the <canvas> offset and scale into account
 Vectr.getPoints = (event) ->
   # Truncate existing "points" array
   # TODO: Hard-code 5 objects which get their x/y props overwritten (or set to null)
-  Vectr.instance.points.length = 0
-
   if event.type.indexOf('mouse') != -1
-    Vectr.instance.points.push
-      'x': (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE
-      'y': (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
+    Vectr.instance.points.length = 1
+    Vectr.instance.points.coordinates[0] =
+      x: (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE
+      y: (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
   else 
-    length = event.touches.length
+    Vectr.instance.points.length = event.touches.length
     i = 0
     while i < length
-      Vectr.instance.points.push
-        x: (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE
-        y: (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE
+      Vectr.instance.points.coordinates[i].x = (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE
+      Vectr.instance.points.coordinates[i].y = (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE
       i += 1
 
 ###

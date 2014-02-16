@@ -79,7 +79,7 @@ class Button extends GameObject
 
     i = Vectr.instance.points.length
     while i--
-      if @containsPoint Vectr.instance.points[i].x, Vectr.instance.points[i].y
+      if @containsPoint Vectr.instance.points.coordinates[i].x, Vectr.instance.points.coordinates[i].y
         @onUp()
         return true
 

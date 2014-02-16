@@ -87,7 +87,7 @@ Button = (function(_super) {
     Vectr.getPoints(event);
     i = Vectr.instance.points.length;
     while (i--) {
-      if (this.containsPoint(Vectr.instance.points[i].x, Vectr.instance.points[i].y)) {
+      if (this.containsPoint(Vectr.instance.points.coordinates[i].x, Vectr.instance.points.coordinates[i].y)) {
         this.onUp();
         return true;
       }
@@ -332,7 +332,42 @@ Game = (function() {
       'z': false,
       'x': false
     };
-    this.points = [];
+    this.points = {
+      length: 0,
+      coordinates: [
+        {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }, {
+          x: null,
+          y: null
+        }
+      ]
+    };
     this.active = new SceneClass();
     this.start();
   }
@@ -1281,22 +1316,20 @@ Takes the <canvas> offset and scale into account
  */
 
 Vectr.getPoints = function(event) {
-  var i, length, _results;
-  Vectr.instance.points.length = 0;
+  var i, _results;
   if (event.type.indexOf('mouse') !== -1) {
-    return Vectr.instance.points.push({
-      'x': (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE,
-      'y': (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
-    });
+    Vectr.instance.points.length = 1;
+    return Vectr.instance.points.coordinates[0] = {
+      x: (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE,
+      y: (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
+    };
   } else {
-    length = event.touches.length;
+    Vectr.instance.points.length = event.touches.length;
     i = 0;
     _results = [];
     while (i < length) {
-      Vectr.instance.points.push({
-        x: (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE,
-        y: (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE
-      });
+      Vectr.instance.points.coordinates[i].x = (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE;
+      Vectr.instance.points.coordinates[i].y = (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE;
       _results.push(i += 1);
     }
     return _results;

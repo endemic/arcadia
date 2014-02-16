@@ -17,3 +17,4 @@
 [ ] Give GameObjects a BitmapData property which gets copied to the main canvas
 [ ] Give Screens their own <canvas> - this would allow for 3D CSS transforms for transitions
 [ ] Handle Hi-DPI screens
+[ ] Add SAT collision detection
