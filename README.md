@@ -1,4 +1,4 @@
-Vectr
+Arkadia
 =====
 
 Minimal &lt;canvas> game framework
@@ -6,14 +6,27 @@ Minimal &lt;canvas> game framework
 ## Build Requirements
 
 Uses NodeJS and Grunt to concatenate/minify. Install NodeJS and NPM, then install
-Grunt globally with `npm install -g grunt`. Execute Grunt with `grunt` :astonished:
+Grunt globally with `npm install -g grunt`. Execute Grunt with `grunt`.
+
+`browserify --standalone Vectr -t coffeeify --extension=".coffee" src/vectr.coffee > dist/vectr.js`
 
 ## Documentation
 
-A Vectr game is mainly made up of _Scenes_ and _Shapes_. A scene is a discrete 
-view in a game, such as the title, difficulty select, etc. A shape is an object 
-to be drawn to the screen, such as the player, enemies, or projectiles. To 
-create a game, subclass the _Scene_ object to create your own scenes. Look in 
+Class Hierarchy
+
+```
+Game
+  |
+  -> Scene
+  	   |
+  	   -> Layer
+  	        |
+  	        -> Shape (or other GameObjects)
+```
+
+A Vectr game is mainly made up of _Scenes_ and _Shapes_. A scene is an encapsulated
+part of a game, such as a title, difficulty select, or actual gameplay. A shape is a game object, such as the player, 
+enemies, or projectiles. To create a game, subclass the _Scene_ object to create your own scenes. Look in 
 the /example directory for ideas.
 
 ### Vectr.Game

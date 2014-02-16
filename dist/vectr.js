@@ -1,14 +1,15 @@
-;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Vectr=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var Button, GameObject,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-GameObject = require('./gameobject');
+GameObject = _dereq_('./gameobject');
 
 Button = (function(_super) {
   __extends(Button, _super);
 
   function Button(x, y, text) {
+    Button.__super__.constructor.apply(this, arguments);
     this.label = new Vectr.Label(x, y, text);
     this.add(this.label);
     this.backgroundColors = {
@@ -155,12 +156,12 @@ Button = (function(_super) {
 module.exports = Button;
 
 
-},{"./gameobject":4}],2:[function(require,module,exports){
+},{"./gameobject":4}],2:[function(_dereq_,module,exports){
 var Emitter, GameObject,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-GameObject = require('./gameobject');
+GameObject = _dereq_('./gameobject');
 
 Emitter = (function(_super) {
   __extends(Emitter, _super);
@@ -257,20 +258,28 @@ Emitter = (function(_super) {
 module.exports = Emitter;
 
 
-},{"./gameobject":4}],3:[function(require,module,exports){
+},{"./gameobject":4}],3:[function(_dereq_,module,exports){
 var Game;
 
 Game = (function() {
-  function Game(width, height, scaleToFit) {
-    width = parseInt(width, 10) || 320;
+
+  /*
+   * @constructor
+   * @description Main "game" object; sets up screens, input, etc.
+   * @param {String} [width=640] Width of game view
+   * @param {Number} [height=480] Height of game view
+   * @param {Boolean} [scaleToFit=true] Full screen or not
+   */
+  function Game(width, height, SceneClass, scaleToFit) {
+    width = parseInt(width, 10) || 640;
     height = parseInt(height, 10) || 480;
     scaleToFit = scaleToFit || true;
     Vectr.WIDTH = width;
     Vectr.HEIGHT = height;
     Vectr.SCALE = 1;
     Vectr.OFFSET = {
-      'x': 0,
-      'y': 0
+      x: 0,
+      y: 0
     };
     Vectr.instance = this;
     this.element = document.createElement('div');
@@ -402,49 +411,7 @@ Game = (function() {
 
   Game.prototype.onKeyDown = function(event) {
     var key;
-    switch (event.keyCode) {
-      case 37:
-        key = 'left';
-        break;
-      case 38:
-        key = 'up';
-        break;
-      case 39:
-        key = 'right';
-        break;
-      case 40:
-        key = 'down';
-        break;
-      case 87:
-        key = 'w';
-        break;
-      case 65:
-        key = 'a';
-        break;
-      case 83:
-        key = 's';
-        break;
-      case 68:
-        key = 'd';
-        break;
-      case 13:
-        key = 'enter';
-        break;
-      case 27:
-        key = 'escape';
-        break;
-      case 32:
-        key = 'space';
-        break;
-      case 17:
-        key = 'control';
-        break;
-      case 90:
-        key = 'z';
-        break;
-      case 88:
-        key = 'x';
-    }
+    key = this.getKey(event.keyCode);
     if (this.input[key]) {
       return;
     }
@@ -461,52 +428,48 @@ Game = (function() {
 
   Game.prototype.onKeyUp = function(event) {
     var key;
-    switch (event.keyCode) {
-      case 37:
-        key = 'left';
-        break;
-      case 38:
-        key = 'up';
-        break;
-      case 39:
-        key = 'right';
-        break;
-      case 40:
-        key = 'down';
-        break;
-      case 87:
-        key = 'w';
-        break;
-      case 65:
-        key = 'a';
-        break;
-      case 83:
-        key = 's';
-        break;
-      case 68:
-        key = 'd';
-        break;
-      case 13:
-        key = 'enter';
-        break;
-      case 27:
-        key = 'escape';
-        break;
-      case 32:
-        key = 'space';
-        break;
-      case 17:
-        key = 'control';
-        break;
-      case 90:
-        key = 'z';
-        break;
-      case 88:
-        key = 'x';
-    }
+    key = this.getKey(event.keyCode);
     this.input[key] = false;
     if (typeof this.active.onKeyUp === "function") {
       return this.active.onKeyUp(key);
+    }
+  };
+
+
+  /*
+  @description Translate a keyboard event code into a meaningful string
+   */
+
+  Game.prototype.getKey = function(keyCode) {
+    switch (keyCode) {
+      case 37:
+        return 'left';
+      case 38:
+        return 'up';
+      case 39:
+        return 'right';
+      case 40:
+        return 'down';
+      case 87:
+        return 'w';
+      case 65:
+        return 'a';
+      case 83:
+        return 's';
+      case 68:
+        return 'd';
+      case 13:
+        return 'enter';
+      case 27:
+        return 'escape';
+      case 32:
+        return 'space';
+      case 17:
+        return 'control';
+      case 90:
+        return 'z';
+      case 88:
+        return 'x';
     }
   };
 
@@ -600,7 +563,7 @@ Game = (function() {
 module.exports = Game;
 
 
-},{}],4:[function(require,module,exports){
+},{}],4:[function(_dereq_,module,exports){
 var GameObject;
 
 GameObject = (function() {
@@ -736,12 +699,12 @@ GameObject = (function() {
 module.exports = GameObject;
 
 
-},{}],5:[function(require,module,exports){
+},{}],5:[function(_dereq_,module,exports){
 var GameObject, Label,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-GameObject = require('./gameobject');
+GameObject = _dereq_('./gameobject');
 
 Label = (function(_super) {
   __extends(Label, _super);
@@ -853,7 +816,7 @@ Label = (function(_super) {
 module.exports = Label;
 
 
-},{"./gameobject":4}],6:[function(require,module,exports){
+},{"./gameobject":4}],6:[function(_dereq_,module,exports){
 
 /*
 * @description Object pool One possible way to store common recyclable objects
@@ -1017,12 +980,12 @@ Pool = (function() {
 module.exports = Pool;
 
 
-},{}],7:[function(require,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 var GameObject, Scene,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-GameObject = require('./gameobject');
+GameObject = _dereq_('./gameobject');
 
 Scene = (function(_super) {
   __extends(Scene, _super);
@@ -1116,12 +1079,12 @@ Scene = (function(_super) {
 module.exports = Scene;
 
 
-},{"./gameobject":4}],8:[function(require,module,exports){
+},{"./gameobject":4}],8:[function(_dereq_,module,exports){
 var GameObject, Shape,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-GameObject = require('./gameobject');
+GameObject = _dereq_('./gameobject');
 
 Shape = (function(_super) {
   __extends(Shape, _super);
@@ -1248,7 +1211,7 @@ Shape = (function(_super) {
 module.exports = Shape;
 
 
-},{"./gameobject":4}],9:[function(require,module,exports){
+},{"./gameobject":4}],9:[function(_dereq_,module,exports){
 var Vectr;
 
 if (window.requestAnimationFrame === void 0) {
@@ -1264,21 +1227,17 @@ Function.prototype.property = function(prop, desc) {
 };
 
 Vectr = {
-  Game: require('./game'),
-  Button: require('./button'),
-  Emitter: require('./emitter'),
-  GameObject: require('./gameobject'),
-  Label: require('./label'),
-  Pool: require('./pool'),
-  Scene: require('./scene'),
-  Shape: require('./shape')
+  Game: _dereq_('./game'),
+  Button: _dereq_('./button'),
+  Emitter: _dereq_('./emitter'),
+  GameObject: _dereq_('./gameobject'),
+  Label: _dereq_('./label'),
+  Pool: _dereq_('./pool'),
+  Scene: _dereq_('./scene'),
+  Shape: _dereq_('./shape')
 };
 
-if (typeof module !== void 0) {
-  module.exports = Vectr;
-} else {
-  window.Vectr = Vectr;
-}
+module.exports = Vectr;
 
 
 /*
@@ -1420,4 +1379,5 @@ Vectr.stopMusic = function() {
 
 
 },{"./button":1,"./emitter":2,"./game":3,"./gameobject":4,"./label":5,"./pool":6,"./scene":7,"./shape":8}]},{},[9])
-;
+(9)
+});
