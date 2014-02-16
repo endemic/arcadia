@@ -5,7 +5,10 @@ if window.requestAnimationFrame == undefined
 if window.cancelAnimationFrame == undefined
   window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame
 
-Vectr = 
+Function::property = (prop, desc) ->
+  Object.defineProperty @prototype, prop, desc
+
+Vectr =
   Game: require('./game')
   Button: require('./button')
   Emitter: require('./emitter')
@@ -15,10 +18,15 @@ Vectr =
   Scene: require('./scene')
   Shape: require('./shape')
 
+if typeof module != undefined
+  module.exports = Vectr
+else
+  window.Vectr = Vectr
+
 ###
 @description Get information about the current environment
 ###
-Vectr.env: do ->
+Vectr.env = do ->
   agent = navigator.userAgent.toLowerCase()
 
   android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false
@@ -28,13 +36,14 @@ Vectr.env: do ->
   # "mobile" here refers to a touchscreen - this is pretty janky
   mobile = ((agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || false) || android
 
-  return
+  return {
     android: android
     ios: ios
     firefox: firefox
     mobile: mobile
     desktop: !mobile
     cordova: window.cordova != undefined
+  }
 
 ###
 @description Change the active scene being displayed
@@ -57,19 +66,17 @@ Vectr.getPoints = (event) ->
   Vectr.instance.points.length = 0
 
   if event.type.indexOf('mouse') != -1
-    Vectr.instance.points.push({
-      'x': (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE,
+    Vectr.instance.points.push
+      'x': (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE
       'y': (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
-    })
   else 
     length = event.touches.length
-    while (i < length) {
-        Vectr.instance.points.push({
-          'x': (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE,
-          'y': (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE
-        })
-
-        i += 1
+    i = 0
+    while i < length
+      Vectr.instance.points.push
+        x: (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE
+        y: (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE
+      i += 1
 
 ###
 @description Static variables used to store music/sound effects
@@ -83,7 +90,7 @@ Vectr.currentMusic = null
              Assumes you have an instance property 'sounds' filled with Buzz sound objects.
              Otherwise you can override this method to use whatever sound library you like.
 ###
-Vectr.playSfx = function (id) {
+Vectr.playSfx = (id) ->
   return if localStorage.getItem('playSfx') == "false"
 
   if Vectr.sounds[id] != undefined && typeof Vectr.sounds[id].play == "function"
@@ -94,7 +101,7 @@ Vectr.playSfx = function (id) {
  * Assumes you have an instance property 'music' filled with Buzz sound objects.
  * Otherwise you can override this method to use whatever sound library you like.
 ###
-Vectr.playMusic = function (id) {
+Vectr.playMusic = (id) ->
   return if localStorage.getItem('playMusic') == "false"
 
   return if Vectr.currentMusic == id
@@ -118,5 +125,3 @@ Vectr.stopMusic = ->
 
   Vectr.music[Vectr.currentMusic]?.stop()
   Vectr.currentMusic = null
-
-module.exports = Vectr

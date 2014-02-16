@@ -26,3 +26,4 @@
 * [X] Re-lint source
 * [X] Concatenate source files, or figure out a better way to organize code (grunt)
 * [X] Make Vectr objects' arg order consistent, e.g. (x, y, size, color, shadow)
+* [ ] Rename "Arcadia.js"
