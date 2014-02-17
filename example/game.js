@@ -140,15 +140,20 @@ Game.prototype.update = function (delta) {
 
                 // Remove both enemy and bullet if they collide
                 if (enemy.active === true && enemy.collidesWith(bullet) === true) {
-                    particles = this.particles.activate();
-                    if (particles !== null) {
-                        particles.start(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
-                    }
                     this.enemies.deactivate(j);
                     this.playerBullets.deactivate(i);
                     this.score += 10;
                     this.label.text = "Score: " + this.score;
 
+                    // Create particle effect
+                    particles = this.particles.activate();
+                    if (particles === null) {
+                        debugger;
+                    }
+                    if (particles !== null) {
+                        particles.start(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
+                    }
+                    
                     // Spawn a new enemy immediately
                     enemy = this.enemies.activate();
                     if (enemy !== null) {

@@ -13,7 +13,6 @@ class Emitter extends GameObject
   constructor: (shape, size, count) ->
     super
     
-    @particles = new Pool()
     @duration = 1
     @fade = false
     @speed = 200
@@ -24,7 +23,7 @@ class Emitter extends GameObject
       particle = new Shape(0, 0, shape || 'square', size || 5)
       particle.active = false
       particle.solid = true
-      @particles.add(particle)
+      @children.add(particle)
 
   ###
    * @description Activate a particle emitter
@@ -32,27 +31,26 @@ class Emitter extends GameObject
    * @param {number} y Position of emitter on y-axis
   ###
   start: (x, y) ->
-    @particles.activateAll()
-    @active = true
-    
-    @position.x = x
-    @position.y = y
+    @children.activateAll()
 
-    @i = @particles.length
+    @i = @children.length
     while @i--
-      @particle = @particles.at @i
+      @particle = @children.at @i
 
       @particle.position.x = x
       @particle.position.y = y
 
       # Set random velocity/speed
       direction = Math.random() * 2 * Math.PI
-      @particle.velocity.x = Math.cos(direction)
-      @particle.velocity.y = Math.sin(direction)
+      @particle.velocity.x = Math.cos direction
+      @particle.velocity.y = Math.sin direction
       @particle.speed = Math.random() * @speed
       @particle.color = @color
 
+    @active = true
     @timer = 0
+    @position.x = x
+    @position.y = y
 
   draw: (context, offsetX, offsetY) ->
     return if not @active
@@ -60,24 +58,20 @@ class Emitter extends GameObject
     offsetX = offsetX || 0
     offsetY = offsetY || 0
 
-    @particles.draw context, offsetX, offsetY
+    @children.draw context, offsetX, offsetY
 
   update: (delta) ->
-    return if not @active
+    return if not @active or not @children.active
 
-    @i = @particles.length
-    if @i == 0
-      @active = false
-      return
-
-    @particles.update delta
+    @children.update delta
     @timer += delta
 
+    @i = @children.length
     while @i--
-      @particle = @particles.at @i
+      @particle = @children.at @i
       @particle.colors.alpha -= delta / @duration if @fade
-      @particles.deactivate @i if @timer >= @duration
+      @children.deactivate @i if @timer >= @duration
 
-    return true
+    return  # CoffeeScript idiosincracy; don't return the results of the while loop
 
 module.exports = Emitter

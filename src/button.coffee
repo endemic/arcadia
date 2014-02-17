@@ -59,17 +59,6 @@ class Button extends GameObject
     context.restore()
 
   ###
-   * @description Update object
-   * @param {Number} delta Time since last update (in seconds)
-   * TODO: Can this just use the parent method?
-  ###
-  update: (delta) ->
-    return if not @active
-
-    # Update child objects
-    super delta
-
-  ###
    * @description If touch/mouse end is inside button, execute the user-supplied callback
   ###
   onPointEnd: (event) ->
@@ -81,9 +70,7 @@ class Button extends GameObject
     while i--
       if @containsPoint Arcadia.instance.points.coordinates[i].x, Arcadia.instance.points.coordinates[i].y
         @onUp()
-        return true
-
-    return false
+        return
 
   ###
    * @description Helper method to determine if mouse/touch is inside button graphic
