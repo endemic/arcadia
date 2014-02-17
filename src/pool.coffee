@@ -3,68 +3,53 @@
 ###
 class Pool
   constructor: ->
-    @length = 0
-    @children = []       # Active objects
-    @inactive = []     # Deadpool
-    @i = 0             # in-memory iterator/object storage
+    @children = []    # Active objects
+    @i = 0            # Iterator
+    @active = 0       # Current number of active objects in the pool
+    @length = 0       # Shortcut for @children.length
 
   ###
    * @description Get the next "inactive" object in the Pool
   ###
   activate: ->
-    return null if @inactive.length is 0
-
-    @i = @inactive.pop()
-    @i.active = true
-    @i.activate() if typeof @i.activate == 'function'
-    @children.push(@i)
-    @length += 1
-
-    return @i
+    @i = @length
+    while @i--
+      if not @children[@i].active
+        @active += 1
+        @children[@i].active = true
+        @children[@i].activate() if typeof @children[@i].activate is 'function'
+        return @children[@i]
+    return null
 
   ###
    * @description Activate all the objects in the pool
   ###
   activateAll: ->
-    while @inactive.length
-      @i = @inactive.pop()
-      @i.active = true
-      if typeof @i.activate == 'function'
-        @i.activate()
-
-      @children.push(@i)
-      @length += 1
+    @i = @length
+    while @i--
+      if not @children[@i].active
+        @active += 1
+        @children[@i].active = true
+        @children[@i].activate() if typeof @children[@i].activate is 'function'
 
   ###
-   * @description Move object to the deadpool
+   * @description Deactivate an object (won't be drawn/updated)
   ###
   deactivate: (index) ->
-      return if @children[index] is undefined
+    return if @children[index] is undefined
 
-      @children[index].active = false
-      @inactive.push(@children[index])
-
-      # Shift array contents downward
-      @i = index
-      while @i < @children.length - 1
-        @children[@i] = @children[@i + 1]
-        @i += 1
-
-      @children.length -= 1
-      @length -= 1
-
-      if @length == 0
-        @active = false
+    @children[index].active = false
+    @active -= 1
 
   ###
-   * @description Move object to the deadpool
+   * @description Deactivate all objects in pool
   ###
   deactivateAll: ->
-    while @children.length
-      @i = @children.pop()
-      @i.active = false
-      @inactive.push(@i)
-      @length -= 1
+    @i = @length
+    while @i--
+      if @children[@i].active
+        @active -= 1
+        @children[@i].active = false
 
   ###
    * @description Convenience method to access a particular child index
@@ -78,34 +63,29 @@ class Pool
   add: (object) ->
     throw "Pool objects need an 'active' property." if object.active is undefined
 
-    if object.active
-      @children.push(object)
-      @length += 1
-    else
-      @inactive.push(object)
+    @children.push(object)
+    @length++
+    @active++ if object.active
 
   ###
    * @description "Passthrough" method which updates active child objects
   ###
   update: (delta) ->
-    @i = @children.length
-
+    @i = @length
     while @i--
-      @children[@i].update(delta)
-
-      # If a child object is marked as "inactive," move it to the dead pool
-      @deactivate(@i) if not @children[@i].active
+      @children[@i].update delta
+      @deactivate @i if not @children[@i].active
 
   ###
    * @description "Passthrough" method which draws active child objects
   ###
   draw: (context, offsetX, offsetY) ->
-    @i = @children.length
+    @i = @length
 
     offsetX = offsetX || 0
     offsetY = offsetY || 0
 
     while @i--
-      @children[@i].draw(context, offsetX, offsetY)
+      @children[@i].draw context, offsetX, offsetY
 
 module.exports = Pool

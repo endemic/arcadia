@@ -72,3 +72,7 @@ How you want the shape's joins to look. Options: miter, round (default), bevel
 
 __Arcadia.Shape.solid__  
 Whether the shape should be filled or not.
+
+## Performance
+
+Reverse `while()` loops are marginally faster (http://jsperf.com/loops).

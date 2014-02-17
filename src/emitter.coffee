@@ -1,4 +1,6 @@
 GameObject = require './gameobject'
+Pool = require './pool'
+Shape = require './shape'
 
 class Emitter extends GameObject
   ###
@@ -11,14 +13,15 @@ class Emitter extends GameObject
   constructor: (shape, size, count) ->
     super
     
-    @particles = new Arcadia.Pool()
+    @particles = new Pool()
     @duration = 1
     @fade = false
     @speed = 200
+    @active = false
     count = count || 25
 
     while count--
-      particle = new Arcadia.Shape(0, 0, shape || 'square', size || 5)
+      particle = new Shape(0, 0, shape || 'square', size || 5)
       particle.active = false
       particle.solid = true
       @particles.add(particle)
@@ -35,17 +38,19 @@ class Emitter extends GameObject
     @position.x = x
     @position.y = y
 
-    i = @particles.length
-    while i--
-      @particles.at(i).position.x = x
-      @particles.at(i).position.y = y
+    @i = @particles.length
+    while @i--
+      @particle = @particles.at @i
+
+      @particle.position.x = x
+      @particle.position.y = y
 
       # Set random velocity/speed
       direction = Math.random() * 2 * Math.PI
-      @particles.at(i).velocity.x = Math.cos(direction)
-      @particles.at(i).velocity.y = Math.sin(direction)
-      @particles.at(i).speed = Math.random() * @speed
-      @particles.at(i).color = @color
+      @particle.velocity.x = Math.cos(direction)
+      @particle.velocity.y = Math.sin(direction)
+      @particle.speed = Math.random() * @speed
+      @particle.color = @color
 
     @timer = 0
 
@@ -55,25 +60,24 @@ class Emitter extends GameObject
     offsetX = offsetX || 0
     offsetY = offsetY || 0
 
-    @particles.draw(context, offsetX, offsetY)
+    @particles.draw context, offsetX, offsetY
 
   update: (delta) ->
     return if not @active
 
-    i = @particles.length
-
-    if i == 0
+    @i = @particles.length
+    if @i == 0
       @active = false
+      return
 
-    @particles.update(delta)
-
+    @particles.update delta
     @timer += delta
 
-    while i--
-      if @fade
-        @particles.at(i).colors.alpha -= delta / @duration
+    while @i--
+      @particle = @particles.at @i
+      @particle.colors.alpha -= delta / @duration if @fade
+      @particles.deactivate @i if @timer >= @duration
 
-      if @timer >= @duration
-        @particles.deactivate(i)
+    return true
 
 module.exports = Emitter

@@ -51,18 +51,21 @@ var Game = function () {
     // Create some bullets
     i = 20;
     while (i--) {
-        this.playerBullets.add(new PlayerBullet());
+        obj = new PlayerBullet();
+        this.playerBullets.add(obj);
     }
 
     i = 40;
     while (i--) {
-        this.enemyBullets.add(new EnemyBullet());
+        obj = new EnemyBullet();
+        this.enemyBullets.add(obj);
     }
 
     // Create some enemies
     i = 20;
     while (i--) {
-        this.enemies.add(new Enemy());
+        obj = new Enemy();
+        this.enemies.add(obj);
     }
     this.spawnTimer = 999;  // Immediately spawn an enemy
 
@@ -124,8 +127,10 @@ Game.prototype.update = function (delta) {
     while (i--) {
         bullet = this.playerBullets.at(i);
 
-        // Remove bullets if they go offscreen
-        if (bullet !== null && (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0)) {
+        if (bullet.active === false) {
+            continue;
+        } else if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
+            // Remove bullets if they go offscreen
             this.playerBullets.deactivate(i);
             continue;
         } else {
@@ -134,7 +139,7 @@ Game.prototype.update = function (delta) {
                 enemy = this.enemies.at(j);
 
                 // Remove both enemy and bullet if they collide
-                if (enemy !== null && enemy.collidesWith(bullet) === true) {
+                if (enemy.active === true && enemy.collidesWith(bullet) === true) {
                     particles = this.particles.activate();
                     if (particles !== null) {
                         particles.start(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
@@ -176,6 +181,10 @@ Game.prototype.update = function (delta) {
     i = this.enemies.length;
     while (i--) {
         enemy = this.enemies.at(i);
+        if (enemy.active === false) {
+            continue;
+        }
+
         angle = Math.atan2(this.player.position.y - enemy.position.y, this.player.position.x - enemy.position.x);
         enemy.rotation = angle;
         enemy.velocity.x = Math.cos(angle);
@@ -200,7 +209,9 @@ Game.prototype.update = function (delta) {
     while (i--) {
         bullet = this.enemyBullets.at(i);
 
-        if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
+        if (bullet.active === false) {
+            continue;
+        } else if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
             this.enemyBullets.deactivate(i);
         } else if (bullet.collidesWith(this.player) === true) {
             this.playerExplosion.start(this.player.position.x, this.player.position.y);
