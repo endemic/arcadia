@@ -49,10 +49,10 @@ class Label extends GameObject
 
     if @solid
       context.fillStyle = @color
-      context.fillText(@text, 0, 0, Vectr.WIDTH)
+      context.fillText(@text, 0, 0, Arcadia.WIDTH)
     else
       context.strokeStyle = @color
-      context.strokeText(@text, 0, 0, Vectr.WIDTH)
+      context.strokeText(@text, 0, 0, Arcadia.WIDTH)
 
     context.restore()
 

@@ -11,14 +11,14 @@ class Emitter extends GameObject
   constructor: (shape, size, count) ->
     super
     
-    @particles = new Vectr.Pool()
+    @particles = new Arcadia.Pool()
     @duration = 1
     @fade = false
     @speed = 200
     count = count || 25
 
     while count--
-      particle = new Vectr.Shape(0, 0, shape || 'square', size || 5)
+      particle = new Arcadia.Shape(0, 0, shape || 'square', size || 5)
       particle.active = false
       particle.solid = true
       @particles.add(particle)

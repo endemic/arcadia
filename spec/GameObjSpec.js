@@ -1,11 +1,11 @@
 /*jslint sloppy: true */
-/*global describe: false, it: false, expect: false, beforeEach: false, afterEach: false, Vectr: false */
+/*global describe: false, it: false, expect: false, beforeEach: false, afterEach: false, Arcadia: false */
 
-describe('Vectr.GameObject', function () {
+describe('Arcadia.GameObject', function () {
     var gameobj;
 
     beforeEach(function () {
-        gameobj = new Vectr.GameObject();
+        gameobj = new Arcadia.GameObject();
     });
 
     afterEach(function () {
@@ -18,7 +18,7 @@ describe('Vectr.GameObject', function () {
     });
 
     it('can have objects added to it', function () {
-        var shape = new Vectr.Shape(0, 0, 'circle', 25);
+        var shape = new Arcadia.Shape(0, 0, 'circle', 25);
         gameobj.add(shape);
         expect(gameobj.children.length).toBe(1);
     });
@@ -27,10 +27,10 @@ describe('Vectr.GameObject', function () {
         var activeShape,
             inactiveShape;
 
-        activeShape = new Vectr.Shape(0, 0, 'circle', 25);
+        activeShape = new Arcadia.Shape(0, 0, 'circle', 25);
         activeShape.velocity.x = 10;
 
-        inactiveShape = new Vectr.Shape(0, 0, 'circle', 25);
+        inactiveShape = new Arcadia.Shape(0, 0, 'circle', 25);
         inactiveShape.velocity.x = 10;
         inactiveShape.active = false;
 

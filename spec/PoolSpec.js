@@ -1,11 +1,11 @@
 /*jslint sloppy: true */
-/*global describe: false, it: false, expect: false, beforeEach: false, afterEach: false, Vectr: false */
+/*global describe: false, it: false, expect: false, beforeEach: false, afterEach: false, Arcadia: false */
 
-describe('Vectr.Pool', function () {
+describe('Arcadia.Pool', function () {
     var pool;
 
     beforeEach(function () {
-        pool = new Vectr.Pool();
+        pool = new Arcadia.Pool();
     });
 
     afterEach(function () {
@@ -16,14 +16,14 @@ describe('Vectr.Pool', function () {
         expect(pool.length).toBe(0);
     });
 
-    it('can have Vectr objects added to it', function () {
-        var shape = new Vectr.Shape(0, 0, 'circle', 25);
+    it('can have Arcadia objects added to it', function () {
+        var shape = new Arcadia.Shape(0, 0, 'circle', 25);
         pool.add(shape);
         expect(pool.length).toBe(1);
         expect(pool.at(0)).toBe(shape);
     });
 
-    it("can't have non-Vectr objects added to it", function () {
+    it("can't have non-Arcadia objects added to it", function () {
         var obj = {
             property: "fgsfds"
         };
@@ -32,7 +32,7 @@ describe('Vectr.Pool', function () {
     });
 
     it("doesn't allow direct access of inactive objects", function () {
-        var shape = new Vectr.Shape(0, 0, 'circle', 25);
+        var shape = new Arcadia.Shape(0, 0, 'circle', 25);
         shape.active = false;
         pool.add(shape);
         expect(pool.length).toBe(0);
@@ -43,10 +43,10 @@ describe('Vectr.Pool', function () {
         var activeShape,
             inactiveShape;
 
-        activeShape = new Vectr.Shape(0, 0, 'circle', 25);
+        activeShape = new Arcadia.Shape(0, 0, 'circle', 25);
         activeShape.velocity.x = 10;
 
-        inactiveShape = new Vectr.Shape(0, 0, 'circle', 25);
+        inactiveShape = new Arcadia.Shape(0, 0, 'circle', 25);
         inactiveShape.velocity.x = 10;
         inactiveShape.active = false;
 
@@ -60,7 +60,7 @@ describe('Vectr.Pool', function () {
     });
 
     it("updates inactive objects out of its list of active children", function () {
-        var shape = new Vectr.Shape(0, 0, 'circle', 25);
+        var shape = new Arcadia.Shape(0, 0, 'circle', 25);
         pool.add(shape);
 
         expect(pool.length).toBe(1);

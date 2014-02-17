@@ -1,8 +1,8 @@
 /*jslint sloppy: true, browser: true */
-/*globals Vectr: false */
+/*globals Arcadia: false */
 
 var Player = function () {
-    Vectr.Shape.apply(this, arguments);
+    Arcadia.Shape.apply(this, arguments);
 
     this.speed = 100;
     this.shape = 'triangle';
@@ -12,21 +12,21 @@ var Player = function () {
     this.glow = 20;
 };
 
-Player.prototype = new Vectr.Shape();
+Player.prototype = new Arcadia.Shape();
 
 Player.prototype.update = function (delta) {
-    Vectr.Shape.prototype.update.call(this, delta);
+    Arcadia.Shape.prototype.update.call(this, delta);
 
-    if (this.position.x + this.size / 2 > Vectr.WIDTH) {
-        this.position.x = Vectr.WIDTH - this.size / 2;
+    if (this.position.x + this.size / 2 > Arcadia.WIDTH) {
+        this.position.x = Arcadia.WIDTH - this.size / 2;
     }
 
     if (this.position.x - this.size / 2 < 0) {
         this.position.x = this.size / 2;
     }
 
-    if (this.position.y + this.size / 2 > Vectr.HEIGHT) {
-        this.position.y = Vectr.HEIGHT - this.size / 2;
+    if (this.position.y + this.size / 2 > Arcadia.HEIGHT) {
+        this.position.y = Arcadia.HEIGHT - this.size / 2;
     }
 
     if (this.position.y - this.size / 2 < 0) {
