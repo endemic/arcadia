@@ -227,20 +227,6 @@ Button = (function(_super) {
 
 
   /*
-   * @description Update object
-   * @param {Number} delta Time since last update (in seconds)
-   * TODO: Can this just use the parent method?
-   */
-
-  Button.prototype.update = function(delta) {
-    if (!this.active) {
-      return;
-    }
-    return Button.__super__.update.call(this, delta);
-  };
-
-
-  /*
    * @description If touch/mouse end is inside button, execute the user-supplied callback
    */
 
@@ -254,10 +240,9 @@ Button = (function(_super) {
     while (i--) {
       if (this.containsPoint(Arcadia.instance.points.coordinates[i].x, Arcadia.instance.points.coordinates[i].y)) {
         this.onUp();
-        return true;
+        return;
       }
     }
-    return false;
   };
 
 
@@ -322,11 +307,15 @@ module.exports = Button;
 
 
 },{"./gameobject":5}],3:[function(_dereq_,module,exports){
-var Emitter, GameObject,
+var Emitter, GameObject, Pool, Shape,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 GameObject = _dereq_('./gameobject');
+
+Pool = _dereq_('./pool');
+
+Shape = _dereq_('./shape');
 
 Emitter = (function(_super) {
   __extends(Emitter, _super);
@@ -343,17 +332,16 @@ Emitter = (function(_super) {
   function Emitter(shape, size, count) {
     var particle;
     Emitter.__super__.constructor.apply(this, arguments);
-    this.particles = new Arcadia.Pool();
     this.duration = 1;
     this.fade = false;
     this.speed = 200;
     this.active = false;
     count = count || 25;
     while (count--) {
-      particle = new Arcadia.Shape(0, 0, shape || 'square', size || 5);
+      particle = new Shape(0, 0, shape || 'square', size || 5);
       particle.active = false;
       particle.solid = true;
-      this.particles.add(particle);
+      this.children.add(particle);
     }
   }
 
@@ -366,13 +354,10 @@ Emitter = (function(_super) {
 
   Emitter.prototype.start = function(x, y) {
     var direction;
-    this.particles.activateAll();
-    this.active = true;
-    this.position.x = x;
-    this.position.y = y;
-    this.i = this.particles.length;
+    this.children.activateAll();
+    this.i = this.children.length;
     while (this.i--) {
-      this.particle = this.particles.at(this.i);
+      this.particle = this.children.at(this.i);
       this.particle.position.x = x;
       this.particle.position.y = y;
       direction = Math.random() * 2 * Math.PI;
@@ -381,7 +366,10 @@ Emitter = (function(_super) {
       this.particle.speed = Math.random() * this.speed;
       this.particle.color = this.color;
     }
-    return this.timer = 0;
+    this.active = true;
+    this.timer = 0;
+    this.position.x = x;
+    return this.position.y = y;
   };
 
   Emitter.prototype.draw = function(context, offsetX, offsetY) {
@@ -390,30 +378,25 @@ Emitter = (function(_super) {
     }
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
-    return this.particles.draw(context, offsetX, offsetY);
+    return this.children.draw(context, offsetX, offsetY);
   };
 
   Emitter.prototype.update = function(delta) {
-    if (!this.active) {
+    if (!this.active || !this.children.active) {
       return;
     }
-    this.i = this.particles.length;
-    if (this.i === 0) {
-      this.active = false;
-      return;
-    }
-    this.particles.update(delta);
+    this.children.update(delta);
     this.timer += delta;
+    this.i = this.children.length;
     while (this.i--) {
-      this.particle = this.particles.at(this.i);
+      this.particle = this.children.at(this.i);
       if (this.fade) {
         this.particle.colors.alpha -= delta / this.duration;
       }
       if (this.timer >= this.duration) {
-        this.particles.deactivate(this.i);
+        this.children.deactivate(this.i);
       }
     }
-    return true;
   };
 
   return Emitter;
@@ -423,7 +406,7 @@ Emitter = (function(_super) {
 module.exports = Emitter;
 
 
-},{"./gameobject":5}],4:[function(_dereq_,module,exports){
+},{"./gameobject":5,"./pool":7,"./shape":9}],4:[function(_dereq_,module,exports){
 var Game;
 
 Game = (function() {
@@ -764,7 +747,9 @@ module.exports = Game;
 
 
 },{}],5:[function(_dereq_,module,exports){
-var GameObject;
+var GameObject, Pool;
+
+Pool = _dereq_('./pool');
 
 GameObject = (function() {
   function GameObject(x, y) {
@@ -783,7 +768,7 @@ GameObject = (function() {
       'blue': 255,
       'alpha': 1
     };
-    this.children = [];
+    this.children = new Pool;
     this.i = 0;
   }
 
@@ -800,11 +785,10 @@ GameObject = (function() {
     }
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
-    this.i = 0;
+    this.i = this.children.length;
     _results = [];
-    while (this.i < this.children.length) {
-      this.children[this.i].draw(context, offsetX, offsetY);
-      _results.push(this.i++);
+    while (this.i--) {
+      _results.push(this.children.at(this.i).draw(context, offsetX, offsetY));
     }
     return _results;
   };
@@ -820,11 +804,10 @@ GameObject = (function() {
     if (!this.active) {
       return;
     }
-    this.i = 0;
+    this.i = this.children.length;
     _results = [];
-    while (this.i < this.children.length) {
-      this.children[this.i].update(delta);
-      _results.push(this.i++);
+    while (this.i--) {
+      _results.push(this.children.at(this.i).update(delta));
     }
     return _results;
   };
@@ -836,27 +819,13 @@ GameObject = (function() {
    */
 
   GameObject.prototype.add = function(object) {
-    this.children.push(object);
+    this.children.add(object);
     return object.parent = this;
   };
 
 
   /*
-   * @description Remove a Shape object from the GameObject
-   * @param {Shape} object Shape to be removed consider setting shape.active = false instead to re-use the shape later
-   */
-
-  GameObject.prototype.remove = function(object) {
-    this.i = this.children.indexOf(object);
-    if (this.i !== -1) {
-      delete object.parent;
-      return this.children.splice(this.i, 1);
-    }
-  };
-
-
-  /*
-   * @description Clean up all child objects
+   * @description Clean up child objects
    */
 
   GameObject.prototype.destroy = function() {
@@ -864,8 +833,8 @@ GameObject = (function() {
     this.i = this.children.length;
     _results = [];
     while (this.i--) {
-      if (typeof this.children[this.i].destroy === "function") {
-        _results.push(this.children[this.i].destroy());
+      if (typeof this.children.at(this.i).destroy === "function") {
+        _results.push(this.children.at(this.i).destroy());
       } else {
         _results.push(void 0);
       }
@@ -901,7 +870,7 @@ GameObject = (function() {
 module.exports = GameObject;
 
 
-},{}],6:[function(_dereq_,module,exports){
+},{"./pool":7}],6:[function(_dereq_,module,exports){
 var GameObject, Label,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1027,9 +996,10 @@ var Pool;
 
 Pool = (function() {
   function Pool() {
-    this.children = [];
+    this.pool = [];
     this.i = 0;
-    this.active = 0;
+    this.active = false;
+    this.activeCount = 0;
     this.length = 0;
   }
 
@@ -1041,13 +1011,14 @@ Pool = (function() {
   Pool.prototype.activate = function() {
     this.i = this.length;
     while (this.i--) {
-      if (!this.children[this.i].active) {
-        this.active += 1;
-        this.children[this.i].active = true;
-        if (typeof this.children[this.i].activate === 'function') {
-          this.children[this.i].activate();
+      if (!this.pool[this.i].active) {
+        this.active = true;
+        this.activeCount += 1;
+        this.pool[this.i].active = true;
+        if (typeof this.pool[this.i].activate === 'function') {
+          this.pool[this.i].activate();
         }
-        return this.children[this.i];
+        return this.pool[this.i];
       }
     }
     return null;
@@ -1060,14 +1031,15 @@ Pool = (function() {
 
   Pool.prototype.activateAll = function() {
     var _results;
+    this.active = true;
     this.i = this.length;
     _results = [];
     while (this.i--) {
-      if (!this.children[this.i].active) {
-        this.active += 1;
-        this.children[this.i].active = true;
-        if (typeof this.children[this.i].activate === 'function') {
-          _results.push(this.children[this.i].activate());
+      if (!this.pool[this.i].active) {
+        this.activeCount += 1;
+        this.pool[this.i].active = true;
+        if (typeof this.pool[this.i].activate === 'function') {
+          _results.push(this.pool[this.i].activate());
         } else {
           _results.push(void 0);
         }
@@ -1084,11 +1056,14 @@ Pool = (function() {
    */
 
   Pool.prototype.deactivate = function(index) {
-    if (this.children[index] === void 0) {
+    if (this.pool[index] === void 0) {
       return;
     }
-    this.children[index].active = false;
-    return this.active -= 1;
+    this.pool[index].active = false;
+    this.activeCount -= 1;
+    if (this.activeCount === 0) {
+      return this.active = false;
+    }
   };
 
 
@@ -1098,12 +1073,13 @@ Pool = (function() {
 
   Pool.prototype.deactivateAll = function() {
     var _results;
+    this.active = false;
     this.i = this.length;
     _results = [];
     while (this.i--) {
-      if (this.children[this.i].active) {
+      if (this.pool[this.i].active) {
         this.active -= 1;
-        _results.push(this.children[this.i].active = false);
+        _results.push(this.pool[this.i].active = false);
       } else {
         _results.push(void 0);
       }
@@ -1117,7 +1093,7 @@ Pool = (function() {
    */
 
   Pool.prototype.at = function(index) {
-    return this.children[index] || null;
+    return this.pool[index] || null;
   };
 
 
@@ -1129,10 +1105,11 @@ Pool = (function() {
     if (object.active === void 0) {
       throw "Pool objects need an 'active' property.";
     }
-    this.children.push(object);
-    this.length++;
+    this.pool.push(object);
+    this.length += 1;
     if (object.active) {
-      return this.active++;
+      this.activeCount += 1;
+      return this.active = true;
     }
   };
 
@@ -1146,8 +1123,8 @@ Pool = (function() {
     this.i = this.length;
     _results = [];
     while (this.i--) {
-      this.children[this.i].update(delta);
-      if (!this.children[this.i].active) {
+      this.pool[this.i].update(delta);
+      if (!this.pool[this.i].active) {
         _results.push(this.deactivate(this.i));
       } else {
         _results.push(void 0);
@@ -1163,12 +1140,12 @@ Pool = (function() {
 
   Pool.prototype.draw = function(context, offsetX, offsetY) {
     var _results;
-    this.i = this.length;
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
+    this.i = this.length;
     _results = [];
     while (this.i--) {
-      _results.push(this.children[this.i].draw(context, offsetX, offsetY));
+      _results.push(this.pool[this.i].draw(context, offsetX, offsetY));
     }
     return _results;
   };

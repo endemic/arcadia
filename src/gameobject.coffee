@@ -1,3 +1,5 @@
+Pool = require './pool'
+
 class GameObject
   constructor: (x, y) ->
     @position =
@@ -14,7 +16,7 @@ class GameObject
         'green': 255
         'blue': 255
         'alpha': 1
-    @children = []
+    @children = new Pool
     @i = 0
 
   ###
@@ -27,10 +29,9 @@ class GameObject
     offsetX = offsetX || 0
     offsetY = offsetY || 0
 
-    @i = 0
-    while @i < @children.length
-      @children[@i].draw(context, offsetX, offsetY)
-      @i++
+    @i = @children.length
+    while @i--
+      @children.at(@i).draw context, offsetX, offsetY
 
   ###
    * @description Update all child objects
@@ -39,38 +40,26 @@ class GameObject
   update: (delta) ->
     return if not @active
 
-    @i = 0
-    while @i < @children.length
-      @children[@i].update delta
-      @i++
+    @i = @children.length
+    while @i--
+      @children.at(@i).update delta
 
   ###
    * @description Add an object to the draw/update loop
    * @param {Shape} object
   ###
   add: (object) ->
-    @children.push(object)
+    @children.add object
     object.parent = this
 
   ###
-   * @description Remove a Shape object from the GameObject
-   * @param {Shape} object Shape to be removed consider setting shape.active = false instead to re-use the shape later
-  ###
-  remove: (object) ->
-    @i = @children.indexOf(object)
-
-    if @i != -1
-      delete object.parent
-      @children.splice(@i, 1)
-
-  ###
-   * @description Clean up all child objects
+   * @description Clean up child objects
   ###
   destroy: ->
     @i = @children.length
     while @i--
-      if typeof @children[@i].destroy == "function"
-        @children[@i].destroy()
+      if typeof @children.at(@i).destroy == "function"
+        @children.at(@i).destroy()
 
   ###
    * @description Getter/setter for color value
