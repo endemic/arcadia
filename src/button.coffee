@@ -5,7 +5,7 @@ class Button extends GameObject
     super
 
     # Create label that goes inside button border
-    @label = new Vectr.Label(x, y, text)
+    @label = new Arcadia.Label(x, y, text)
     @add(@label)
 
     # Default border/background
@@ -22,8 +22,8 @@ class Button extends GameObject
 
     # Attach event listeners
     @onPointEnd = @onPointEnd.bind(this)
-    Vectr.instance.element.addEventListener('mouseup', @onPointEnd, false)
-    Vectr.instance.element.addEventListener('touchend', @onPointEnd, false)
+    Arcadia.instance.element.addEventListener('mouseup', @onPointEnd, false)
+    Arcadia.instance.element.addEventListener('touchend', @onPointEnd, false)
 
   ###
    * @description Draw object
@@ -75,11 +75,11 @@ class Button extends GameObject
   onPointEnd: (event) ->
     return if not @active or typeof @onUp != 'function'
 
-    Vectr.getPoints event
+    Arcadia.getPoints event
 
-    i = Vectr.instance.points.length
+    i = Arcadia.instance.points.length
     while i--
-      if @containsPoint Vectr.instance.points.coordinates[i].x, Vectr.instance.points.coordinates[i].y
+      if @containsPoint Arcadia.instance.points.coordinates[i].x, Arcadia.instance.points.coordinates[i].y
         @onUp()
         return true
 
@@ -98,8 +98,8 @@ class Button extends GameObject
    * @description Clean up event listeners
   ###
   destroy: () ->
-    Vectr.instance.element.removeEventListener 'mouseup', @onPointEnd, false
-    Vectr.instance.element.removeEventListener 'touchend', @onPointEnd, false
+    Arcadia.instance.element.removeEventListener 'mouseup', @onPointEnd, false
+    Arcadia.instance.element.removeEventListener 'touchend', @onPointEnd, false
 
   ###
    * @description Getter/setter for background color value

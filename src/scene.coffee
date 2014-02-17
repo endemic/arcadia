@@ -7,16 +7,16 @@ class Scene extends GameObject
     @camera =
       target: null
       viewport:
-        width: Vectr.WIDTH
-        height: Vectr.HEIGHT
+        width: Arcadia.WIDTH
+        height: Arcadia.HEIGHT
       bounds:
         top: 0
-        bottom: Vectr.HEIGHT
+        bottom: Arcadia.HEIGHT
         left: 0
-        right: Vectr.WIDTH
+        right: Arcadia.WIDTH
       position: 
-        x: Vectr.WIDTH / 2
-        y: Vectr.HEIGHT / 2
+        x: Arcadia.WIDTH / 2
+        y: Arcadia.HEIGHT / 2
 
   ###
    * @description Update the camera if necessary

@@ -1,8 +1,8 @@
 /*jslint sloppy: true, browser: true */
-/*globals Vectr */
+/*globals Arcadia */
 
 var Enemy = function () {
-    Vectr.Shape.apply(this, arguments);
+    Arcadia.Shape.apply(this, arguments);
 
     this.colors = {
         'red': 255,
@@ -20,4 +20,4 @@ var Enemy = function () {
     this.lineWidth = 3;
 };
 
-Enemy.prototype = new Vectr.Shape();
+Enemy.prototype = new Arcadia.Shape();

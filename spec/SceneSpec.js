@@ -1,15 +1,15 @@
 /*jslint sloppy: true */
 /*global describe: false, it: false, expect: false, beforeEach: false,
-afterEach: false, spyOn: false, jasmine: false, Vectr: false */
+afterEach: false, spyOn: false, jasmine: false, Arcadia: false */
 
-describe('Vectr.Scene', function () {
+describe('Arcadia.Scene', function () {
     var scene,
         context;
 
-    Vectr.WIDTH = Vectr.HEIGHT = 1000;
+    Arcadia.WIDTH = Arcadia.HEIGHT = 1000;
 
     beforeEach(function () {
-        scene = new Vectr.Scene();
+        scene = new Arcadia.Scene();
         context = jasmine.createSpyObj('context', [ 'canvas', 'clearRect', 'translate', 'save' ]);
     });
 
@@ -18,21 +18,21 @@ describe('Vectr.Scene', function () {
     });
 
     it('can add child objects', function () {
-        var shape = new Vectr.Shape();
+        var shape = new Arcadia.Shape();
 
         expect(function () { scene.add(shape); }).not.toThrow();
         expect(scene.children.length).toBe(1);
     });
 
     it('gives child object a link back to parent', function () {
-        var shape = new Vectr.Shape();
+        var shape = new Arcadia.Shape();
         scene.add(shape);
 
         expect(shape.parent).toBe(scene);
     });
 
     it('can remove child objects', function () {
-        var shape = new Vectr.Shape();
+        var shape = new Arcadia.Shape();
         scene.add(shape);
         expect(scene.children.length).toBe(1);
 
@@ -44,7 +44,7 @@ describe('Vectr.Scene', function () {
         var shape,
             delta;
 
-        shape = new Vectr.Shape();
+        shape = new Arcadia.Shape();
         delta = 1;
 
         spyOn(shape, 'update');
@@ -59,7 +59,7 @@ describe('Vectr.Scene', function () {
         var shape,
             context;
 
-        shape = new Vectr.Shape();
+        shape = new Arcadia.Shape();
         context = {
             canvas: {
                 width: 0,
@@ -79,7 +79,7 @@ describe('Vectr.Scene', function () {
     it('tracks a camera target', function () {
         var shape;
 
-        shape = new Vectr.Shape(100, 100);
+        shape = new Arcadia.Shape(100, 100);
 
         scene.target = shape;
 
@@ -95,8 +95,8 @@ describe('Vectr.Scene', function () {
         var shape1,
             shape2;
 
-        shape1 = new Vectr.Shape(100, 100);
-        shape2 = new Vectr.Shape(200, 200);
+        shape1 = new Arcadia.Shape(100, 100);
+        shape2 = new Arcadia.Shape(200, 200);
 
         scene.add(shape1);
         scene.add(shape2);

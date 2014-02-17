@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Vectr=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Arcadia=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var Button, GameObject,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -10,7 +10,7 @@ Button = (function(_super) {
 
   function Button(x, y, text) {
     Button.__super__.constructor.apply(this, arguments);
-    this.label = new Vectr.Label(x, y, text);
+    this.label = new Arcadia.Label(x, y, text);
     this.add(this.label);
     this.backgroundColors = {
       'red': 255,
@@ -23,8 +23,8 @@ Button = (function(_super) {
     this.padding = 10;
     this.fixed = true;
     this.onPointEnd = this.onPointEnd.bind(this);
-    Vectr.instance.element.addEventListener('mouseup', this.onPointEnd, false);
-    Vectr.instance.element.addEventListener('touchend', this.onPointEnd, false);
+    Arcadia.instance.element.addEventListener('mouseup', this.onPointEnd, false);
+    Arcadia.instance.element.addEventListener('touchend', this.onPointEnd, false);
   }
 
 
@@ -84,10 +84,10 @@ Button = (function(_super) {
     if (!this.active || typeof this.onUp !== 'function') {
       return;
     }
-    Vectr.getPoints(event);
-    i = Vectr.instance.points.length;
+    Arcadia.getPoints(event);
+    i = Arcadia.instance.points.length;
     while (i--) {
-      if (this.containsPoint(Vectr.instance.points.coordinates[i].x, Vectr.instance.points.coordinates[i].y)) {
+      if (this.containsPoint(Arcadia.instance.points.coordinates[i].x, Arcadia.instance.points.coordinates[i].y)) {
         this.onUp();
         return true;
       }
@@ -110,8 +110,8 @@ Button = (function(_super) {
    */
 
   Button.prototype.destroy = function() {
-    Vectr.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
-    return Vectr.instance.element.removeEventListener('touchend', this.onPointEnd, false);
+    Arcadia.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
+    return Arcadia.instance.element.removeEventListener('touchend', this.onPointEnd, false);
   };
 
 
@@ -178,13 +178,13 @@ Emitter = (function(_super) {
   function Emitter(shape, size, count) {
     var particle;
     Emitter.__super__.constructor.apply(this, arguments);
-    this.particles = new Vectr.Pool();
+    this.particles = new Arcadia.Pool();
     this.duration = 1;
     this.fade = false;
     this.speed = 200;
     count = count || 25;
     while (count--) {
-      particle = new Vectr.Shape(0, 0, shape || 'square', size || 5);
+      particle = new Arcadia.Shape(0, 0, shape || 'square', size || 5);
       particle.active = false;
       particle.solid = true;
       this.particles.add(particle);
@@ -274,16 +274,16 @@ Game = (function() {
     width = parseInt(width, 10) || 640;
     height = parseInt(height, 10) || 480;
     scaleToFit = scaleToFit || true;
-    Vectr.WIDTH = width;
-    Vectr.HEIGHT = height;
-    Vectr.SCALE = 1;
-    Vectr.OFFSET = {
+    Arcadia.WIDTH = width;
+    Arcadia.HEIGHT = height;
+    Arcadia.SCALE = 1;
+    Arcadia.OFFSET = {
       x: 0,
       y: 0
     };
-    Vectr.instance = this;
+    Arcadia.instance = this;
     this.element = document.createElement('div');
-    this.element.setAttribute('id', 'vectr');
+    this.element.setAttribute('id', 'arcadia');
     this.canvas = document.createElement('canvas');
     this.canvas.setAttribute('width', width);
     this.canvas.setAttribute('height', height);
@@ -379,7 +379,7 @@ Game = (function() {
 
   Game.prototype.pause = function() {
     this.pausedMusic = this.currentMusic;
-    Vectr.stopMusic();
+    Arcadia.stopMusic();
     if (typeof this.active.pause === "function") {
       return this.active.pause();
     }
@@ -391,7 +391,7 @@ Game = (function() {
    */
 
   Game.prototype.resume = function() {
-    Vectr.playMusic(this.pausedMusic);
+    Arcadia.playMusic(this.pausedMusic);
     if (typeof this.active.resume === "function") {
       return this.active.resume();
     }
@@ -403,7 +403,7 @@ Game = (function() {
    */
 
   Game.prototype.onPointStart = function(event) {
-    Vectr.getPoints(event);
+    Arcadia.getPoints(event);
     if (event.type.indexOf('mouse') !== -1) {
       this.element.addEventListener('mousemove', this.onPointMove, false);
     }
@@ -418,7 +418,7 @@ Game = (function() {
    */
 
   Game.prototype.onPointMove = function(event) {
-    Vectr.getPoints(event);
+    Arcadia.getPoints(event);
     if (typeof this.active.onPointMove === "function") {
       return this.active.onPointMove(this.points);
     }
@@ -430,7 +430,7 @@ Game = (function() {
    */
 
   Game.prototype.onPointEnd = function(event) {
-    Vectr.getPoints(event);
+    Arcadia.getPoints(event);
     if (event.type.indexOf('mouse') !== -1) {
       this.element.removeEventListener('mousemove', this.onPointMove, false);
     }
@@ -562,10 +562,10 @@ Game = (function() {
     height = window.innerHeight;
     if (width > height) {
       orientation = "landscape";
-      aspectRatio = Vectr.WIDTH / Vectr.HEIGHT;
+      aspectRatio = Arcadia.WIDTH / Arcadia.HEIGHT;
     } else {
       orientation = "portrait";
-      aspectRatio = Vectr.HEIGHT / Vectr.WIDTH;
+      aspectRatio = Arcadia.HEIGHT / Arcadia.WIDTH;
     }
     if (orientation === "landscape") {
       if (width / aspectRatio > height) {
@@ -584,11 +584,11 @@ Game = (function() {
         margin = '0 ' + ((window.innerWidth - width) / 2) + 'px';
       }
     }
-    Vectr.SCALE = height / Vectr.HEIGHT;
-    Vectr.OFFSET.x = (window.innerWidth - width) / 2;
-    Vectr.OFFSET.y = (window.innerHeight - height) / 2;
+    Arcadia.SCALE = height / Arcadia.HEIGHT;
+    Arcadia.OFFSET.x = (window.innerWidth - width) / 2;
+    Arcadia.OFFSET.y = (window.innerHeight - height) / 2;
     this.element.setAttribute("style", "position: relative; width: " + width + "px; height: " + height + "px; margin: " + margin + ";");
-    return this.canvas.setAttribute("style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Vectr.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Vectr.SCALE + "); transform-origin: 0 0;");
+    return this.canvas.setAttribute("style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Arcadia.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Arcadia.SCALE + "); transform-origin: 0 0;");
   };
 
   return Game;
@@ -788,10 +788,10 @@ Label = (function(_super) {
     }
     if (this.solid) {
       context.fillStyle = this.color;
-      context.fillText(this.text, 0, 0, Vectr.WIDTH);
+      context.fillText(this.text, 0, 0, Arcadia.WIDTH);
     } else {
       context.strokeStyle = this.color;
-      context.strokeText(this.text, 0, 0, Vectr.WIDTH);
+      context.strokeText(this.text, 0, 0, Arcadia.WIDTH);
     }
     return context.restore();
   };
@@ -1030,18 +1030,18 @@ Scene = (function(_super) {
     this.camera = {
       target: null,
       viewport: {
-        width: Vectr.WIDTH,
-        height: Vectr.HEIGHT
+        width: Arcadia.WIDTH,
+        height: Arcadia.HEIGHT
       },
       bounds: {
         top: 0,
-        bottom: Vectr.HEIGHT,
+        bottom: Arcadia.HEIGHT,
         left: 0,
-        right: Vectr.WIDTH
+        right: Arcadia.WIDTH
       },
       position: {
-        x: Vectr.WIDTH / 2,
-        y: Vectr.HEIGHT / 2
+        x: Arcadia.WIDTH / 2,
+        y: Arcadia.HEIGHT / 2
       }
     };
   }
@@ -1247,7 +1247,7 @@ module.exports = Shape;
 
 
 },{"./gameobject":4}],9:[function(_dereq_,module,exports){
-var Vectr;
+var Arcadia;
 
 if (window.requestAnimationFrame === void 0) {
   window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -1261,7 +1261,7 @@ Function.prototype.property = function(prop, desc) {
   return Object.defineProperty(this.prototype, prop, desc);
 };
 
-Vectr = {
+Arcadia = {
   Game: _dereq_('./game'),
   Button: _dereq_('./button'),
   Emitter: _dereq_('./emitter'),
@@ -1272,14 +1272,14 @@ Vectr = {
   Shape: _dereq_('./shape')
 };
 
-module.exports = Vectr;
+module.exports = Arcadia;
 
 
 /*
 @description Get information about the current environment
  */
 
-Vectr.env = (function() {
+Arcadia.env = (function() {
   var agent, android, firefox, ios, mobile;
   agent = navigator.userAgent.toLowerCase();
   android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false;
@@ -1301,12 +1301,12 @@ Vectr.env = (function() {
 @description Change the active scene being displayed
  */
 
-Vectr.changeScene = function(SceneClass) {
+Arcadia.changeScene = function(SceneClass) {
   if (typeof SceneClass !== "function") {
     throw "Invalid scene!";
   }
-  Vectr.instance.active.destroy();
-  return Vectr.instance.active = new SceneClass();
+  Arcadia.instance.active.destroy();
+  return Arcadia.instance.active = new SceneClass();
 };
 
 
@@ -1315,21 +1315,21 @@ Vectr.changeScene = function(SceneClass) {
 Takes the <canvas> offset and scale into account
  */
 
-Vectr.getPoints = function(event) {
+Arcadia.getPoints = function(event) {
   var i, _results;
   if (event.type.indexOf('mouse') !== -1) {
-    Vectr.instance.points.length = 1;
-    return Vectr.instance.points.coordinates[0] = {
-      x: (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE,
-      y: (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
+    Arcadia.instance.points.length = 1;
+    return Arcadia.instance.points.coordinates[0] = {
+      x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
+      y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
     };
   } else {
-    Vectr.instance.points.length = event.touches.length;
+    Arcadia.instance.points.length = event.touches.length;
     i = 0;
     _results = [];
     while (i < length) {
-      Vectr.instance.points.coordinates[i].x = (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE;
-      Vectr.instance.points.coordinates[i].y = (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE;
+      Arcadia.instance.points.coordinates[i].x = (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE;
+      Arcadia.instance.points.coordinates[i].y = (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE;
       _results.push(i += 1);
     }
     return _results;
@@ -1341,11 +1341,11 @@ Vectr.getPoints = function(event) {
 @description Static variables used to store music/sound effects
  */
 
-Vectr.music = {};
+Arcadia.music = {};
 
-Vectr.sounds = {};
+Arcadia.sounds = {};
 
-Vectr.currentMusic = null;
+Arcadia.currentMusic = null;
 
 
 /*/**
@@ -1354,12 +1354,12 @@ Vectr.currentMusic = null;
              Otherwise you can override this method to use whatever sound library you like.
  */
 
-Vectr.playSfx = function(id) {
+Arcadia.playSfx = function(id) {
   if (localStorage.getItem('playSfx') === "false") {
     return;
   }
-  if (Vectr.sounds[id] !== void 0 && typeof Vectr.sounds[id].play === "function") {
-    return Vectr.sounds[id].play();
+  if (Arcadia.sounds[id] !== void 0 && typeof Arcadia.sounds[id].play === "function") {
+    return Arcadia.sounds[id].play();
   }
 };
 
@@ -1370,26 +1370,26 @@ Vectr.playSfx = function(id) {
  * Otherwise you can override this method to use whatever sound library you like.
  */
 
-Vectr.playMusic = function(id) {
+Arcadia.playMusic = function(id) {
   var _ref, _ref1;
   if (localStorage.getItem('playMusic') === "false") {
     return;
   }
-  if (Vectr.currentMusic === id) {
+  if (Arcadia.currentMusic === id) {
     return;
   }
-  if (id === void 0 && Vectr.currentMusic !== null) {
-    id = Vectr.currentMusic;
+  if (id === void 0 && Arcadia.currentMusic !== null) {
+    id = Arcadia.currentMusic;
   }
-  if (Vectr.currentMusic !== null) {
-    if ((_ref = Vectr.music[Vectr.currentMusic]) != null) {
+  if (Arcadia.currentMusic !== null) {
+    if ((_ref = Arcadia.music[Arcadia.currentMusic]) != null) {
       _ref.stop();
     }
   }
-  if ((_ref1 = Vectr.music[id]) != null) {
+  if ((_ref1 = Arcadia.music[id]) != null) {
     _ref1.play();
   }
-  return Vectr.currentMusic = id;
+  return Arcadia.currentMusic = id;
 };
 
 
@@ -1399,15 +1399,15 @@ Vectr.playMusic = function(id) {
              Otherwise you can override this method to use whatever sound library you like.
  */
 
-Vectr.stopMusic = function() {
+Arcadia.stopMusic = function() {
   var _ref;
-  if (Vectr.currentMusic === null) {
+  if (Arcadia.currentMusic === null) {
     return;
   }
-  if ((_ref = Vectr.music[Vectr.currentMusic]) != null) {
+  if ((_ref = Arcadia.music[Arcadia.currentMusic]) != null) {
     _ref.stop();
   }
-  return Vectr.currentMusic = null;
+  return Arcadia.currentMusic = null;
 };
 
 

@@ -9,7 +9,7 @@ if window.cancelAnimationFrame == undefined
 Function::property = (prop, desc) ->
   Object.defineProperty @prototype, prop, desc
 
-Vectr =
+Arcadia =
   Game: require('./game')
   Button: require('./button')
   Emitter: require('./emitter')
@@ -19,12 +19,12 @@ Vectr =
   Scene: require('./scene')
   Shape: require('./shape')
 
-module.exports = Vectr
+module.exports = Arcadia
 
 ###
 @description Get information about the current environment
 ###
-Vectr.env = do ->
+Arcadia.env = do ->
   agent = navigator.userAgent.toLowerCase()
 
   android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false
@@ -46,78 +46,76 @@ Vectr.env = do ->
 ###
 @description Change the active scene being displayed
 ###
-Vectr.changeScene = (SceneClass) ->
+Arcadia.changeScene = (SceneClass) ->
   throw "Invalid scene!" if typeof SceneClass != "function"
 
   # Clean up previous scene
-  Vectr.instance.active.destroy()
+  Arcadia.instance.active.destroy()
 
-  Vectr.instance.active = new SceneClass()
+  Arcadia.instance.active = new SceneClass()
 
 ###
 @description Static method to translate mouse/touch input to coordinates the game will understand
-Takes the <canvas> offset and scale into account
+             Takes the <canvas> offset and scale into account
 ###
-Vectr.getPoints = (event) ->
-  # Truncate existing "points" array
-  # TODO: Hard-code 5 objects which get their x/y props overwritten (or set to null)
+Arcadia.getPoints = (event) ->
   if event.type.indexOf('mouse') != -1
-    Vectr.instance.points.length = 1
-    Vectr.instance.points.coordinates[0] =
-      x: (event.pageX - Vectr.OFFSET.x) / Vectr.SCALE
-      y: (event.pageY - Vectr.OFFSET.y) / Vectr.SCALE
+    Arcadia.instance.points.length = 1
+    Arcadia.instance.points.coordinates[0] =
+      x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
+      y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
   else 
-    Vectr.instance.points.length = event.touches.length
+    Arcadia.instance.points.length = event.touches.length
     i = 0
     while i < length
-      Vectr.instance.points.coordinates[i].x = (event.touches[i].pageX - Vectr.OFFSET.x) / Vectr.SCALE
-      Vectr.instance.points.coordinates[i].y = (event.touches[i].pageY - Vectr.OFFSET.y) / Vectr.SCALE
+      Arcadia.instance.points.coordinates[i].x = (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
+      Arcadia.instance.points.coordinates[i].y = (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
       i += 1
 
 ###
 @description Static variables used to store music/sound effects
 ###
-Vectr.music = {}
-Vectr.sounds = {}
-Vectr.currentMusic = null
+Arcadia.music = {}
+Arcadia.sounds = {}
+Arcadia.currentMusic = null
 
 ###/**
 @description Static method to play sound effects.
              Assumes you have an instance property 'sounds' filled with Buzz sound objects.
              Otherwise you can override this method to use whatever sound library you like.
 ###
-Vectr.playSfx = (id) ->
+Arcadia.playSfx = (id) ->
   return if localStorage.getItem('playSfx') == "false"
 
-  if Vectr.sounds[id] != undefined && typeof Vectr.sounds[id].play == "function"
-      Vectr.sounds[id].play()
+  if Arcadia.sounds[id] != undefined && typeof Arcadia.sounds[id].play == "function"
+      Arcadia.sounds[id].play()
 
 ###
  * @description Static method to play music.
  * Assumes you have an instance property 'music' filled with Buzz sound objects.
  * Otherwise you can override this method to use whatever sound library you like.
 ###
-Vectr.playMusic = (id) ->
+Arcadia.playMusic = (id) ->
   return if localStorage.getItem('playMusic') == "false"
 
-  return if Vectr.currentMusic == id
+  return if Arcadia.currentMusic == id
 
-  if id == undefined && Vectr.currentMusic != null
-      id = Vectr.currentMusic
+  if id == undefined && Arcadia.currentMusic != null
+      id = Arcadia.currentMusic
 
-  if Vectr.currentMusic != null
-      Vectr.music[Vectr.currentMusic]?.stop()
+  if Arcadia.currentMusic != null
+      Arcadia.music[Arcadia.currentMusic]?.stop()
 
-  Vectr.music[id]?.play()
-  Vectr.currentMusic = id
+  Arcadia.music[id]?.play()
+  Arcadia.currentMusic = id
 
 ###
 @description Static method to stop music.
              Assumes you have an instance property 'music' filled with Buzz sound objects.
              Otherwise you can override this method to use whatever sound library you like.
 ###
-Vectr.stopMusic = ->
-  return if Vectr.currentMusic == null
+Arcadia.stopMusic = ->
+  return if Arcadia.currentMusic == null
 
-  Vectr.music[Vectr.currentMusic]?.stop()
-  Vectr.currentMusic = null
+  Arcadia.music[Arcadia.currentMusic]?.stop()
+  Arcadia.currentMusic = null

@@ -1,8 +1,8 @@
 /*jslint sloppy: true, browser: true */
-/*globals Vectr */
+/*globals Arcadia */
 
 var EnemyBullet = function () {
-    Vectr.Shape.apply(this, arguments);
+    Arcadia.Shape.apply(this, arguments);
 
     this.shape = 'circle';
     this.size = 4;
@@ -17,4 +17,4 @@ var EnemyBullet = function () {
     this.lineWidth = 3;
 };
 
-EnemyBullet.prototype = new Vectr.Shape();
+EnemyBullet.prototype = new Arcadia.Shape();

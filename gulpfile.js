@@ -7,7 +7,7 @@ gulp.task('default', function () {
 });
 
 gulp.task('coffee', function() {
-  gulp.src('src/vectr.coffee', { read: false })
+  gulp.src('src/arcadia.coffee', { read: false })
     .pipe(browserify({
       transform: ['coffeeify'],
       extensions: ['.coffee']

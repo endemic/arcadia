@@ -12,22 +12,22 @@ class Game
 
     scaleToFit = scaleToFit || true
 
-    Vectr.WIDTH = width
-    Vectr.HEIGHT = height
+    Arcadia.WIDTH = width
+    Arcadia.HEIGHT = height
 
     # If game is scaled up/down, clicks/touches need to be scaled
-    Vectr.SCALE = 1
+    Arcadia.SCALE = 1
 
     # If game element is not at (0, 0), clicks/touches need to be offset
-    Vectr.OFFSET =
+    Arcadia.OFFSET =
         x: 0
         y: 0
 
     # Static reference to current game instance
-    Vectr.instance = @
+    Arcadia.instance = @
 
     @element = document.createElement 'div'
-    @element.setAttribute 'id', 'vectr'
+    @element.setAttribute 'id', 'arcadia'
 
     @canvas = document.createElement('canvas')
     @canvas.setAttribute('width', width)
@@ -113,7 +113,7 @@ class Game
   ###
   pause: ->
     @pausedMusic = @currentMusic
-    Vectr.stopMusic()
+    Arcadia.stopMusic()
 
     @active.pause() if typeof @active.pause == "function"
 
@@ -121,7 +121,7 @@ class Game
   @description Resume active scene if it has a pause method
   ###
   resume: ->
-    Vectr.playMusic @pausedMusic
+    Arcadia.playMusic @pausedMusic
 
     @active.resume() if typeof @active.resume == "function"
 
@@ -129,7 +129,7 @@ class Game
   @description Mouse/touch event callback
   ###
   onPointStart: (event) ->
-    Vectr.getPoints event
+    Arcadia.getPoints event
 
     if event.type.indexOf('mouse') != -1
       @element.addEventListener 'mousemove', @onPointMove, false
@@ -140,7 +140,7 @@ class Game
   @description Mouse/touch event callback
   ###
   onPointMove: (event) ->
-    Vectr.getPoints event
+    Arcadia.getPoints event
 
     @active.onPointMove(@points) if typeof @active.onPointMove == "function"
 
@@ -148,7 +148,7 @@ class Game
   @description Mouse/touch event callback
   ###
   onPointEnd: (event) ->
-    Vectr.getPoints event
+    Arcadia.getPoints event
 
     if event.type.indexOf('mouse') != -1
       @element.removeEventListener('mousemove', @onPointMove, false)
@@ -243,10 +243,10 @@ class Game
 
     if width > height
       orientation = "landscape"
-      aspectRatio = Vectr.WIDTH / Vectr.HEIGHT
+      aspectRatio = Arcadia.WIDTH / Arcadia.HEIGHT
     else
       orientation = "portrait"
-      aspectRatio = Vectr.HEIGHT / Vectr.WIDTH
+      aspectRatio = Arcadia.HEIGHT / Arcadia.WIDTH
 
     if orientation == "landscape"
       if width / aspectRatio > height  # Too wide
@@ -263,10 +263,10 @@ class Game
         width = height / aspectRatio
         margin = '0 ' + ((window.innerWidth - width) / 2) + 'px'
 
-    Vectr.SCALE = height / Vectr.HEIGHT
-    Vectr.OFFSET.x = (window.innerWidth - width) / 2
-    Vectr.OFFSET.y = (window.innerHeight - height) / 2
+    Arcadia.SCALE = height / Arcadia.HEIGHT
+    Arcadia.OFFSET.x = (window.innerWidth - width) / 2
+    Arcadia.OFFSET.y = (window.innerHeight - height) / 2
     @element.setAttribute "style", "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Vectr.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Vectr.SCALE}); transform-origin: 0 0;"
+    @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
 
 module.exports = Game
