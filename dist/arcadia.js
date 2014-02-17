@@ -1,4 +1,169 @@
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Arcadia=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+var Arcadia;
+
+if (window.requestAnimationFrame === void 0) {
+  window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+}
+
+if (window.cancelAnimationFrame === void 0) {
+  window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
+}
+
+Function.prototype.property = function(prop, desc) {
+  return Object.defineProperty(this.prototype, prop, desc);
+};
+
+Arcadia = {
+  Game: _dereq_('./game'),
+  Button: _dereq_('./button'),
+  Emitter: _dereq_('./emitter'),
+  GameObject: _dereq_('./gameobject'),
+  Label: _dereq_('./label'),
+  Pool: _dereq_('./pool'),
+  Scene: _dereq_('./scene'),
+  Shape: _dereq_('./shape')
+};
+
+module.exports = Arcadia;
+
+
+/*
+@description Get information about the current environment
+ */
+
+Arcadia.env = (function() {
+  var agent, android, firefox, ios, mobile;
+  agent = navigator.userAgent.toLowerCase();
+  android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false;
+  ios = (agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length) > 0 || false;
+  firefox = (agent.match(/firefox/i) && agent.match(/firefox/i).length > 0) || false;
+  mobile = ((agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || false) || android;
+  return {
+    android: android,
+    ios: ios,
+    firefox: firefox,
+    mobile: mobile,
+    desktop: !mobile,
+    cordova: window.cordova !== void 0
+  };
+})();
+
+
+/*
+@description Change the active scene being displayed
+ */
+
+Arcadia.changeScene = function(SceneClass) {
+  if (typeof SceneClass !== "function") {
+    throw "Invalid scene!";
+  }
+  Arcadia.instance.active.destroy();
+  return Arcadia.instance.active = new SceneClass();
+};
+
+
+/*
+@description Static method to translate mouse/touch input to coordinates the game will understand
+             Takes the <canvas> offset and scale into account
+ */
+
+Arcadia.getPoints = function(event) {
+  var i, _results;
+  if (event.type.indexOf('mouse') !== -1) {
+    Arcadia.instance.points.length = 1;
+    return Arcadia.instance.points.coordinates[0] = {
+      x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
+      y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
+    };
+  } else {
+    Arcadia.instance.points.length = event.touches.length;
+    i = 0;
+    _results = [];
+    while (i < length) {
+      Arcadia.instance.points.coordinates[i].x = (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE;
+      Arcadia.instance.points.coordinates[i].y = (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE;
+      _results.push(i += 1);
+    }
+    return _results;
+  }
+};
+
+
+/*
+@description Static variables used to store music/sound effects
+ */
+
+Arcadia.music = {};
+
+Arcadia.sounds = {};
+
+Arcadia.currentMusic = null;
+
+
+/*/**
+@description Static method to play sound effects.
+             Assumes you have an instance property 'sounds' filled with Buzz sound objects.
+             Otherwise you can override this method to use whatever sound library you like.
+ */
+
+Arcadia.playSfx = function(id) {
+  if (localStorage.getItem('playSfx') === "false") {
+    return;
+  }
+  if (Arcadia.sounds[id] !== void 0 && typeof Arcadia.sounds[id].play === "function") {
+    return Arcadia.sounds[id].play();
+  }
+};
+
+
+/*
+ * @description Static method to play music.
+ * Assumes you have an instance property 'music' filled with Buzz sound objects.
+ * Otherwise you can override this method to use whatever sound library you like.
+ */
+
+Arcadia.playMusic = function(id) {
+  var _ref, _ref1;
+  if (localStorage.getItem('playMusic') === "false") {
+    return;
+  }
+  if (Arcadia.currentMusic === id) {
+    return;
+  }
+  if (id === void 0 && Arcadia.currentMusic !== null) {
+    id = Arcadia.currentMusic;
+  }
+  if (Arcadia.currentMusic !== null) {
+    if ((_ref = Arcadia.music[Arcadia.currentMusic]) != null) {
+      _ref.stop();
+    }
+  }
+  if ((_ref1 = Arcadia.music[id]) != null) {
+    _ref1.play();
+  }
+  return Arcadia.currentMusic = id;
+};
+
+
+/*
+@description Static method to stop music.
+             Assumes you have an instance property 'music' filled with Buzz sound objects.
+             Otherwise you can override this method to use whatever sound library you like.
+ */
+
+Arcadia.stopMusic = function() {
+  var _ref;
+  if (Arcadia.currentMusic === null) {
+    return;
+  }
+  if ((_ref = Arcadia.music[Arcadia.currentMusic]) != null) {
+    _ref.stop();
+  }
+  return Arcadia.currentMusic = null;
+};
+
+
+},{"./button":2,"./emitter":3,"./game":4,"./gameobject":5,"./label":6,"./pool":7,"./scene":8,"./shape":9}],2:[function(_dereq_,module,exports){
 var Button, GameObject,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -156,7 +321,7 @@ Button = (function(_super) {
 module.exports = Button;
 
 
-},{"./gameobject":4}],2:[function(_dereq_,module,exports){
+},{"./gameobject":5}],3:[function(_dereq_,module,exports){
 var Emitter, GameObject,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -182,6 +347,7 @@ Emitter = (function(_super) {
     this.duration = 1;
     this.fade = false;
     this.speed = 200;
+    this.active = false;
     count = count || 25;
     while (count--) {
       particle = new Arcadia.Shape(0, 0, shape || 'square', size || 5);
@@ -199,20 +365,21 @@ Emitter = (function(_super) {
    */
 
   Emitter.prototype.start = function(x, y) {
-    var direction, i;
+    var direction;
     this.particles.activateAll();
     this.active = true;
     this.position.x = x;
     this.position.y = y;
-    i = this.particles.length;
-    while (i--) {
-      this.particles.at(i).position.x = x;
-      this.particles.at(i).position.y = y;
+    this.i = this.particles.length;
+    while (this.i--) {
+      this.particle = this.particles.at(this.i);
+      this.particle.position.x = x;
+      this.particle.position.y = y;
       direction = Math.random() * 2 * Math.PI;
-      this.particles.at(i).velocity.x = Math.cos(direction);
-      this.particles.at(i).velocity.y = Math.sin(direction);
-      this.particles.at(i).speed = Math.random() * this.speed;
-      this.particles.at(i).color = this.color;
+      this.particle.velocity.x = Math.cos(direction);
+      this.particle.velocity.y = Math.sin(direction);
+      this.particle.speed = Math.random() * this.speed;
+      this.particle.color = this.color;
     }
     return this.timer = 0;
   };
@@ -227,28 +394,26 @@ Emitter = (function(_super) {
   };
 
   Emitter.prototype.update = function(delta) {
-    var i, _results;
     if (!this.active) {
       return;
     }
-    i = this.particles.length;
-    if (i === 0) {
+    this.i = this.particles.length;
+    if (this.i === 0) {
       this.active = false;
+      return;
     }
     this.particles.update(delta);
     this.timer += delta;
-    _results = [];
-    while (i--) {
+    while (this.i--) {
+      this.particle = this.particles.at(this.i);
       if (this.fade) {
-        this.particles.at(i).colors.alpha -= delta / this.duration;
+        this.particle.colors.alpha -= delta / this.duration;
       }
       if (this.timer >= this.duration) {
-        _results.push(this.particles.deactivate(i));
-      } else {
-        _results.push(void 0);
+        this.particles.deactivate(this.i);
       }
     }
-    return _results;
+    return true;
   };
 
   return Emitter;
@@ -258,7 +423,7 @@ Emitter = (function(_super) {
 module.exports = Emitter;
 
 
-},{"./gameobject":4}],3:[function(_dereq_,module,exports){
+},{"./gameobject":5}],4:[function(_dereq_,module,exports){
 var Game;
 
 Game = (function() {
@@ -598,7 +763,7 @@ Game = (function() {
 module.exports = Game;
 
 
-},{}],4:[function(_dereq_,module,exports){
+},{}],5:[function(_dereq_,module,exports){
 var GameObject;
 
 GameObject = (function() {
@@ -635,10 +800,11 @@ GameObject = (function() {
     }
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
-    this.i = this.children.length;
+    this.i = 0;
     _results = [];
-    while (this.i--) {
-      _results.push(this.children[this.i].draw(context, offsetX, offsetY));
+    while (this.i < this.children.length) {
+      this.children[this.i].draw(context, offsetX, offsetY);
+      _results.push(this.i++);
     }
     return _results;
   };
@@ -654,10 +820,11 @@ GameObject = (function() {
     if (!this.active) {
       return;
     }
-    this.i = this.children.length;
+    this.i = 0;
     _results = [];
-    while (this.i--) {
-      _results.push(this.children[this.i].update(delta));
+    while (this.i < this.children.length) {
+      this.children[this.i].update(delta);
+      _results.push(this.i++);
     }
     return _results;
   };
@@ -734,7 +901,7 @@ GameObject = (function() {
 module.exports = GameObject;
 
 
-},{}],5:[function(_dereq_,module,exports){
+},{}],6:[function(_dereq_,module,exports){
 var GameObject, Label,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -851,7 +1018,7 @@ Label = (function(_super) {
 module.exports = Label;
 
 
-},{"./gameobject":4}],6:[function(_dereq_,module,exports){
+},{"./gameobject":5}],7:[function(_dereq_,module,exports){
 
 /*
 * @description Object pool One possible way to store common recyclable objects
@@ -860,10 +1027,10 @@ var Pool;
 
 Pool = (function() {
   function Pool() {
-    this.length = 0;
     this.children = [];
-    this.inactive = [];
     this.i = 0;
+    this.active = 0;
+    this.length = 0;
   }
 
 
@@ -872,17 +1039,18 @@ Pool = (function() {
    */
 
   Pool.prototype.activate = function() {
-    if (this.inactive.length === 0) {
-      return null;
+    this.i = this.length;
+    while (this.i--) {
+      if (!this.children[this.i].active) {
+        this.active += 1;
+        this.children[this.i].active = true;
+        if (typeof this.children[this.i].activate === 'function') {
+          this.children[this.i].activate();
+        }
+        return this.children[this.i];
+      }
     }
-    this.i = this.inactive.pop();
-    this.i.active = true;
-    if (typeof this.i.activate === 'function') {
-      this.i.activate();
-    }
-    this.children.push(this.i);
-    this.length += 1;
-    return this.i;
+    return null;
   };
 
 
@@ -892,22 +1060,27 @@ Pool = (function() {
 
   Pool.prototype.activateAll = function() {
     var _results;
+    this.i = this.length;
     _results = [];
-    while (this.inactive.length) {
-      this.i = this.inactive.pop();
-      this.i.active = true;
-      if (typeof this.i.activate === 'function') {
-        this.i.activate();
+    while (this.i--) {
+      if (!this.children[this.i].active) {
+        this.active += 1;
+        this.children[this.i].active = true;
+        if (typeof this.children[this.i].activate === 'function') {
+          _results.push(this.children[this.i].activate());
+        } else {
+          _results.push(void 0);
+        }
+      } else {
+        _results.push(void 0);
       }
-      this.children.push(this.i);
-      _results.push(this.length += 1);
     }
     return _results;
   };
 
 
   /*
-   * @description Move object to the deadpool
+   * @description Deactivate an object (won't be drawn/updated)
    */
 
   Pool.prototype.deactivate = function(index) {
@@ -915,32 +1088,25 @@ Pool = (function() {
       return;
     }
     this.children[index].active = false;
-    this.inactive.push(this.children[index]);
-    this.i = index;
-    while (this.i < this.children.length - 1) {
-      this.children[this.i] = this.children[this.i + 1];
-      this.i += 1;
-    }
-    this.children.length -= 1;
-    this.length -= 1;
-    if (this.length === 0) {
-      return this.active = false;
-    }
+    return this.active -= 1;
   };
 
 
   /*
-   * @description Move object to the deadpool
+   * @description Deactivate all objects in pool
    */
 
   Pool.prototype.deactivateAll = function() {
     var _results;
+    this.i = this.length;
     _results = [];
-    while (this.children.length) {
-      this.i = this.children.pop();
-      this.i.active = false;
-      this.inactive.push(this.i);
-      _results.push(this.length -= 1);
+    while (this.i--) {
+      if (this.children[this.i].active) {
+        this.active -= 1;
+        _results.push(this.children[this.i].active = false);
+      } else {
+        _results.push(void 0);
+      }
     }
     return _results;
   };
@@ -963,11 +1129,10 @@ Pool = (function() {
     if (object.active === void 0) {
       throw "Pool objects need an 'active' property.";
     }
+    this.children.push(object);
+    this.length++;
     if (object.active) {
-      this.children.push(object);
-      return this.length += 1;
-    } else {
-      return this.inactive.push(object);
+      return this.active++;
     }
   };
 
@@ -978,7 +1143,7 @@ Pool = (function() {
 
   Pool.prototype.update = function(delta) {
     var _results;
-    this.i = this.children.length;
+    this.i = this.length;
     _results = [];
     while (this.i--) {
       this.children[this.i].update(delta);
@@ -998,7 +1163,7 @@ Pool = (function() {
 
   Pool.prototype.draw = function(context, offsetX, offsetY) {
     var _results;
-    this.i = this.children.length;
+    this.i = this.length;
     offsetX = offsetX || 0;
     offsetY = offsetY || 0;
     _results = [];
@@ -1015,7 +1180,7 @@ Pool = (function() {
 module.exports = Pool;
 
 
-},{}],7:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 var GameObject, Scene,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1114,7 +1279,7 @@ Scene = (function(_super) {
 module.exports = Scene;
 
 
-},{"./gameobject":4}],8:[function(_dereq_,module,exports){
+},{"./gameobject":5}],9:[function(_dereq_,module,exports){
 var GameObject, Shape,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1246,171 +1411,6 @@ Shape = (function(_super) {
 module.exports = Shape;
 
 
-},{"./gameobject":4}],9:[function(_dereq_,module,exports){
-var Arcadia;
-
-if (window.requestAnimationFrame === void 0) {
-  window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-}
-
-if (window.cancelAnimationFrame === void 0) {
-  window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
-}
-
-Function.prototype.property = function(prop, desc) {
-  return Object.defineProperty(this.prototype, prop, desc);
-};
-
-Arcadia = {
-  Game: _dereq_('./game'),
-  Button: _dereq_('./button'),
-  Emitter: _dereq_('./emitter'),
-  GameObject: _dereq_('./gameobject'),
-  Label: _dereq_('./label'),
-  Pool: _dereq_('./pool'),
-  Scene: _dereq_('./scene'),
-  Shape: _dereq_('./shape')
-};
-
-module.exports = Arcadia;
-
-
-/*
-@description Get information about the current environment
- */
-
-Arcadia.env = (function() {
-  var agent, android, firefox, ios, mobile;
-  agent = navigator.userAgent.toLowerCase();
-  android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false;
-  ios = (agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length) > 0 || false;
-  firefox = (agent.match(/firefox/i) && agent.match(/firefox/i).length > 0) || false;
-  mobile = ((agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || false) || android;
-  return {
-    android: android,
-    ios: ios,
-    firefox: firefox,
-    mobile: mobile,
-    desktop: !mobile,
-    cordova: window.cordova !== void 0
-  };
-})();
-
-
-/*
-@description Change the active scene being displayed
- */
-
-Arcadia.changeScene = function(SceneClass) {
-  if (typeof SceneClass !== "function") {
-    throw "Invalid scene!";
-  }
-  Arcadia.instance.active.destroy();
-  return Arcadia.instance.active = new SceneClass();
-};
-
-
-/*
-@description Static method to translate mouse/touch input to coordinates the game will understand
-Takes the <canvas> offset and scale into account
- */
-
-Arcadia.getPoints = function(event) {
-  var i, _results;
-  if (event.type.indexOf('mouse') !== -1) {
-    Arcadia.instance.points.length = 1;
-    return Arcadia.instance.points.coordinates[0] = {
-      x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
-      y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-    };
-  } else {
-    Arcadia.instance.points.length = event.touches.length;
-    i = 0;
-    _results = [];
-    while (i < length) {
-      Arcadia.instance.points.coordinates[i].x = (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE;
-      Arcadia.instance.points.coordinates[i].y = (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE;
-      _results.push(i += 1);
-    }
-    return _results;
-  }
-};
-
-
-/*
-@description Static variables used to store music/sound effects
- */
-
-Arcadia.music = {};
-
-Arcadia.sounds = {};
-
-Arcadia.currentMusic = null;
-
-
-/*/**
-@description Static method to play sound effects.
-             Assumes you have an instance property 'sounds' filled with Buzz sound objects.
-             Otherwise you can override this method to use whatever sound library you like.
- */
-
-Arcadia.playSfx = function(id) {
-  if (localStorage.getItem('playSfx') === "false") {
-    return;
-  }
-  if (Arcadia.sounds[id] !== void 0 && typeof Arcadia.sounds[id].play === "function") {
-    return Arcadia.sounds[id].play();
-  }
-};
-
-
-/*
- * @description Static method to play music.
- * Assumes you have an instance property 'music' filled with Buzz sound objects.
- * Otherwise you can override this method to use whatever sound library you like.
- */
-
-Arcadia.playMusic = function(id) {
-  var _ref, _ref1;
-  if (localStorage.getItem('playMusic') === "false") {
-    return;
-  }
-  if (Arcadia.currentMusic === id) {
-    return;
-  }
-  if (id === void 0 && Arcadia.currentMusic !== null) {
-    id = Arcadia.currentMusic;
-  }
-  if (Arcadia.currentMusic !== null) {
-    if ((_ref = Arcadia.music[Arcadia.currentMusic]) != null) {
-      _ref.stop();
-    }
-  }
-  if ((_ref1 = Arcadia.music[id]) != null) {
-    _ref1.play();
-  }
-  return Arcadia.currentMusic = id;
-};
-
-
-/*
-@description Static method to stop music.
-             Assumes you have an instance property 'music' filled with Buzz sound objects.
-             Otherwise you can override this method to use whatever sound library you like.
- */
-
-Arcadia.stopMusic = function() {
-  var _ref;
-  if (Arcadia.currentMusic === null) {
-    return;
-  }
-  if ((_ref = Arcadia.music[Arcadia.currentMusic]) != null) {
-    _ref.stop();
-  }
-  return Arcadia.currentMusic = null;
-};
-
-
-},{"./button":1,"./emitter":2,"./game":3,"./gameobject":4,"./label":5,"./pool":6,"./scene":7,"./shape":8}]},{},[9])
-(9)
+},{"./gameobject":5}]},{},[1])
+(1)
 });

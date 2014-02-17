@@ -27,9 +27,10 @@ class GameObject
     offsetX = offsetX || 0
     offsetY = offsetY || 0
 
-    @i = @children.length
-    while @i--
+    @i = 0
+    while @i < @children.length
       @children[@i].draw(context, offsetX, offsetY)
+      @i++
 
   ###
    * @description Update all child objects
@@ -38,9 +39,10 @@ class GameObject
   update: (delta) ->
     return if not @active
 
-    @i = @children.length
-    while @i--
-      @children[@i].update(delta)
+    @i = 0
+    while @i < @children.length
+      @children[@i].update delta
+      @i++
 
   ###
    * @description Add an object to the draw/update loop
