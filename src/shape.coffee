@@ -1,4 +1,4 @@
-GameObject = require './gameobject'
+GameObject = require './gameobject.coffee'
 
 class Shape extends GameObject
   ###
