@@ -1,6 +1,6 @@
-GameObject = require './gameobject'
-Pool = require './pool'
-Shape = require './shape'
+GameObject = require './gameobject.coffee'
+Pool = require './pool.coffee'
+Shape = require './shape.coffee'
 
 class Emitter extends GameObject
   ###

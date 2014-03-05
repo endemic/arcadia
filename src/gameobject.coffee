@@ -1,4 +1,4 @@
-Pool = require './pool'
+Pool = require './pool.coffee'
 
 class GameObject
   constructor: (x, y) ->
