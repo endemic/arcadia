@@ -16,8 +16,16 @@ module.exports = (grunt) ->
         tasks: ['browserify']
         options:
           interrupt: true
+    jasmine:
+      pivotal:
+        src: 'dist/arcadia.js'
+        options:
+          specs: 'spec/*-spec.js'
+          helpers: 'spec/*-helper.js'
 
   grunt.loadNpmTasks 'grunt-browserify'
   grunt.loadNpmTasks 'grunt-contrib-watch'
+  grunt.loadNpmTasks 'grunt-contrib-jasmine'
 
   grunt.registerTask 'default', ['browserify']
+  grunt.registerTask 'test', ['jasmine']
