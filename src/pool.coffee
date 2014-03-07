@@ -3,8 +3,9 @@
 ###
 class Pool
   constructor: (size) ->
+    @active = false
     @length = 0
-    @inactiveLength = 0
+    @inactive = 0
     @activeObjects = []
     @inactiveObjects = []
 
@@ -18,21 +19,23 @@ class Pool
    * @description Get the next "inactive" object in the Pool
   ###
   activate: ->
-    if @inactiveLength > 0 && @inactiveObjects[@inactiveLength - 1] != null
-      @activeObjects[@length] = @inactiveObjects[@inactiveLength - 1]
-      @inactiveObjects[@inactiveLength - 1] = null
+    if @inactive > 0 && @inactiveObjects[@inactive - 1] != null
+      @activeObjects[@length] = @inactiveObjects[@inactive - 1]
+      @inactiveObjects[@inactive - 1] = null
       @activeObjects[@length].active = true
       @activeObjects[@length].activate() if typeof @activeObjects[@length].activate is 'function'
       @length += 1
-      @inactiveLength -= 1
+      @inactive -= 1
+      @active = true
 
   ###
    * @description Activate all the objects in the pool
   ###
   activateAll: ->
-    while @inactiveLength--
-      @activeObjects[@length] = @inactiveObjects[@inactiveLength]
-      @inactiveObjects[@inactiveLength] = null
+    @active = true
+    while @inactive--
+      @activeObjects[@length] = @inactiveObjects[@inactive]
+      @inactiveObjects[@inactive] = null
       @activeObjects[@length].active = true
       @activeObjects[@length].activate() if typeof @activeObjects[@length].activate is 'function'
       @length += 1
@@ -45,23 +48,25 @@ class Pool
     return if @tmp == -1
 
     @activeObjects[@tmp].active = false
-    @inactiveObjects[@inactiveLength] = @activeObjects[@tmp]
+    @inactiveObjects[@inactive] = @activeObjects[@tmp]
 
     while @tmp < @length
       @activeObjects[@tmp] = @activeObjects[@tmp + 1]
       @tmp += 1
 
     @length -= 1
+    @active = false if not @length
 
   ###
    * @description Deactivate all objects in pool
   ###
   deactivateAll: ->
+    @active = false
     while @length--
-      @inactiveObjects[@inactiveLength] = @activeObjects[@length]
-      @inactiveObjects[@inactiveLength].active = true
+      @inactiveObjects[@inactive] = @activeObjects[@length]
+      @inactiveObjects[@inactive].active = true
       @activeObjects[@length] = null
-      @inactiveLength += 1
+      @inactive += 1
 
   ###
    * @description Convenience method to access a particular child index
@@ -82,13 +87,14 @@ class Pool
 
       @activeObjects[@length] = object
       @length += 1
+      @active = true
     else
-      if @inactiveLength + 1 > @inactiveObjects.length
+      if @inactive + 1 > @inactiveObjects.length
         @activeObjects.push null
         @inactiveObjects.push null
 
-      @inactiveObjects[@inactiveLength] = object
-      @inactiveLength += 1
+      @inactiveObjects[@inactive] = object
+      @inactive += 1
 
   ###
    * @description "Passthrough" method which updates active child objects
