@@ -10,14 +10,14 @@ Function::property = (prop, desc) ->
   Object.defineProperty @prototype, prop, desc
 
 Arcadia =
-  Game: require('./game')
-  Button: require('./button')
-  Emitter: require('./emitter')
-  GameObject: require('./gameobject')
-  Label: require('./label')
-  Pool: require('./pool')
-  Scene: require('./scene')
-  Shape: require('./shape')
+  Game: require('./game.coffee')
+  Button: require('./button.coffee')
+  Emitter: require('./emitter.coffee')
+  GameObject: require('./gameobject.coffee')
+  Label: require('./label.coffee')
+  Pool: require('./pool.coffee')
+  Scene: require('./scene.coffee')
+  Shape: require('./shape.coffee')
 
 module.exports = Arcadia
 
