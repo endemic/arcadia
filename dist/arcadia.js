@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Arcadia=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Arcadia=e():"undefined"!=typeof global?global.Arcadia=e():"undefined"!=typeof self&&(self.Arcadia=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
   var Arcadia;
 
@@ -15,14 +15,14 @@
   };
 
   Arcadia = {
-    Game: _dereq_('./game.coffee'),
-    Button: _dereq_('./button.coffee'),
-    Emitter: _dereq_('./emitter.coffee'),
-    GameObject: _dereq_('./gameobject.coffee'),
-    Label: _dereq_('./label.coffee'),
-    Pool: _dereq_('./pool.coffee'),
-    Scene: _dereq_('./scene.coffee'),
-    Shape: _dereq_('./shape.coffee')
+    Game: require('./game.coffee'),
+    Button: require('./button.coffee'),
+    Emitter: require('./emitter.coffee'),
+    GameObject: require('./gameobject.coffee'),
+    Label: require('./label.coffee'),
+    Pool: require('./pool.coffee'),
+    Scene: require('./scene.coffee'),
+    Shape: require('./shape.coffee')
   };
 
   module.exports = Arcadia;
@@ -166,13 +166,13 @@
 }).call(this);
 
 
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9}],2:[function(_dereq_,module,exports){
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9}],2:[function(require,module,exports){
 (function() {
   var Button, GameObject,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
   Button = (function(_super) {
     __extends(Button, _super);
@@ -312,17 +312,17 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],3:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5}],3:[function(require,module,exports){
 (function() {
   var Emitter, GameObject, Pool, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
-  Pool = _dereq_('./pool.coffee');
+  Pool = require('./pool.coffee');
 
-  Shape = _dereq_('./shape.coffee');
+  Shape = require('./shape.coffee');
 
   Emitter = (function(_super) {
     __extends(Emitter, _super);
@@ -415,7 +415,7 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
 (function() {
   var Game;
 
@@ -757,11 +757,11 @@
 }).call(this);
 
 
-},{}],5:[function(_dereq_,module,exports){
+},{}],5:[function(require,module,exports){
 (function() {
   var GameObject, Pool;
 
-  Pool = _dereq_('./pool.coffee');
+  Pool = require('./pool.coffee');
 
   GameObject = (function() {
     function GameObject(x, y) {
@@ -884,13 +884,13 @@
 }).call(this);
 
 
-},{"./pool.coffee":7}],6:[function(_dereq_,module,exports){
+},{"./pool.coffee":7}],6:[function(require,module,exports){
 (function() {
   var GameObject, Label,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
   Label = (function(_super) {
     __extends(Label, _super);
@@ -1004,7 +1004,7 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],7:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5}],7:[function(require,module,exports){
 /*
 * @description Object pool One possible way to store common recyclable objects
 */
@@ -1015,11 +1015,12 @@
 
   Pool = (function() {
     function Pool(size) {
-      this.active = false;
+      this.active = true;
       this.length = 0;
       this.inactive = 0;
       this.activeObjects = [];
       this.inactiveObjects = [];
+      size = size || 0;
       while (size--) {
         this.activeObjects.push(null);
         this.inactiveObjects.push(null);
@@ -1033,17 +1034,21 @@
 
 
     Pool.prototype.activate = function() {
-      if (this.inactive > 0 && this.inactiveObjects[this.inactive - 1] !== null) {
-        this.activeObjects[this.length] = this.inactiveObjects[this.inactive - 1];
-        this.inactiveObjects[this.inactive - 1] = null;
-        this.activeObjects[this.length].active = true;
-        if (typeof this.activeObjects[this.length].activate === 'function') {
-          this.activeObjects[this.length].activate();
-        }
-        this.length += 1;
-        this.inactive -= 1;
-        return this.active = true;
+      if (this.inactive < 1) {
+        return null;
       }
+      this.activeObjects[this.length] = this.inactiveObjects[this.inactive - 1];
+      this.inactiveObjects[this.inactive - 1] = null;
+      this.activeObjects[this.length].active = true;
+      if (typeof this.activeObjects[this.length].activate === 'function') {
+        this.activeObjects[this.length].activate();
+      }
+      this.length += 1;
+      this.inactive -= 1;
+      if (!this.active) {
+        this.active = true;
+      }
+      return this.activeObjects[this.length - 1];
     };
 
     /*
@@ -1189,13 +1194,13 @@
 }).call(this);
 
 
-},{}],8:[function(_dereq_,module,exports){
+},{}],8:[function(require,module,exports){
 (function() {
   var GameObject, Scene,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
   Scene = (function(_super) {
     __extends(Scene, _super);
@@ -1291,13 +1296,13 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],9:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5}],9:[function(require,module,exports){
 (function() {
   var GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
   Shape = (function(_super) {
     __extends(Shape, _super);
@@ -1429,3 +1434,4 @@
 },{"./gameobject.coffee":5}]},{},[1])
 (1)
 });
+;
