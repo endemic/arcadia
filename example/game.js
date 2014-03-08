@@ -147,13 +147,10 @@ Game.prototype.update = function (delta) {
 
                     // Create particle effect
                     particles = this.particles.activate();
-                    if (particles === null) {
-                        debugger;
-                    }
                     if (particles !== null) {
                         particles.start(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
                     }
-                    
+
                     // Spawn a new enemy immediately
                     enemy = this.enemies.activate();
                     if (enemy !== null) {
@@ -234,9 +231,9 @@ Game.prototype.onPointStart = function (points) {
         return;
     }
 
-    var angle = Math.atan2(points[0].y - this.player.position.y, points[0].x - this.player.position.x);
+    var angle = Math.atan2(points.coordinates[0].y - this.player.position.y, points.coordinates[0].x - this.player.position.x);
 
-    if (this.player.position.x !== points[0].x && this.player.position.y !== points[0].y) {
+    if (this.player.position.x !== points.coordinates[0].x && this.player.position.y !== points.coordinates[0].y) {
         this.player.velocity.x = Math.cos(angle);
         this.player.velocity.y = Math.sin(angle);
     }
@@ -247,9 +244,9 @@ Game.prototype.onPointMove = function (points) {
         return;
     }
 
-    var angle = Math.atan2(points[0].y - this.player.position.y, points[0].x - this.player.position.x);
+    var angle = Math.atan2(points.coordinates[0].y - this.player.position.y, points.coordinates[0].x - this.player.position.x);
 
-    if (this.player.position.x !== points[0].x && this.player.position.y !== points[0].y) {
+    if (this.player.position.x !== points.coordinates[0].x && this.player.position.y !== points.coordinates[0].y) {
         this.player.velocity.x = Math.cos(angle);
         this.player.velocity.y = Math.sin(angle);
     }

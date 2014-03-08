@@ -2,7 +2,7 @@ GameObject = require './gameobject.coffee'
 
 class Scene extends GameObject
   constructor: ->
-    super 
+    super
     # implement a camera view/drawing offset
     @camera =
       target: null
@@ -14,7 +14,7 @@ class Scene extends GameObject
         bottom: Arcadia.HEIGHT
         left: 0
         right: Arcadia.WIDTH
-      position: 
+      position:
         x: Arcadia.WIDTH / 2
         y: Arcadia.HEIGHT / 2
 
@@ -67,7 +67,7 @@ class Scene extends GameObject
         return @camera.target
       set: (shape) ->
         return if not shape?.position
-        
+
         @camera.target = shape
         @camera.position.x = shape.position.x
         @camera.position.y = shape.position.y

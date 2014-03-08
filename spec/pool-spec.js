@@ -31,6 +31,13 @@ describe('Arcadia.Pool', function () {
         expect(function () { pool.add(obj); }).toThrow();
     });
 
+    it('can return activated objects', function () {
+        pool.add(new Arcadia.Shape(0, 0, 'circle', 25));
+        pool.deactivateAll();
+
+        expect(pool.activate()).toNotBeNull();
+    });
+
     it("doesn't allow direct access of inactive objects", function () {
         var shape = new Arcadia.Shape(0, 0, 'circle', 25);
         shape.active = false;

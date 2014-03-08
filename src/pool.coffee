@@ -3,12 +3,13 @@
 ###
 class Pool
   constructor: (size) ->
-    @active = false
+    @active = true
     @length = 0
     @inactive = 0
     @activeObjects = []
     @inactiveObjects = []
 
+    size = size || 0
     while size--
       @activeObjects.push null
       @inactiveObjects.push null
@@ -19,14 +20,16 @@ class Pool
    * @description Get the next "inactive" object in the Pool
   ###
   activate: ->
-    if @inactive > 0 && @inactiveObjects[@inactive - 1] != null
-      @activeObjects[@length] = @inactiveObjects[@inactive - 1]
-      @inactiveObjects[@inactive - 1] = null
-      @activeObjects[@length].active = true
-      @activeObjects[@length].activate() if typeof @activeObjects[@length].activate is 'function'
-      @length += 1
-      @inactive -= 1
-      @active = true
+    return null if @inactive < 1
+
+    @activeObjects[@length] = @inactiveObjects[@inactive - 1]
+    @inactiveObjects[@inactive - 1] = null
+    @activeObjects[@length].active = true
+    @activeObjects[@length].activate() if typeof @activeObjects[@length].activate is 'function'
+    @length += 1
+    @inactive -= 1
+    @active = true if not @active
+    return @activeObjects[@length - 1]
 
   ###
    * @description Activate all the objects in the pool
