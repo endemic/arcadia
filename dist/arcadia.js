@@ -1015,18 +1015,31 @@
 
   Pool = (function() {
     function Pool(size) {
-      this.active = true;
-      this.length = 0;
-      this.inactive = 0;
+      if (size == null) {
+        size = 0;
+      }
+      this.activeLength = 0;
+      this.inactiveLength = 0;
       this.activeObjects = [];
-      this.inactiveObjects = [];
-      size = size || 0;
+      this.inactiveLengthObjects = [];
       while (size--) {
         this.activeObjects.push(null);
-        this.inactiveObjects.push(null);
+        this.inactiveLengthObjects.push(null);
       }
       this.tmp = 0;
+      this.active = true;
     }
+
+    /*
+     * @description Getter/setter for # of active objects value
+    */
+
+
+    Pool.property('length', {
+      get: function() {
+        return this.activeLength;
+      }
+    });
 
     /*
      * @description Get the next "inactive" object in the Pool
@@ -1034,21 +1047,19 @@
 
 
     Pool.prototype.activate = function() {
-      if (this.inactive < 1) {
+      if (this.inactiveLength < 1) {
         return null;
       }
-      this.activeObjects[this.length] = this.inactiveObjects[this.inactive - 1];
-      this.inactiveObjects[this.inactive - 1] = null;
-      this.activeObjects[this.length].active = true;
-      if (typeof this.activeObjects[this.length].activate === 'function') {
-        this.activeObjects[this.length].activate();
+      this.activeObjects[this.activeLength] = this.inactiveLengthObjects[this.inactiveLength - 1];
+      this.inactiveLengthObjects[this.inactiveLength - 1] = null;
+      this.activeObjects[this.activeLength].active = true;
+      if (typeof this.activeObjects[this.activeLength].activate === 'function') {
+        this.activeObjects[this.activeLength].activate();
       }
-      this.length += 1;
-      this.inactive -= 1;
-      if (!this.active) {
-        this.active = true;
-      }
-      return this.activeObjects[this.length - 1];
+      this.activeLength += 1;
+      this.inactiveLength -= 1;
+      this.active = true;
+      return this.activeObjects[this.activeLength - 1];
     };
 
     /*
@@ -1057,19 +1068,16 @@
 
 
     Pool.prototype.activateAll = function() {
-      var _results;
-      this.active = true;
-      _results = [];
-      while (this.inactive--) {
-        this.activeObjects[this.length] = this.inactiveObjects[this.inactive];
-        this.inactiveObjects[this.inactive] = null;
-        this.activeObjects[this.length].active = true;
-        if (typeof this.activeObjects[this.length].activate === 'function') {
-          this.activeObjects[this.length].activate();
+      while (this.inactiveLength--) {
+        this.activeObjects[this.activeLength] = this.inactiveLengthObjects[this.inactiveLength];
+        this.inactiveLengthObjects[this.inactiveLength] = null;
+        this.activeObjects[this.activeLength].active = true;
+        if (typeof this.activeObjects[this.activeLength].activate === 'function') {
+          this.activeObjects[this.activeLength].activate();
         }
-        _results.push(this.length += 1);
+        this.activeLength += 1;
       }
-      return _results;
+      return this.active = true;
     };
 
     /*
@@ -1083,13 +1091,13 @@
         return;
       }
       this.activeObjects[this.tmp].active = false;
-      this.inactiveObjects[this.inactive] = this.activeObjects[this.tmp];
-      while (this.tmp < this.length) {
+      this.inactiveLengthObjects[this.inactiveLength] = this.activeObjects[this.tmp];
+      while (this.tmp < this.activeLength) {
         this.activeObjects[this.tmp] = this.activeObjects[this.tmp + 1];
         this.tmp += 1;
       }
-      this.length -= 1;
-      if (!this.length) {
+      this.activeLength -= 1;
+      if (!this.activeLength) {
         return this.active = false;
       }
     };
@@ -1103,11 +1111,11 @@
       var _results;
       this.active = false;
       _results = [];
-      while (this.length--) {
-        this.inactiveObjects[this.inactive] = this.activeObjects[this.length];
-        this.inactiveObjects[this.inactive].active = true;
-        this.activeObjects[this.length] = null;
-        _results.push(this.inactive += 1);
+      while (this.activeLength--) {
+        this.inactiveLengthObjects[this.inactiveLength] = this.activeObjects[this.activeLength];
+        this.inactiveLengthObjects[this.inactiveLength].active = true;
+        this.activeObjects[this.activeLength] = null;
+        _results.push(this.inactiveLength += 1);
       }
       return _results;
     };
@@ -1131,22 +1139,23 @@
         throw "Pool objects need an 'active' property.";
       }
       if (object.active) {
-        if (this.length + 1 > this.activeObjects.length) {
+        if (this.activeLength + 1 > this.activeObjects.length) {
           this.activeObjects.push(null);
-          this.inactiveObjects.push(null);
+          this.inactiveLengthObjects.push(null);
         }
-        this.activeObjects[this.length] = object;
-        this.length += 1;
-        return this.active = true;
+        this.activeObjects[this.activeLength] = object;
+        return this.activeLength += 1;
       } else {
-        if (this.inactive + 1 > this.inactiveObjects.length) {
+        if (this.inactiveLength + 1 > this.inactiveLengthObjects.length) {
           this.activeObjects.push(null);
-          this.inactiveObjects.push(null);
+          this.inactiveLengthObjects.push(null);
         }
-        this.inactiveObjects[this.inactive] = object;
-        return this.inactive += 1;
+        this.inactiveLengthObjects[this.inactiveLength] = object;
+        return this.inactiveLength += 1;
       }
     };
+
+    Pool.active = Pool.activeLength > 0 ? true : false;
 
     /*
      * @description "Passthrough" method which updates active child objects
@@ -1155,15 +1164,10 @@
 
     Pool.prototype.update = function(delta) {
       var _results;
-      this.tmp = this.length;
+      this.tmp = this.activeLength;
       _results = [];
       while (this.tmp--) {
-        this.activeObjects[this.tmp].update(delta);
-        if (!this.activeObjects[this.tmp].active) {
-          _results.push(this.deactivate(this.tmp));
-        } else {
-          _results.push(void 0);
-        }
+        _results.push(this.activeObjects[this.tmp].update(delta));
       }
       return _results;
     };
@@ -1177,7 +1181,7 @@
       var _results;
       offsetX = offsetX || 0;
       offsetY = offsetY || 0;
-      this.tmp = this.length;
+      this.tmp = this.activeLength;
       _results = [];
       while (this.tmp--) {
         _results.push(this.activeObjects[this.tmp].draw(context, offsetX, offsetY));

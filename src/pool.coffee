@@ -2,46 +2,52 @@
 * @description Object pool One possible way to store common recyclable objects
 ###
 class Pool
-  constructor: (size) ->
-    @active = true
-    @length = 0
-    @inactive = 0
+  constructor: (size = 0) ->
+    @activeLength = 0
+    @inactiveLength = 0
     @activeObjects = []
-    @inactiveObjects = []
+    @inactiveLengthObjects = []
 
-    size = size || 0
     while size--
       @activeObjects.push null
-      @inactiveObjects.push null
+      @inactiveLengthObjects.push null
 
     @tmp = 0            # Iterator
+    @active = true
+
+  ###
+   * @description Getter/setter for # of active objects value
+  ###
+  @property 'length',
+    get: -> return @activeLength
 
   ###
    * @description Get the next "inactive" object in the Pool
   ###
   activate: ->
-    return null if @inactive < 1
+    return null if @inactiveLength < 1
 
-    @activeObjects[@length] = @inactiveObjects[@inactive - 1]
-    @inactiveObjects[@inactive - 1] = null
-    @activeObjects[@length].active = true
-    @activeObjects[@length].activate() if typeof @activeObjects[@length].activate is 'function'
-    @length += 1
-    @inactive -= 1
-    @active = true if not @active
-    return @activeObjects[@length - 1]
+    @activeObjects[@activeLength] = @inactiveLengthObjects[@inactiveLength - 1]
+    @inactiveLengthObjects[@inactiveLength - 1] = null
+    @activeObjects[@activeLength].active = true
+    @activeObjects[@activeLength].activate() if typeof @activeObjects[@activeLength].activate is 'function'
+    @activeLength += 1
+    @inactiveLength -= 1
+    @active = true
+    return @activeObjects[@activeLength - 1]
 
   ###
    * @description Activate all the objects in the pool
   ###
   activateAll: ->
+    while @inactiveLength--
+      @activeObjects[@activeLength] = @inactiveLengthObjects[@inactiveLength]
+      @inactiveLengthObjects[@inactiveLength] = null
+      @activeObjects[@activeLength].active = true
+      @activeObjects[@activeLength].activate() if typeof @activeObjects[@activeLength].activate is 'function'
+      @activeLength += 1
+
     @active = true
-    while @inactive--
-      @activeObjects[@length] = @inactiveObjects[@inactive]
-      @inactiveObjects[@inactive] = null
-      @activeObjects[@length].active = true
-      @activeObjects[@length].activate() if typeof @activeObjects[@length].activate is 'function'
-      @length += 1
 
   ###
    * @description Deactivate an object (won't be drawn/updated)
@@ -51,25 +57,25 @@ class Pool
     return if @tmp == -1
 
     @activeObjects[@tmp].active = false
-    @inactiveObjects[@inactive] = @activeObjects[@tmp]
+    @inactiveLengthObjects[@inactiveLength] = @activeObjects[@tmp]
 
-    while @tmp < @length
+    while @tmp < @activeLength
       @activeObjects[@tmp] = @activeObjects[@tmp + 1]
       @tmp += 1
 
-    @length -= 1
-    @active = false if not @length
+    @activeLength -= 1
+    @active = false if not @activeLength
 
   ###
    * @description Deactivate all objects in pool
   ###
   deactivateAll: ->
     @active = false
-    while @length--
-      @inactiveObjects[@inactive] = @activeObjects[@length]
-      @inactiveObjects[@inactive].active = true
-      @activeObjects[@length] = null
-      @inactive += 1
+    while @activeLength--
+      @inactiveLengthObjects[@inactiveLength] = @activeObjects[@activeLength]
+      @inactiveLengthObjects[@inactiveLength].active = true
+      @activeObjects[@activeLength] = null
+      @inactiveLength += 1
 
   ###
    * @description Convenience method to access a particular child index
@@ -84,29 +90,31 @@ class Pool
     throw "Pool objects need an 'active' property." if object.active is undefined
 
     if object.active
-      if @length + 1 > @activeObjects.length
+      # Increase size of internal storage arrays if necessary
+      if @activeLength + 1 > @activeObjects.length
         @activeObjects.push null
-        @inactiveObjects.push null
+        @inactiveLengthObjects.push null
 
-      @activeObjects[@length] = object
-      @length += 1
-      @active = true
+      @activeObjects[@activeLength] = object
+      @activeLength += 1
     else
-      if @inactive + 1 > @inactiveObjects.length
+      # Increase size of internal storage arrays if necessary
+      if @inactiveLength + 1 > @inactiveLengthObjects.length
         @activeObjects.push null
-        @inactiveObjects.push null
+        @inactiveLengthObjects.push null
 
-      @inactiveObjects[@inactive] = object
-      @inactive += 1
+      @inactiveLengthObjects[@inactiveLength] = object
+      @inactiveLength += 1
+
+  @active = if @activeLength > 0 then true else false
 
   ###
    * @description "Passthrough" method which updates active child objects
   ###
   update: (delta) ->
-    @tmp = @length
+    @tmp = @activeLength
     while @tmp--
       @activeObjects[@tmp].update delta
-      @deactivate @tmp if not @activeObjects[@tmp].active
 
   ###
    * @description "Passthrough" method which draws active child objects
@@ -115,7 +123,7 @@ class Pool
     offsetX = offsetX || 0
     offsetY = offsetY || 0
 
-    @tmp = @length
+    @tmp = @activeLength
     while @tmp--
       @activeObjects[@tmp].draw context, offsetX, offsetY
 

@@ -12,20 +12,35 @@ module.exports = (grunt) ->
           transform: ['coffeeify']
     watch:
       scripts:
-        files: ['src/*.coffee']
-        tasks: ['browserify']
+        files: ['src/*.coffee', 'spec/*.coffee']
+        tasks: ['browserify', 'test']
         options:
           interrupt: true
     jasmine:
       pivotal:
         src: 'dist/arcadia.js'
         options:
-          specs: 'spec/*-spec.js'
-          helpers: 'spec/*-helper.js'
+          specs: 'spec/js/*-spec.js'
+          #helpers: 'spec/js/*-helper.js'
+    coffee:
+      glob_to_multiple:
+        expand: true
+        flatten: true
+        cwd: 'spec'
+        src: ['*.coffee']
+        dest: 'spec/js'
+        ext: '.js'
+    clean: [
+      'spec/js'
+    ]
 
   grunt.loadNpmTasks 'grunt-browserify'
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-jasmine'
+  grunt.loadNpmTasks 'grunt-contrib-coffee'
+  grunt.loadNpmTasks 'grunt-contrib-clean'
 
   grunt.registerTask 'default', ['browserify']
-  grunt.registerTask 'test', ['jasmine']
+  grunt.registerTask 'test', 'translate Jasmine specs, run, then clean', ->
+    grunt.option 'force', true
+    grunt.task.run ['coffee', 'jasmine', 'clean']
