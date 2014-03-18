@@ -18,16 +18,20 @@ Class Hierarchy
 ```
 Game
   |
-  -> Scene
+  -> View
+  |
+  -> View
+  |
+  -> View
   	   |
-  	   -> Layer
+  	   -> Canvas
   	        |
   	        -> Shape (or other GameObjects)
 ```
 
-A Arcadia game is mainly made up of _Scenes_ and _Shapes_. A scene is an encapsulated
+A Arcadia game is mainly made up of _Views_ and _Shapes_. A scene is an encapsulated
 part of a game, such as a title, difficulty select, or actual gameplay. A shape is a game object, such as the player, 
-enemies, or projectiles. To create a game, subclass the _Scene_ object to create your own scenes. Look in 
+enemies, or projectiles. To create a game, subclass the _View_ object to create your own views. Look in 
 the /example directory for ideas.
 
 ### Arcadia.Game
