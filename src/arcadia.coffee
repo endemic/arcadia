@@ -18,6 +18,7 @@ Arcadia =
   Pool: require('./pool.coffee')
   Scene: require('./scene.coffee')
   Shape: require('./shape.coffee')
+  Recycle: require('./recycle.coffee')
 
 module.exports = Arcadia
 

@@ -1,6 +1,6 @@
-GameObject = require './gameobject.coffee'
-Pool = require './pool.coffee'
-Shape = require './shape.coffee'
+GameObject  = require './gameobject.coffee'
+Pool        = require './pool.coffee'
+Shape       = require './shape.coffee'
 
 class Emitter extends GameObject
   ###
@@ -12,7 +12,7 @@ class Emitter extends GameObject
   ###
   constructor: (shape, size, count) ->
     super
-    
+
     @duration = 1
     @fade = false
     @speed = 200

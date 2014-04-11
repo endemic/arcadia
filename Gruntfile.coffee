@@ -21,6 +21,7 @@ module.exports = (grunt) ->
         src: 'dist/arcadia.js'
         options:
           specs: 'spec/js/*-spec.js'
+          # keepRunner: true
           #helpers: 'spec/js/*-helper.js'
     coffee:
       glob_to_multiple:

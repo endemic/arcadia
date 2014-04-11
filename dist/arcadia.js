@@ -22,7 +22,8 @@
     Label: require('./label.coffee'),
     Pool: require('./pool.coffee'),
     Scene: require('./scene.coffee'),
-    Shape: require('./shape.coffee')
+    Shape: require('./shape.coffee'),
+    Recycle: require('./recycle.coffee')
   };
 
   module.exports = Arcadia;
@@ -166,7 +167,7 @@
 }).call(this);
 
 
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9}],2:[function(require,module,exports){
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./recycle.coffee":8,"./scene.coffee":9,"./shape.coffee":10}],2:[function(require,module,exports){
 (function() {
   var Button, GameObject,
     __hasProp = {}.hasOwnProperty,
@@ -415,7 +416,7 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
+},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":10}],4:[function(require,module,exports){
 (function() {
   var Game;
 
@@ -1200,6 +1201,62 @@
 
 },{}],8:[function(require,module,exports){
 (function() {
+  var Recycle;
+
+  Recycle = (function() {
+    function Recycle() {
+      this.children = [];
+      this.length = 0;
+      this.tmp = null;
+      this.factory = null;
+    }
+
+    Recycle.prototype.at = function(index) {
+      if (index >= this.length) {
+        throw "No child at index " + index;
+      }
+      return this.children[index];
+    };
+
+    Recycle.prototype.add = function(object) {
+      this.children.push(object);
+      if (object.active) {
+        this.tmp = this.children[this.children.length - 1];
+        this.children[this.children.length - 1] = this.children[this.length];
+        this.children[this.length] = this.tmp;
+        this.length += 1;
+      }
+      return this.length;
+    };
+
+    Recycle.prototype.activate = function() {
+      if (this.length < this.children.length) {
+        this.tmp = this.children[this.length];
+        if (typeof this.tmp.activate === 'function') {
+          this.tmp.activate();
+        }
+      } else {
+        if (typeof this.factory !== 'function') {
+          throw 'A Recycle Pool needs a factory defined!';
+        }
+        this.tmp = this.factory();
+        this.children.push(this.tmp);
+      }
+      this.length += 1;
+      return this.tmp;
+    };
+
+    return Recycle;
+
+  })();
+
+  module.exports = Recycle;
+
+}).call(this);
+
+
+},{}],9:[function(require,module,exports){
+(function() {
   var GameObject, Scene,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1300,7 +1357,7 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],9:[function(require,module,exports){
+},{"./gameobject.coffee":5}],10:[function(require,module,exports){
 (function() {
   var GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
