@@ -22,8 +22,7 @@
     Label: require('./label.coffee'),
     Pool: require('./pool.coffee'),
     Scene: require('./scene.coffee'),
-    Shape: require('./shape.coffee'),
-    Recycle: require('./recycle.coffee')
+    Shape: require('./shape.coffee')
   };
 
   module.exports = Arcadia;
@@ -167,7 +166,7 @@
 }).call(this);
 
 
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./recycle.coffee":8,"./scene.coffee":9,"./shape.coffee":10}],2:[function(require,module,exports){
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9}],2:[function(require,module,exports){
 (function() {
   var Button, GameObject,
     __hasProp = {}.hasOwnProperty,
@@ -416,7 +415,7 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":10}],4:[function(require,module,exports){
+},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
 (function() {
   var Game;
 
@@ -1007,7 +1006,10 @@
 
 },{"./gameobject.coffee":5}],7:[function(require,module,exports){
 /*
-* @description Object pool One possible way to store common recyclable objects
+@description One possible way to store common recyclable objects.
+Assumes the objects you add will have an `active` property, and optionally an
+`activate()` method which resets the object's state. Inspired by Programming
+Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 */
 
 
@@ -1015,210 +1017,26 @@
   var Pool;
 
   Pool = (function() {
-    function Pool(size) {
-      if (size == null) {
-        size = 0;
-      }
-      this.activeLength = 0;
-      this.inactiveLength = 0;
-      this.activeObjects = [];
-      this.inactiveLengthObjects = [];
-      while (size--) {
-        this.activeObjects.push(null);
-        this.inactiveLengthObjects.push(null);
-      }
-      this.tmp = 0;
-      this.active = true;
-    }
-
-    /*
-     * @description Getter/setter for # of active objects value
-    */
-
-
-    Pool.property('length', {
-      get: function() {
-        return this.activeLength;
-      }
-    });
-
-    /*
-     * @description Get the next "inactive" object in the Pool
-    */
-
-
-    Pool.prototype.activate = function() {
-      if (this.inactiveLength < 1) {
-        return null;
-      }
-      this.activeObjects[this.activeLength] = this.inactiveLengthObjects[this.inactiveLength - 1];
-      this.inactiveLengthObjects[this.inactiveLength - 1] = null;
-      this.activeObjects[this.activeLength].active = true;
-      if (typeof this.activeObjects[this.activeLength].activate === 'function') {
-        this.activeObjects[this.activeLength].activate();
-      }
-      this.activeLength += 1;
-      this.inactiveLength -= 1;
-      this.active = true;
-      return this.activeObjects[this.activeLength - 1];
-    };
-
-    /*
-     * @description Activate all the objects in the pool
-    */
-
-
-    Pool.prototype.activateAll = function() {
-      while (this.inactiveLength--) {
-        this.activeObjects[this.activeLength] = this.inactiveLengthObjects[this.inactiveLength];
-        this.inactiveLengthObjects[this.inactiveLength] = null;
-        this.activeObjects[this.activeLength].active = true;
-        if (typeof this.activeObjects[this.activeLength].activate === 'function') {
-          this.activeObjects[this.activeLength].activate();
-        }
-        this.activeLength += 1;
-      }
-      return this.active = true;
-    };
-
-    /*
-     * @description Deactivate an object (won't be drawn/updated)
-    */
-
-
-    Pool.prototype.deactivate = function(object) {
-      this.tmp = this.activeObjects.indexOf(object);
-      if (this.tmp === -1) {
-        return;
-      }
-      this.activeObjects[this.tmp].active = false;
-      this.inactiveLengthObjects[this.inactiveLength] = this.activeObjects[this.tmp];
-      while (this.tmp < this.activeLength) {
-        this.activeObjects[this.tmp] = this.activeObjects[this.tmp + 1];
-        this.tmp += 1;
-      }
-      this.activeLength -= 1;
-      if (!this.activeLength) {
-        return this.active = false;
-      }
-    };
-
-    /*
-     * @description Deactivate all objects in pool
-    */
-
-
-    Pool.prototype.deactivateAll = function() {
-      var _results;
-      this.active = false;
-      _results = [];
-      while (this.activeLength--) {
-        this.inactiveLengthObjects[this.inactiveLength] = this.activeObjects[this.activeLength];
-        this.inactiveLengthObjects[this.inactiveLength].active = true;
-        this.activeObjects[this.activeLength] = null;
-        _results.push(this.inactiveLength += 1);
-      }
-      return _results;
-    };
-
-    /*
-     * @description Convenience method to access a particular child index
-    */
-
-
-    Pool.prototype.at = function(index) {
-      return this.activeObjects[index] || null;
-    };
-
-    /*
-     * @description Add object to one of the lists
-    */
-
-
-    Pool.prototype.add = function(object) {
-      if (object.active === void 0) {
-        throw "Pool objects need an 'active' property.";
-      }
-      if (object.active) {
-        if (this.activeLength + 1 > this.activeObjects.length) {
-          this.activeObjects.push(null);
-          this.inactiveLengthObjects.push(null);
-        }
-        this.activeObjects[this.activeLength] = object;
-        return this.activeLength += 1;
-      } else {
-        if (this.inactiveLength + 1 > this.inactiveLengthObjects.length) {
-          this.activeObjects.push(null);
-          this.inactiveLengthObjects.push(null);
-        }
-        this.inactiveLengthObjects[this.inactiveLength] = object;
-        return this.inactiveLength += 1;
-      }
-    };
-
-    Pool.active = Pool.activeLength > 0 ? true : false;
-
-    /*
-     * @description "Passthrough" method which updates active child objects
-    */
-
-
-    Pool.prototype.update = function(delta) {
-      var _results;
-      this.tmp = this.activeLength;
-      _results = [];
-      while (this.tmp--) {
-        _results.push(this.activeObjects[this.tmp].update(delta));
-      }
-      return _results;
-    };
-
-    /*
-     * @description "Passthrough" method which draws active child objects
-    */
-
-
-    Pool.prototype.draw = function(context, offsetX, offsetY) {
-      var _results;
-      offsetX = offsetX || 0;
-      offsetY = offsetY || 0;
-      this.tmp = this.activeLength;
-      _results = [];
-      while (this.tmp--) {
-        _results.push(this.activeObjects[this.tmp].draw(context, offsetX, offsetY));
-      }
-      return _results;
-    };
-
-    return Pool;
-
-  })();
-
-  module.exports = Pool;
-
-}).call(this);
-
-
-},{}],8:[function(require,module,exports){
-(function() {
-  var Recycle;
-
-  Recycle = (function() {
-    function Recycle() {
+    function Pool() {
       this.children = [];
       this.length = 0;
       this.tmp = null;
       this.factory = null;
     }
 
-    Recycle.prototype.at = function(index) {
+    Pool.prototype.at = function(index) {
       if (index >= this.length) {
-        throw "No child at index " + index;
+        return null;
       }
       return this.children[index];
     };
 
-    Recycle.prototype.add = function(object) {
+    /*
+    @description Push an object into the recycle pool
+    */
+
+
+    Pool.prototype.add = function(object) {
       this.children.push(object);
       if (object.active) {
         this.tmp = this.children[this.children.length - 1];
@@ -1229,7 +1047,12 @@
       return this.length;
     };
 
-    Recycle.prototype.activate = function() {
+    /*
+    @description Get an active object
+    */
+
+
+    Pool.prototype.activate = function() {
       if (this.length < this.children.length) {
         this.tmp = this.children[this.length];
         if (typeof this.tmp.activate === 'function') {
@@ -1246,16 +1069,89 @@
       return this.tmp;
     };
 
-    return Recycle;
+    /*
+    @description Deactivate an active object at a particular index
+    */
+
+
+    Pool.prototype.deactivate = function(index) {
+      if (index >= this.length) {
+        return false;
+      }
+      this.tmp = this.children[index];
+      this.children[index] = this.children[this.children.length - 1];
+      this.children[this.length - 1] = this.tmp;
+      this.length -= 1;
+      return this.tmp;
+    };
+
+    /*
+    @description Deactivate all child objects
+    */
+
+
+    Pool.prototype.deactivateAll = function() {
+      return this.length = 0;
+    };
+
+    /*
+    @description Activate all child objects
+    */
+
+
+    Pool.prototype.activateAll = function() {
+      this.length = this.children.length;
+      while (this.length--) {
+        this.tmp = this.children[this.length];
+        if (typeof this.tmp.activate === 'function') {
+          this.tmp.activate();
+        }
+      }
+      return this.length = this.children.length;
+    };
+
+    /*
+    @description Passthrough method to update active child objects
+    */
+
+
+    Pool.prototype.update = function(delta) {
+      var _results;
+      this.tmp = this.length;
+      _results = [];
+      while (this.tmp--) {
+        _results.push(this.children[this.tmp].update(delta));
+      }
+      return _results;
+    };
+
+    /*
+    @description Passthrough method to draw active child objects
+    */
+
+
+    Pool.prototype.draw = function(context, offsetX, offsetY) {
+      var _results;
+      offsetX = offsetX || 0;
+      offsetY = offsetY || 0;
+      this.tmp = this.length;
+      _results = [];
+      while (this.tmp--) {
+        _results.push(this.children[this.tmp].draw(context, offsetX, offsetY));
+      }
+      return _results;
+    };
+
+    return Pool;
 
   })();
 
-  module.exports = Recycle;
+  module.exports = Pool;
 
 }).call(this);
 
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function() {
   var GameObject, Scene,
     __hasProp = {}.hasOwnProperty,
@@ -1357,7 +1253,7 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],10:[function(require,module,exports){
+},{"./gameobject.coffee":5}],9:[function(require,module,exports){
 (function() {
   var GameObject, Shape,
     __hasProp = {}.hasOwnProperty,

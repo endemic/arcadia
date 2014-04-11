@@ -15,4 +15,5 @@
 * [ ] Remove separate event handler attach/detatch for buttons
 * [ ] Global effects - flash, shake, etc.
 * [ ] Tests for Pool object
+* [ ] Determine how Pool should work with active/inactive objects
 * [ ] Refactor offset/child drawing? (perhaps a recursive strategy)
