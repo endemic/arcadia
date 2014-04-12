@@ -13,7 +13,7 @@ var EnemyBullet = function () {
         'alpha': 1
     };
     this.speed = 75;
-    this.active = false;
+    // this.active = false;
     this.lineWidth = 3;
 };
 
