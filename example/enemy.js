@@ -15,7 +15,7 @@ var Enemy = function () {
     this.speed = 40;
     this.size = 20;
     this.shape = 'triangle';
-    this.active = false;
+    // this.active = false;
     this.bulletTimer = 0;
     this.lineWidth = 3;
 };

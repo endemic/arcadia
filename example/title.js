@@ -3,14 +3,9 @@
 
 var Title = function () {
     Arcadia.Scene.apply(this, arguments);
-
-    var i,
-        star,
-        title;
-
     this.clearColor = 'rgba(0, 0, 0, 0.15)';
 
-    title = new Arcadia.Label(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 4, "ARMADA");
+    var title = new Arcadia.Label(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 4, "ARMADA");
     title.font = '40px monospace';
     title.color = 'rgba(255, 255, 255, 0.8)';
     title.glow = 10;
@@ -28,31 +23,28 @@ var Title = function () {
 
     // Add a starfield background
     this.stars = new Arcadia.Pool();
-    this.add(this.stars);
-
-    i = 50;
-    while (i--) {
-        star = new Arcadia.Shape(Math.random() * Arcadia.WIDTH, Math.random() * Arcadia.HEIGHT, 'circle', Math.random() * 4 + 1);
+    this.stars.factory = function () {
+        var star = new Arcadia.Shape(Math.random() * Arcadia.WIDTH, Math.random() * Arcadia.HEIGHT, 'circle', Math.random() * 4 + 1);
         star.solid = true;
         star.velocity.y = 40 / star.size;
-        this.stars.add(star);
+        star.update = function (delta) {
+            Arcadia.Shape.prototype.update.call(this, delta);   // "super"
+
+            // Reset star position if it goes off the bottom of the screen
+            if (this.position.y > Arcadia.HEIGHT) {
+                this.position.y = 0;
+            }
+        };
+
+        return star;
+    };
+
+    this.add(this.stars);
+
+    // Create 50 star objects
+    while (this.stars.length < 50) {
+        this.stars.activate();
     }
 };
 
 Title.prototype = new Arcadia.Scene();
-
-Title.prototype.update = function (delta) {
-    Arcadia.Scene.prototype.update.call(this, delta);
-
-    var i,
-        star;
-
-    // Reset star positions
-    i = this.stars.length;
-    while (i--) {
-        star = this.stars.at(i);
-        if (star.position.y > Arcadia.HEIGHT) {
-            star.position.y = 0;
-        }
-    }
-};
