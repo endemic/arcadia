@@ -1,5 +1,9 @@
 # TODO
 
+* [ ] Decide if objects should have an "active" property
+	* Use pool to activate/deactivate?
+	* Get rid of "active" prop on objects
+* [ ] Review CoffeeScript source to ensure no random object/array creation
 * [ ] Rename Emitter to "Particles" or something
 * [ ] Refactor shadows to just set/get standard CSS string, not be limited to a "glow" effect
 * [ ] Update particle emitter to emit particles infinitely; can turn on/off
