@@ -1,12 +1,11 @@
 Pool = require './pool.coffee'
 
 class GameObject
-  constructor: (x, y) ->
+  constructor: (x = 0, y = 0) ->
     @position =
-        'x': x || 0
-        'y': y || 0
+        'x': x
+        'y': y
 
-    @active = true
     @fixed = false     # static positioning for UI elements
     @scale = 1
     @rotation = 0
@@ -16,18 +15,14 @@ class GameObject
         'green': 255
         'blue': 255
         'alpha': 1
-    @children = new Pool
     @i = 0
 
   ###
    * @description Draw child objects
    * @param {CanvasRenderingContext2D} context
   ###
-  draw: (context, offsetX, offsetY) ->
-    return if not @active
-
-    offsetX = offsetX || 0
-    offsetY = offsetY || 0
+  draw: (context, offsetX = 0, offsetY = 0) ->
+    return if @children is undefined
 
     @i = @children.length
     while @i--
@@ -38,7 +33,7 @@ class GameObject
    * @param {Number} delta Time since last update (in seconds)
   ###
   update: (delta) ->
-    return if not @active
+    return if @children is undefined
 
     @i = @children.length
     while @i--
@@ -49,20 +44,23 @@ class GameObject
    * @param {Shape} object
   ###
   add: (object) ->
+    @children = new Pool() if @children is undefined # be lazy
+
     @children.add object
     object.parent = this
 
   ###
-   * @description Clean up child objects
+   @description Clean up child objects
   ###
   destroy: ->
+    return if @children is undefined
+
     @i = @children.length
     while @i--
-      if typeof @children.at(@i).destroy == "function"
-        @children.at(@i).destroy()
+      @children.at(@i).destroy() if typeof @children.at(@i).destroy is 'function'
 
   ###
-   * @description Getter/setter for color value
+   @description Getter/setter for color value
   ###
   @property 'color',
     get: ->
