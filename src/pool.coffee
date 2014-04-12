@@ -23,19 +23,19 @@ class Pool
   add: (object) ->
     @children.push object
 
-    if object.active
-      # Swap with inactive object
+    # Swap with inactive object
+    if @length < @children.length
       @tmp = @children[@children.length - 1]
       @children[@children.length - 1] = @children[@length]
       @children[@length] = @tmp
-      @length += 1
 
-    @length
+    @length += 1
 
   ###
   @description Get an active object
   ###
-  activate: ->
+  activate: (object = null) ->
+    # TODO: conditional based on whether you want to activate a specific object
     if @length < @children.length
       @tmp = @children[@length]
       @tmp.activate() if typeof @tmp.activate == 'function'
@@ -48,10 +48,13 @@ class Pool
     @tmp
 
   ###
-  @description Deactivate an active object at a particular index
+  @description Deactivate an active object at a particular object/index
   ###
   deactivate: (index) ->
-    return false if index >= @length
+    index = @children.indexOf(index) if typeof index == 'object'
+
+    return false if index >= @length || index < 0
+
     # Move inactive object to end
     @tmp = @children[index]
     @children[index] = @children[@children.length - 1]
@@ -87,10 +90,7 @@ class Pool
   ###
   @description Passthrough method to draw active child objects
   ###
-  draw: (context, offsetX, offsetY) ->
-    offsetX = offsetX || 0
-    offsetY = offsetY || 0
-
+  draw: (context, offsetX = 0, offsetY = 0) ->
     @tmp = @length
     while @tmp--
       @children[@tmp].draw context, offsetX, offsetY

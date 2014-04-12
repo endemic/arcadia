@@ -37,8 +37,8 @@ describe 'Arcadia.Pool', ->
       @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
 
       shape = new Arcadia.Shape(0, 0, 'square', 25)
-      shape.active = false
       @pool.add shape
+      @pool.deactivate shape
 
       expect(=> @pool.activate()).not.toThrow()
       expect(@pool.length).toBe 2
@@ -51,14 +51,14 @@ describe 'Arcadia.Pool', ->
     expect(@pool.length).toBe 3
 
     @pool.deactivate 0
+
     expect(@pool.length).toBe 2
     expect(@pool.at(0).shape).toBe 'triangle'
     expect(@pool.at(1).shape).toBe 'square'
     expect(@pool.at(2)).toBe null
 
   it 'can deactivate all its objects at once', ->
-    i = 10
-    while i--
+    while @pool.length < 10
       @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
 
     expect(@pool.at(9).shape).toBe 'circle'
@@ -66,8 +66,7 @@ describe 'Arcadia.Pool', ->
     expect(@pool.at(0)).toBe null
 
   it 'can activate all its objects at once', ->
-    i = 10
-    while i--
+    while @pool.length < 10
       @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
 
     @pool.deactivateAll()
@@ -79,9 +78,9 @@ describe 'Arcadia.Pool', ->
   it 'can update its active objects', ->
     shape1 = new Arcadia.Shape(0, 0, 'circle', 25)
     shape2 = new Arcadia.Shape(0, 0, 'circle', 25)
-    shape2.active = false
     @pool.add shape1
     @pool.add shape2
+    @pool.deactivate shape2
     spyOn shape1, 'update'
     spyOn shape2, 'update'
 
@@ -92,9 +91,9 @@ describe 'Arcadia.Pool', ->
   it 'can draw its active objects', ->
     shape1 = new Arcadia.Shape(0, 0, 'circle', 25)
     shape2 = new Arcadia.Shape(0, 0, 'circle', 25)
-    shape1.active = false
     @pool.add shape1
     @pool.add shape2
+    @pool.deactivate shape1
     spyOn shape1, 'draw'
     spyOn shape2, 'draw'
 
