@@ -765,11 +765,16 @@
 
   GameObject = (function() {
     function GameObject(x, y) {
+      if (x == null) {
+        x = 0;
+      }
+      if (y == null) {
+        y = 0;
+      }
       this.position = {
-        'x': x || 0,
-        'y': y || 0
+        'x': x,
+        'y': y
       };
-      this.active = true;
       this.fixed = false;
       this.scale = 1;
       this.rotation = 0;
@@ -780,7 +785,6 @@
         'blue': 255,
         'alpha': 1
       };
-      this.children = new Pool;
       this.i = 0;
     }
 
@@ -792,11 +796,15 @@
 
     GameObject.prototype.draw = function(context, offsetX, offsetY) {
       var _results;
-      if (!this.active) {
+      if (offsetX == null) {
+        offsetX = 0;
+      }
+      if (offsetY == null) {
+        offsetY = 0;
+      }
+      if (this.children === void 0) {
         return;
       }
-      offsetX = offsetX || 0;
-      offsetY = offsetY || 0;
       this.i = this.children.length;
       _results = [];
       while (this.i--) {
@@ -813,7 +821,7 @@
 
     GameObject.prototype.update = function(delta) {
       var _results;
-      if (!this.active) {
+      if (this.children === void 0) {
         return;
       }
       this.i = this.children.length;
@@ -831,21 +839,27 @@
 
 
     GameObject.prototype.add = function(object) {
+      if (this.children === void 0) {
+        this.children = new Pool();
+      }
       this.children.add(object);
       return object.parent = this;
     };
 
     /*
-     * @description Clean up child objects
+     @description Clean up child objects
     */
 
 
     GameObject.prototype.destroy = function() {
       var _results;
+      if (this.children === void 0) {
+        return;
+      }
       this.i = this.children.length;
       _results = [];
       while (this.i--) {
-        if (typeof this.children.at(this.i).destroy === "function") {
+        if (typeof this.children.at(this.i).destroy === 'function') {
           _results.push(this.children.at(this.i).destroy());
         } else {
           _results.push(void 0);
@@ -855,7 +869,7 @@
     };
 
     /*
-     * @description Getter/setter for color value
+     @description Getter/setter for color value
     */
 
 
@@ -1038,13 +1052,12 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Pool.prototype.add = function(object) {
       this.children.push(object);
-      if (object.active) {
+      if (this.length < this.children.length) {
         this.tmp = this.children[this.children.length - 1];
         this.children[this.children.length - 1] = this.children[this.length];
         this.children[this.length] = this.tmp;
-        this.length += 1;
       }
-      return this.length;
+      return this.length += 1;
     };
 
     /*
@@ -1052,7 +1065,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Pool.prototype.activate = function() {
+    Pool.prototype.activate = function(object) {
+      if (object == null) {
+        object = null;
+      }
       if (this.length < this.children.length) {
         this.tmp = this.children[this.length];
         if (typeof this.tmp.activate === 'function') {
@@ -1070,12 +1086,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
-    @description Deactivate an active object at a particular index
+    @description Deactivate an active object at a particular object/index
     */
 
 
     Pool.prototype.deactivate = function(index) {
-      if (index >= this.length) {
+      if (typeof index === 'object') {
+        index = this.children.indexOf(index);
+      }
+      if (index >= this.length || index < 0) {
         return false;
       }
       this.tmp = this.children[index];
@@ -1132,8 +1151,12 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Pool.prototype.draw = function(context, offsetX, offsetY) {
       var _results;
-      offsetX = offsetX || 0;
-      offsetY = offsetY || 0;
+      if (offsetX == null) {
+        offsetX = 0;
+      }
+      if (offsetY == null) {
+        offsetY = 0;
+      }
       this.tmp = this.length;
       _results = [];
       while (this.tmp--) {
