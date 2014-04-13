@@ -1,8 +1,8 @@
 /*jslint sloppy: true, browser: true */
-/*globals Vectr */
+/*globals Arcadia */
 
 var Enemy = function () {
-    Vectr.Shape.apply(this, arguments);
+    Arcadia.Shape.apply(this, arguments);
 
     this.colors = {
         'red': 255,
@@ -15,9 +15,9 @@ var Enemy = function () {
     this.speed = 40;
     this.size = 20;
     this.shape = 'triangle';
-    this.active = false;
+    // this.active = false;
     this.bulletTimer = 0;
     this.lineWidth = 3;
 };
 
-Enemy.prototype = new Vectr.Shape();
+Enemy.prototype = new Arcadia.Shape();
