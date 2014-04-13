@@ -23,7 +23,14 @@ describe 'Arcadia.Pool', ->
     expect(@pool.length).toBe 8
 
     shape = @pool.at 0
-    expect(@pool.remove(shape)).not.toThrow()
+    # ensure "destroy" method is called when object is removed
+    shape.destroy = ->
+      console.log 'pass'
+    spyOn shape, 'destroy'
+
+    expect(=> @pool.remove()).toThrow()
+    expect(@pool.remove(shape)).toBe shape
+    expect(shape.destroy).toHaveBeenCalled()
     expect(@pool.length).toBe 7
 
   it 'can access active objects', ->

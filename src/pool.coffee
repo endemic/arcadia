@@ -22,27 +22,32 @@ class Pool
   ###
   add: (object) ->
     @children.push object
+    @length += 1
 
     # Swap with inactive object
+    # TODO: test this condition
     if @length < @children.length
       @tmp = @children[@children.length - 1]
       @children[@children.length - 1] = @children[@length]
       @children[@length] = @tmp
 
-    @length += 1
+    @length
 
   ###
   @description Remove an object from the recycle pool
   ###
-  remove: (object) ->
-    index = @children.indexOf object
+  remove: (objectOrIndex) ->
+    throw 'Must specify an object/index to remove' if objectOrIndex is undefined
+
+    index = if objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
     return if index is -1
 
-    object.destroy() if object.destroy is 'function'
-    object.parent = null
+    object = @children[index]
+    object.destroy() if typeof object.destroy is 'function'
 
     @children.splice index, 1
     @length -= 1 if index < @length
+    object
 
   ###
   @description Get an active object
