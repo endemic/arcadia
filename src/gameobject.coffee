@@ -35,14 +35,15 @@ class GameObject
   ###
   add: (object) ->
     @children.add object
+    console.log @children.length
     object.parent = this
 
   ###
   @description Permanently remove an object from the draw/update loop
   @param {Shape} object
   ###
-  remove: (object) ->
-    @children.remove object
+  remove: (objectOrIndex) ->
+    @children.remove objectOrIndex
 
   ###
   @description Passthrough to @children Pool
