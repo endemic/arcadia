@@ -14,6 +14,18 @@ describe 'Arcadia.Pool', ->
     @pool.add shape
     expect(@pool.length).toBe 1
 
+  it 'can remove objects', ->
+    while @pool.length < 10
+      @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
+
+    @pool.deactivate 9
+    @pool.deactivate 8
+    expect(@pool.length).toBe 8
+
+    shape = @pool.at 0
+    expect(@pool.remove(shape)).not.toThrow()
+    expect(@pool.length).toBe 7
+
   it 'can access active objects', ->
     shape = new Arcadia.Shape(0, 0, 'circle', 25)
     @pool.add shape
@@ -34,15 +46,14 @@ describe 'Arcadia.Pool', ->
 
   describe 'activating objects when there _are_ inactive objects', ->
     it 'can activate objects', ->
-      @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
+      while @pool.length < 10
+        @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
 
-      shape = new Arcadia.Shape(0, 0, 'square', 25)
-      @pool.add shape
-      @pool.deactivate shape
+      @pool.deactivate 0
+      expect(@pool.length).toBe 9
 
       expect(=> @pool.activate()).not.toThrow()
-      expect(@pool.length).toBe 2
-      expect(@pool.at(1).shape).toBe 'square'
+      expect(@pool.length).toBe 10
 
   it 'can deactivate objects', ->
     @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
