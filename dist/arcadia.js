@@ -182,7 +182,7 @@
       this.label = new Arcadia.Label(x, y, text);
       this.add(this.label);
       this.backgroundColor = 'rgba(255, 255, 255, 1)';
-      this.height = parseInt(this.label.fonts.size, 10);
+      this.height = parseInt(this.label.font, 10);
       this.solid = true;
       this.padding = 10;
       this.fixed = true;
@@ -192,8 +192,8 @@
     }
 
     /*
-     * @description Draw object
-     * @param {CanvasRenderingContext2D} context
+    @description Draw object
+    @param {CanvasRenderingContext2D} context
     */
 
 
@@ -205,11 +205,11 @@
       this.width = this.label.width(context);
       context.save();
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
-      if (this.glow > 0) {
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0;
-        context.shadowBlur = this.glow;
-        context.shadowColor = this.color;
+      if (this.shadow.x && this.shadow.y && this.shadow.blur) {
+        context.shadowOffsetX = this.shadow.x;
+        context.shadowOffsetY = this.shadow.y;
+        context.shadowBlur = this.shadow.blur;
+        context.shadowColor = this.shadow.color;
       }
       if (this.solid === true) {
         context.fillStyle = this.backgroundColor;
@@ -222,7 +222,7 @@
     };
 
     /*
-     * @description If touch/mouse end is inside button, execute the user-supplied callback
+    @description If touch/mouse end is inside button, execute the user-supplied callback
     */
 
 
@@ -242,7 +242,7 @@
     };
 
     /*
-     * @description Helper method to determine if mouse/touch is inside button graphic
+    @description Helper method to determine if mouse/touch is inside button graphic
     */
 
 
@@ -251,7 +251,7 @@
     };
 
     /*
-     * @description Clean up event listeners
+    @description Clean up event listeners
     */
 
 
@@ -261,28 +261,7 @@
     };
 
     /*
-     * @description Getter/setter for background color value
-    */
-
-
-    Button.property('backgroundColor', {
-      get: function() {
-        return "rgba(" + this.backgroundColors.red + ", " + this.backgroundColors.green + ", " + this.backgroundColors.blue + ", " + this.backgroundColors.alpha + ")";
-      },
-      set: function(color) {
-        var tmp;
-        tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
-        if (tmp.length === 5) {
-          this.backgroundColors.red = parseInt(tmp[1], 10);
-          this.backgroundColors.green = parseInt(tmp[2], 10);
-          this.backgroundColors.blue = parseInt(tmp[3], 10);
-          return this.backgroundColors.alpha = parseFloat(tmp[4], 10);
-        }
-      }
-    });
-
-    /*
-     * @description Getter/setter for font value
+    @description Getter/setter for font value
     */
 
 
@@ -806,6 +785,7 @@
 
     GameObject.prototype.add = function(object) {
       this.children.add(object);
+      console.log(this.children.length);
       return object.parent = this;
     };
 
@@ -815,8 +795,8 @@
     */
 
 
-    GameObject.prototype.remove = function(object) {
-      return this.children.remove(object);
+    GameObject.prototype.remove = function(objectOrIndex) {
+      return this.children.remove(objectOrIndex);
     };
 
     /*
@@ -859,6 +839,9 @@
     __extends(Label, _super);
 
     function Label(x, y, text) {
+      if (text == null) {
+        text = 'text goes here';
+      }
       Label.__super__.constructor.apply(this, arguments);
       this.text = text;
       this.fixed = true;
@@ -874,14 +857,20 @@
 
 
     Label.prototype.draw = function(context, offsetX, offsetY) {
-      Label.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-      if (this.fixed) {
-        offsetX = offsetY = 0;
+      if (offsetX == null) {
+        offsetX = 0;
       }
+      if (offsetY == null) {
+        offsetY = 0;
+      }
+      Label.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       context.save();
       context.font = this.font;
       context.textAlign = this.alignment;
-      context.translate(this.position.x + offsetX, this.position.y + parseInt(this.fonts.size, 10) / 3 + offsetY);
+      if (this.fixed) {
+        offsetX = offsetY = 0;
+      }
+      context.translate(this.position.x + offsetX, this.position.y + parseInt(this.font, 10) / 3 + offsetY);
       if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
       }
@@ -963,12 +952,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Pool.prototype.add = function(object) {
       this.children.push(object);
+      this.length += 1;
       if (this.length < this.children.length) {
         this.tmp = this.children[this.children.length - 1];
         this.children[this.children.length - 1] = this.children[this.length];
         this.children[this.length] = this.tmp;
       }
-      return this.length += 1;
+      return this.length;
     };
 
     /*
@@ -976,20 +966,24 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Pool.prototype.remove = function(object) {
-      var index;
-      index = this.children.indexOf(object);
+    Pool.prototype.remove = function(objectOrIndex) {
+      var index, object;
+      if (objectOrIndex === void 0) {
+        throw 'Must specify an object/index to remove';
+      }
+      index = objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
       if (index === -1) {
         return;
       }
-      if (object.destroy === 'function') {
+      object = this.children[index];
+      if (typeof object.destroy === 'function') {
         object.destroy();
       }
-      object.parent = null;
       this.children.splice(index, 1);
       if (index < this.length) {
-        return this.length -= 1;
+        this.length -= 1;
       }
+      return object;
     };
 
     /*
