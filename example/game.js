@@ -9,9 +9,10 @@ var Game = function () {
     this.gameOverLabel = new Arcadia.Label(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 4, "GAME OVER");
     this.gameOverLabel.font = '40px monospace';
     this.gameOverLabel.color = 'rgba(255, 255, 255, 0.8)';
-    this.gameOverLabel.active = false;
     this.gameOverLabel.glow = 10;
+
     this.add(this.gameOverLabel);
+    this.deactivate(this.gameOverLabel);
 
     this.tryAgainButton = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "TRY AGAIN");
     this.tryAgainButton.font = '20px monospace';
@@ -21,8 +22,9 @@ var Game = function () {
     this.tryAgainButton.onUp = function () {
         Arcadia.changeScene(Game);
     };
-    this.tryAgainButton.active = false;
+
     this.add(this.tryAgainButton);
+    this.deactivate(this.tryAgainButton);
 
     // Score label
     this.label = new Arcadia.Label(10, 20, "Score: 0");
@@ -316,8 +318,8 @@ Game.prototype.onKeyUp = function (key) {
 Game.prototype.showGameOver = function () {
     this.gameOver = true;
 
-    this.player.active = false;
+    this.deactivate(this.player);
 
-    this.gameOverLabel.active = true;
-    this.tryAgainButton.active = true;
+    this.activate(this.gameOverLabel);
+    this.activate(this.tryAgainButton);
 };

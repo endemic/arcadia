@@ -181,12 +181,7 @@
       Button.__super__.constructor.apply(this, arguments);
       this.label = new Arcadia.Label(x, y, text);
       this.add(this.label);
-      this.backgroundColors = {
-        'red': 255,
-        'green': 255,
-        'blue': 255,
-        'alpha': 1
-      };
+      this.backgroundColor = 'rgba(255, 255, 255, 1)';
       this.height = parseInt(this.label.fonts.size, 10);
       this.solid = true;
       this.padding = 10;
@@ -203,9 +198,6 @@
 
 
     Button.prototype.draw = function(context, offsetX, offsetY) {
-      if (!this.active) {
-        return;
-      }
       Button.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       if (this.fixed) {
         offsetX = offsetY = 0;
@@ -236,7 +228,7 @@
 
     Button.prototype.onPointEnd = function(event) {
       var i;
-      if (!this.active || typeof this.onUp !== 'function') {
+      if (typeof this.onUp !== 'function') {
         return;
       }
       Arcadia.getPoints(event);
@@ -342,14 +334,13 @@
       this.duration = 1;
       this.fade = false;
       this.speed = 200;
-      this.active = false;
       count = count || 25;
       while (count--) {
         particle = new Shape(0, 0, shape || 'square', size || 5);
-        particle.active = false;
         particle.solid = true;
-        this.children.add(particle);
+        this.add(particle);
       }
+      return;
     }
 
     /*
@@ -379,20 +370,8 @@
       return this.position.y = y;
     };
 
-    Emitter.prototype.draw = function(context, offsetX, offsetY) {
-      if (!this.active) {
-        return;
-      }
-      offsetX = offsetX || 0;
-      offsetY = offsetY || 0;
-      return this.children.draw(context, offsetX, offsetY);
-    };
-
     Emitter.prototype.update = function(delta) {
-      if (!this.active || !this.children.active) {
-        return;
-      }
-      this.children.update(delta);
+      Emitter.__super__.update.call(this, delta);
       this.timer += delta;
       this.i = this.children.length;
       while (this.i--) {
@@ -404,6 +383,10 @@
           this.children.deactivate(this.i);
         }
       }
+    };
+
+    Emitter.prototype.reset = function() {
+      return this.i;
     };
 
     return Emitter;
@@ -772,122 +755,88 @@
         y = 0;
       }
       this.position = {
-        'x': x,
-        'y': y
+        x: x,
+        y: y
       };
+      this.children = new Pool();
       this.fixed = false;
       this.scale = 1;
       this.rotation = 0;
-      this.glow = 0;
-      this.colors = {
-        'red': 255,
-        'green': 255,
-        'blue': 255,
-        'alpha': 1
+      this.color = 'rgba(255, 255, 255, 1)';
+      this.shadow = {
+        x: 0,
+        y: 0,
+        blur: 0,
+        color: 'rgba(255, 255, 255, 1)'
       };
-      this.i = 0;
+      this.tmp = 0;
     }
 
     /*
-     * @description Draw child objects
-     * @param {CanvasRenderingContext2D} context
+    @description Draw child objects
+    @param {CanvasRenderingContext2D} context
     */
 
 
     GameObject.prototype.draw = function(context, offsetX, offsetY) {
-      var _results;
       if (offsetX == null) {
         offsetX = 0;
       }
       if (offsetY == null) {
         offsetY = 0;
       }
-      if (this.children === void 0) {
-        return;
-      }
-      this.i = this.children.length;
-      _results = [];
-      while (this.i--) {
-        _results.push(this.children.at(this.i).draw(context, offsetX, offsetY));
-      }
-      return _results;
+      return this.children.draw(context, offsetX, offsetY);
     };
 
     /*
-     * @description Update all child objects
-     * @param {Number} delta Time since last update (in seconds)
+    @description Update child objects
+    @param {Number} delta Time since last update (in seconds)
     */
 
 
     GameObject.prototype.update = function(delta) {
-      var _results;
-      if (this.children === void 0) {
-        return;
-      }
-      this.i = this.children.length;
-      _results = [];
-      while (this.i--) {
-        _results.push(this.children.at(this.i).update(delta));
-      }
-      return _results;
+      return this.children.update(delta);
     };
 
     /*
-     * @description Add an object to the draw/update loop
-     * @param {Shape} object
+    @description Add an object to the draw/update loop
+    @param {Shape} object
     */
 
 
     GameObject.prototype.add = function(object) {
-      if (this.children === void 0) {
-        this.children = new Pool();
-      }
       this.children.add(object);
       return object.parent = this;
     };
 
     /*
-     @description Clean up child objects
+    @description Permanently remove an object from the draw/update loop
+    @param {Shape} object
     */
 
 
-    GameObject.prototype.destroy = function() {
-      var _results;
-      if (this.children === void 0) {
-        return;
-      }
-      this.i = this.children.length;
-      _results = [];
-      while (this.i--) {
-        if (typeof this.children.at(this.i).destroy === 'function') {
-          _results.push(this.children.at(this.i).destroy());
-        } else {
-          _results.push(void 0);
-        }
-      }
-      return _results;
+    GameObject.prototype.remove = function(object) {
+      return this.children.remove(object);
     };
 
     /*
-     @description Getter/setter for color value
+    @description Passthrough to @children Pool
+    @param {Number|Object} index Object/index to activate
     */
 
 
-    GameObject.property('color', {
-      get: function() {
-        return "rgba(" + this.colors.red + ", " + this.colors.green + ", " + this.colors.blue + ", " + this.colors.alpha + ")";
-      },
-      set: function(color) {
-        var tmp;
-        tmp = color.match(/^rgba\((\d+),\s?(\d+),\s?(\d+),\s?(\d?\.?\d*)\)$/);
-        if (tmp.length === 5) {
-          this.colors.red = parseInt(tmp[1], 10);
-          this.colors.green = parseInt(tmp[2], 10);
-          this.colors.blue = parseInt(tmp[3], 10);
-          return this.colors.alpha = parseFloat(tmp[4], 10);
-        }
-      }
-    });
+    GameObject.prototype.activate = function(index) {
+      return this.children.activate(index);
+    };
+
+    /*
+    @description Passthrough to @children Pool
+    */
+
+
+    GameObject.prototype.deactivate = function(index) {
+      return this.children.deactivate(index);
+    };
 
     return GameObject;
 
@@ -913,24 +862,18 @@
       Label.__super__.constructor.apply(this, arguments);
       this.text = text;
       this.fixed = true;
-      this.fonts = {
-        size: '10px',
-        family: 'monospace'
-      };
+      this.font = '10px monospace';
       this.alignment = 'center';
       this.solid = true;
     }
 
     /*
-     * @description Draw object
-     * @param {CanvasRenderingContext2D} context
+    @description Draw object
+    @param {CanvasRenderingContext2D} context
     */
 
 
     Label.prototype.draw = function(context, offsetX, offsetY) {
-      if (!this.active) {
-        return;
-      }
       Label.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       if (this.fixed) {
         offsetX = offsetY = 0;
@@ -945,11 +888,11 @@
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (this.glow > 0) {
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0;
-        context.shadowBlur = this.glow;
-        context.shadowColor = this.color;
+      if (this.shadow.x && this.shadow.y && this.shadow.blur) {
+        context.shadowOffsetX = this.shadow.x;
+        context.shadowOffsetY = this.shadow.y;
+        context.shadowBlur = this.shadow.blur;
+        context.shadowColor = this.shadow.color;
       }
       if (this.solid) {
         context.fillStyle = this.color;
@@ -962,52 +905,20 @@
     };
 
     /*
-     * @description Update object
-     * @param {Number} delta Time since last update (in seconds)
-    */
-
-
-    Label.prototype.update = function(delta) {
-      if (!this.active) {
-        return;
-      }
-      return Label.__super__.update.call(this, delta);
-    };
-
-    /*
-     * @description Utility function to determine the width of the label
-     * @param {CanvasRenderingContext2D} context
+    @description Utility function to determine the width of the label
+    @param {CanvasRenderingContext2D} context
     */
 
 
     Label.prototype.width = function(context) {
       var metrics;
       context.save();
-      context.font = this.fonts.size + ' ' + this.fonts.family;
+      context.font = this.font;
       context.textAlign = this.alignment;
       metrics = context.measureText(this.text);
       context.restore();
       return metrics.width;
     };
-
-    /*
-     * @description Getter/setter for font value
-    */
-
-
-    Label.property('font', {
-      get: function() {
-        return "" + this.fonts.size + " " + this.fonts.family;
-      },
-      set: function(font) {
-        var tmp;
-        tmp = font.split(' ');
-        if (tmp.length === 2) {
-          this.fonts.size = tmp[0];
-          return this.fonts.family = tmp[1];
-        }
-      }
-    });
 
     return Label;
 
@@ -1061,26 +972,60 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
+    @description Remove an object from the recycle pool
+    */
+
+
+    Pool.prototype.remove = function(object) {
+      var index;
+      index = this.children.indexOf(object);
+      if (index === -1) {
+        return;
+      }
+      if (object.destroy === 'function') {
+        object.destroy();
+      }
+      object.parent = null;
+      this.children.splice(index, 1);
+      if (index < this.length) {
+        return this.length -= 1;
+      }
+    };
+
+    /*
     @description Get an active object
     */
 
 
     Pool.prototype.activate = function(object) {
+      var index;
       if (object == null) {
         object = null;
       }
-      if (this.length < this.children.length) {
+      if (object !== null) {
+        index = this.children.indexOf(object);
+        if (!((this.length > index && index > 0))) {
+          return;
+        }
         this.tmp = this.children[this.length];
-        if (typeof this.tmp.activate === 'function') {
-          this.tmp.activate();
-        }
-      } else {
-        if (typeof this.factory !== 'function') {
-          throw 'A Recycle Pool needs a factory defined!';
-        }
-        this.tmp = this.factory();
-        this.children.push(this.tmp);
+        this.children[this.length] = this.children[index];
+        this.children[index] = this.tmp;
+        this.length += 1;
+        return this.children[this.length];
       }
+      if (object === null && this.length < this.children.length) {
+        this.tmp = this.children[this.length];
+        if (typeof this.tmp.reset === 'function') {
+          this.tmp.reset();
+        }
+        this.length += 1;
+        return this.tmp;
+      }
+      if (typeof this.factory !== 'function') {
+        throw 'A Recycle Pool needs a factory defined!';
+      }
+      this.tmp = this.factory();
+      this.children.push(this.tmp);
       this.length += 1;
       return this.tmp;
     };
@@ -1095,7 +1040,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         index = this.children.indexOf(index);
       }
       if (index >= this.length || index < 0) {
-        return false;
+        return null;
       }
       this.tmp = this.children[index];
       this.children[index] = this.children[this.children.length - 1];
@@ -1122,8 +1067,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       this.length = this.children.length;
       while (this.length--) {
         this.tmp = this.children[this.length];
-        if (typeof this.tmp.activate === 'function') {
-          this.tmp.activate();
+        if (typeof this.tmp.reset === 'function') {
+          this.tmp.reset();
         }
       }
       return this.length = this.children.length;
@@ -1297,9 +1242,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     function Shape(x, y, shape, size) {
+      if (shape == null) {
+        shape = 'square';
+      }
+      if (size == null) {
+        size = 10;
+      }
       Shape.__super__.constructor.call(this, x, y);
-      this.shape = shape || 'square';
-      this.size = size || 10;
+      this.shape = shape;
+      this.size = size;
       this.lineWidth = 1;
       this.lineJoin = 'round';
       this.speed = 1;
@@ -1317,8 +1268,11 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.draw = function(context, offsetX, offsetY) {
-      if (!this.active) {
-        return;
+      if (offsetX == null) {
+        offsetX = 0;
+      }
+      if (offsetY == null) {
+        offsetY = 0;
       }
       if (this.fixed) {
         offsetX = offsetY = 0;
@@ -1332,11 +1286,11 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (this.glow > 0) {
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0;
-        context.shadowBlur = this.glow;
-        context.shadowColor = this.color;
+      if (this.shadow.x && this.shadow.y && this.shadow.blur) {
+        context.shadowOffsetX = this.shadow.x;
+        context.shadowOffsetY = this.shadow.y;
+        context.shadowBlur = this.shadow.blur;
+        context.shadowColor = this.shadow.color;
       }
       context.lineWidth = this.lineWidth;
       context.lineJoin = this.lineJoin;
@@ -1374,18 +1328,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
-     * @description Update object
-     * @param {Number} delta Time since last update (in seconds)
+    @description Update object
+    @param {Number} delta Time since last update (in seconds)
     */
 
 
     Shape.prototype.update = function(delta) {
-      if (!this.active) {
-        return;
-      }
+      Shape.__super__.update.call(this, delta);
       this.position.x += this.velocity.x * this.speed * delta;
-      this.position.y += this.velocity.y * this.speed * delta;
-      return Shape.__super__.update.call(this, delta);
+      return this.position.y += this.velocity.y * this.speed * delta;
     };
 
     /*
