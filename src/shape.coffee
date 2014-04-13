@@ -8,11 +8,11 @@ class Shape extends GameObject
    * @param {String} shape String representing what to draw
    * @param {Number} size Size of shape in pixels
   ###
-  constructor: (x, y, shape, size) ->
+  constructor: (x, y, shape = 'square', size = 10) ->
     super x, y
 
-    @shape = shape || 'square'
-    @size = size || 10
+    @shape = shape
+    @size = size
     @lineWidth = 1
     @lineJoin = 'round'            # miter, round, bevel
     @speed = 1
@@ -25,28 +25,23 @@ class Shape extends GameObject
    * @description Draw object
    * @param {CanvasRenderingContext2D} context
   ###
-  draw: (context, offsetX, offsetY) ->
-    return if not @active
-
+  draw: (context, offsetX = 0, offsetY = 0) ->
     offsetX = offsetY = 0 if @fixed
 
     # Draw child objects first, so they will be on the "bottom"
     super context, @position.x + offsetX, @position.y + offsetY
 
     context.save()
-    context.translate(@position.x + offsetX, @position.y + offsetY)
 
-    if @scale != 1
-      context.scale(@scale, @scale)
+    context.translate @position.x + offsetX, @position.y + offsetY
+    context.scale @scale, @scale if @scale != 1
+    context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
 
-    if @rotation != 0 && @rotation != Math.PI * 2
-      context.rotate(@rotation)
-
-    if @glow > 0
-      context.shadowOffsetX = 0
-      context.shadowOffsetY = 0
-      context.shadowBlur = @glow
-      context.shadowColor = @color
+    if @shadow.x and @shadow.y and @shadow.blur
+      context.shadowOffsetX = @shadow.x
+      context.shadowOffsetY = @shadow.y
+      context.shadowBlur = @shadow.blur
+      context.shadowColor = @shadow.color
 
     context.lineWidth = @lineWidth
     context.lineJoin = @lineJoin
@@ -84,17 +79,14 @@ class Shape extends GameObject
     context.restore()
 
   ###
-   * @description Update object
-   * @param {Number} delta Time since last update (in seconds)
+  @description Update object
+  @param {Number} delta Time since last update (in seconds)
   ###
   update: (delta) ->
-    return if not @active
+    super delta
 
     @position.x += @velocity.x * @speed * delta
     @position.y += @velocity.y * @speed * delta
-
-    # Update child objects
-    super delta
 
   ###
    * @description Basic collision detection

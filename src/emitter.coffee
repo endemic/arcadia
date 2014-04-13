@@ -16,14 +16,14 @@ class Emitter extends GameObject
     @duration = 1
     @fade = false
     @speed = 200
-    @active = false
     count = count || 25
 
     while count--
       particle = new Shape(0, 0, shape || 'square', size || 5)
-      particle.active = false
       particle.solid = true
-      @children.add(particle)
+      @add particle
+
+    return # CoffeeScript idiosyncrasy; don't return the results of the while loop
 
   ###
    * @description Activate a particle emitter
@@ -52,18 +52,9 @@ class Emitter extends GameObject
     @position.x = x
     @position.y = y
 
-  draw: (context, offsetX, offsetY) ->
-    return if not @active
-
-    offsetX = offsetX || 0
-    offsetY = offsetY || 0
-
-    @children.draw context, offsetX, offsetY
-
   update: (delta) ->
-    return if not @active or not @children.active
+    super delta
 
-    @children.update delta
     @timer += delta
 
     @i = @children.length
@@ -72,6 +63,9 @@ class Emitter extends GameObject
       @particle.colors.alpha -= delta / @duration if @fade
       @children.deactivate @i if @timer >= @duration
 
-    return  # CoffeeScript idiosincracy; don't return the results of the while loop
+    return # CoffeeScript idiosyncrasy; don't return the results of the while loop
+
+  reset: ->
+    @i
 
 module.exports = Emitter

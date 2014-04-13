@@ -6,14 +6,10 @@ class Button extends GameObject
 
     # Create label that goes inside button border
     @label = new Arcadia.Label(x, y, text)
-    @add(@label)
+    @add @label
 
     # Default border/background
-    @backgroundColors =
-      'red': 255
-      'green': 255
-      'blue': 255
-      'alpha': 1
+    @backgroundColor = 'rgba(255, 255, 255, 1)'
 
     @height = parseInt(@label.fonts.size, 10)
     @solid = true
@@ -30,7 +26,7 @@ class Button extends GameObject
    * @param {CanvasRenderingContext2D} context
   ###
   draw: (context, offsetX, offsetY) ->
-    return if not @active
+    #return if not @active
 
     # Draw label
     super context, @position.x + offsetX, @position.y + offsetY
@@ -62,7 +58,8 @@ class Button extends GameObject
    * @description If touch/mouse end is inside button, execute the user-supplied callback
   ###
   onPointEnd: (event) ->
-    return if not @active or typeof @onUp != 'function'
+    #return if not @active or typeof @onUp != 'function'
+    return if typeof @onUp != 'function'
 
     Arcadia.getPoints event
 

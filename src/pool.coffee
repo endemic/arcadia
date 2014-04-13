@@ -32,20 +32,43 @@ class Pool
     @length += 1
 
   ###
+  @description Remove an object from the recycle pool
+  ###
+  remove: (object) ->
+    index = @children.indexOf object
+    return if index is -1
+
+    object.destroy() if object.destroy is 'function'
+    object.parent = null
+
+    @children.splice index, 1
+    @length -= 1 if index < @length
+
+  ###
   @description Get an active object
   ###
   activate: (object = null) ->
-    # TODO: conditional based on whether you want to activate a specific object
-    if @length < @children.length
-      @tmp = @children[@length]
-      @tmp.activate() if typeof @tmp.activate == 'function'
-    else
-      throw 'A Recycle Pool needs a factory defined!' if typeof @factory != 'function'
-      @tmp = @factory()
-      @children.push @tmp
+    if object != null
+      index = @children.indexOf(object)
+      return unless @length > index > 0
 
+      @tmp = @children[@length]
+      @children[@length] = @children[index]
+      @children[index] = @tmp
+      @length += 1
+      return @children[@length]
+
+    if object == null && @length < @children.length
+      @tmp = @children[@length]
+      @tmp.reset() if typeof @tmp.reset == 'function'
+      @length += 1
+      return @tmp
+
+    throw 'A Recycle Pool needs a factory defined!' if typeof @factory != 'function'
+    @tmp = @factory()
+    @children.push @tmp
     @length += 1
-    @tmp
+    return @tmp
 
   ###
   @description Deactivate an active object at a particular object/index
@@ -53,7 +76,7 @@ class Pool
   deactivate: (index) ->
     index = @children.indexOf(index) if typeof index == 'object'
 
-    return false if index >= @length || index < 0
+    return null if index >= @length || index < 0
 
     # Move inactive object to end
     @tmp = @children[index]
@@ -76,7 +99,7 @@ class Pool
     @length = @children.length
     while @length--
       @tmp = @children[@length]
-      @tmp.activate() if typeof @tmp.activate == 'function'
+      @tmp.reset() if typeof @tmp.reset == 'function'
     @length = @children.length
 
   ###
