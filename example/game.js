@@ -11,8 +11,8 @@ var Game = function () {
     this.gameOverLabel.color = 'rgba(255, 255, 255, 0.8)';
     this.gameOverLabel.glow = 10;
 
-    this.add(this.gameOverLabel);
-    this.deactivate(this.gameOverLabel);
+    this.children.add(this.gameOverLabel);
+    this.children.deactivate(this.gameOverLabel);
 
     this.tryAgainButton = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "TRY AGAIN");
     this.tryAgainButton.font = '20px monospace';
@@ -23,20 +23,20 @@ var Game = function () {
         Arcadia.changeScene(Game);
     };
 
-    this.add(this.tryAgainButton);
-    this.deactivate(this.tryAgainButton);
+    this.children.add(this.tryAgainButton);
+    this.children.deactivate(this.tryAgainButton);
 
     // Score label
     this.label = new Arcadia.Label(10, 20, "Score: 0");
     this.label.font = '16px monospace';
     this.label.alignment = 'left';
     this.label.glow = 10;
-    this.add(this.label);
+    this.children.add(this.label);
     this.score = 0;
 
     // Player
     this.player = new Player(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 1.5);
-    this.add(this.player);
+    this.children.add(this.player);
     this.camera.target = this.player;
 
     // Other game objects
@@ -44,19 +44,19 @@ var Game = function () {
     this.playerBullets.factory = function () {
         return new PlayerBullet();
     };
-    this.add(this.playerBullets);
+    this.children.add(this.playerBullets);
 
     this.enemyBullets = new Arcadia.Pool();
     this.enemyBullets.factory = function () {
         return new EnemyBullet();
     };
-    this.add(this.enemyBullets);
+    this.children.add(this.enemyBullets);
 
     this.enemies = new Arcadia.Pool();
     this.enemies.factory = function () {
         return new Enemy();
     };
-    this.add(this.enemies);
+    this.children.add(this.enemies);
 
     this.spawnTimer = 999;  // Immediately spawn an enemy
 
@@ -68,7 +68,7 @@ var Game = function () {
         obj.duration = 0.5;
         return obj;
     };
-    this.add(this.particles);
+    this.children.add(this.particles);
 
     // i = 5;
     // while (i--) {
@@ -82,7 +82,7 @@ var Game = function () {
     this.playerExplosion = new Arcadia.Emitter('circle', 4, 30);
     this.playerExplosion.color = 'rgba(255, 255, 255, 1)';
     this.playerExplosion.duration = 0.5;
-    this.add(this.playerExplosion);
+    this.children.add(this.playerExplosion);
 
     // Add a starfield background
     this.stars = new Arcadia.Pool();
@@ -102,7 +102,7 @@ var Game = function () {
         return star;
     };
 
-    this.add(this.stars);
+    this.children.add(this.stars);
 
     // Create 50 star objects
     while (this.stars.length < 50) {
@@ -318,8 +318,8 @@ Game.prototype.onKeyUp = function (key) {
 Game.prototype.showGameOver = function () {
     this.gameOver = true;
 
-    this.deactivate(this.player);
+    this.children.deactivate(this.player);
 
-    this.activate(this.gameOverLabel);
-    this.activate(this.tryAgainButton);
+    this.children.activate(this.gameOverLabel);
+    this.children.activate(this.tryAgainButton);
 };
