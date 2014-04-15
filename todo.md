@@ -1,16 +1,13 @@
 # TODO
 
-* [ ] Decide if objects should have an "active" property
-	* Use pool to activate/deactivate?
-	* Get rid of "active" prop on objects
-* [ ] Review CoffeeScript source to ensure no random object/array creation
+* Work on emitter
 * [ ] Rename Emitter to "Particles" or something
-* [ ] Refactor shadows to just set/get standard CSS string, not be limited to a "glow" effect
 * [ ] Update particle emitter to emit particles infinitely; can turn on/off
+* [ ] Review CoffeeScript source to ensure no random object/array creation
+* [ ] Refactor shadows to just set/get standard CSS string, not be limited to a "glow" effect
 * [ ] Add additional effects to particles: rotate, fade, scale, etc.
 * [ ] Allow 'rectangle' shapes
 * [ ] Cull drawing of objects outwide viewport
-* [ ] Rename project
 * [ ] Give views their own <canvas> DOM element
 * [ ] 3D CSS transitions when changing views
 * [ ] Handle Hi-DPI screens - 2x backing store
@@ -18,6 +15,4 @@
 * [ ] Add "Tween" class to GameObjects
 * [ ] Remove separate event handler attach/detatch for buttons
 * [ ] Global effects - flash, shake, etc.
-* [ ] Tests for Pool object
-* [ ] Determine how Pool should work with active/inactive objects
 * [ ] Refactor offset/child drawing? (perhaps a recursive strategy)
