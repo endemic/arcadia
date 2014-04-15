@@ -9,10 +9,27 @@ describe 'Arcadia.Pool', ->
   it 'has a length property', ->
     expect(@pool.length).toBe 0
 
-  it 'can add objects to itself', ->
-    shape = new Arcadia.Shape(0, 0, 'circle', 25)
-    @pool.add shape
-    expect(@pool.length).toBe 1
+  describe 'adding objects', ->
+    it 'can add objects to itself', ->
+      shape = new Arcadia.Shape(0, 0, 'circle', 25)
+      @pool.add shape
+      expect(@pool.length).toBe 1
+      expect(@pool.at(0)).toBe shape
+
+    it 'keeps inactive objects at the end of the internal array', ->
+      @pool.add new Arcadia.Shape(0, 0, 'triangle', 25)
+      @pool.add new Arcadia.Shape(0, 0, 'triangle', 25)
+      @pool.deactivate 0
+      @pool.deactivate 0
+      expect(@pool.length).toBe 0
+
+      @pool.add new Arcadia.Shape(0, 0, 'square', 25)
+      expect(@pool.length).toBe 1
+      expect(@pool.at(0).shape).toBe 'square'
+
+      @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
+      expect(@pool.length).toBe 2
+      expect(@pool.at(1).shape).toBe 'circle'
 
   it 'can remove objects', ->
     while @pool.length < 10

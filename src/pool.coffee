@@ -22,15 +22,14 @@ class Pool
   ###
   add: (object) ->
     @children.push object
-    @length += 1
 
     # Swap with inactive object
-    # TODO: test this condition
     if @length < @children.length
       @tmp = @children[@children.length - 1]
       @children[@children.length - 1] = @children[@length]
       @children[@length] = @tmp
 
+    @length += 1
     @length
 
   ###
@@ -50,11 +49,11 @@ class Pool
     object
 
   ###
-  @description Get an active object
+  @description Get an active object by either reference or index
   ###
-  activate: (object = null) ->
-    if object != null
-      index = @children.indexOf(object)
+  activate: (objectOrIndex) ->
+    if objectOrIndex != undefined
+      index = if objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
       return unless @length > index > 0
 
       @tmp = @children[@length]
@@ -63,7 +62,7 @@ class Pool
       @length += 1
       return @children[@length]
 
-    if object == null && @length < @children.length
+    if objectOrIndex == undefined && @length < @children.length
       @tmp = @children[@length]
       @tmp.reset() if typeof @tmp.reset == 'function'
       @length += 1
