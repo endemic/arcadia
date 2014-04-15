@@ -37,7 +37,7 @@ class Shape extends GameObject
     context.scale @scale, @scale if @scale != 1
     context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
 
-    if @shadow.x and @shadow.y and @shadow.blur
+    if typeof @shadow.x == 'number' and typeof @shadow.y == 'number' and typeof @shadow.blur == 'number' and typeof @shadow.color == 'string'
       context.shadowOffsetX = @shadow.x
       context.shadowOffsetY = @shadow.y
       context.shadowBlur = @shadow.blur

@@ -6,7 +6,8 @@ class Button extends GameObject
 
     # Create label that goes inside button border
     @label = new Arcadia.Label x, y, text
-    @add @label
+    @children.add @label
+    @label.shadow = @shadow
 
     # Default border/background
     @backgroundColor = 'rgba(255, 255, 255, 1)'
@@ -38,7 +39,7 @@ class Button extends GameObject
     context.save()
     context.translate @position.x + offsetX, @position.y + offsetY
 
-    if @shadow.x and @shadow.y and @shadow.blur
+    if typeof @shadow.x == 'number' and typeof @shadow.y == 'number' and typeof @shadow.blur == 'number' and typeof @shadow.color == 'string'
       context.shadowOffsetX = @shadow.x
       context.shadowOffsetY = @shadow.y
       context.shadowBlur = @shadow.blur

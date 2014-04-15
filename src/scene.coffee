@@ -59,6 +59,9 @@ class Scene extends GameObject
       # Draw child objects
       super context, @camera.viewport.width / 2 - @camera.position.x, @camera.viewport.height / 2 - @camera.position.y
 
+  destroy: ->
+    console.log 'pass'
+
   ###
    * Getter/setter for camera target
   ###
