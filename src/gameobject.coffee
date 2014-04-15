@@ -9,10 +9,10 @@ class GameObject
     @rotation = 0
     @color = 'rgba(255, 255, 255, 1)'
     @shadow =
-      x: 0
-      y: 0
-      blur: 0
-      color: 'rgba(255, 255, 255, 1)'
+      x: null
+      y: null
+      blur: null
+      color: null
     @tmp = 0
 
   ###
