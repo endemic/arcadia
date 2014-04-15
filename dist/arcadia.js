@@ -180,7 +180,8 @@
     function Button(x, y, text) {
       Button.__super__.constructor.apply(this, arguments);
       this.label = new Arcadia.Label(x, y, text);
-      this.add(this.label);
+      this.children.add(this.label);
+      this.label.shadow = this.shadow;
       this.backgroundColor = 'rgba(255, 255, 255, 1)';
       this.height = parseInt(this.label.font, 10);
       this.solid = true;
@@ -205,7 +206,7 @@
       this.width = this.label.width(context);
       context.save();
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
-      if (this.shadow.x && this.shadow.y && this.shadow.blur) {
+      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
         context.shadowOffsetX = this.shadow.x;
         context.shadowOffsetY = this.shadow.y;
         context.shadowBlur = this.shadow.blur;
@@ -743,10 +744,10 @@
       this.rotation = 0;
       this.color = 'rgba(255, 255, 255, 1)';
       this.shadow = {
-        x: 0,
-        y: 0,
-        blur: 0,
-        color: 'rgba(255, 255, 255, 1)'
+        x: null,
+        y: null,
+        blur: null,
+        color: null
       };
       this.tmp = 0;
     }
@@ -775,47 +776,6 @@
 
     GameObject.prototype.update = function(delta) {
       return this.children.update(delta);
-    };
-
-    /*
-    @description Add an object to the draw/update loop
-    @param {Shape} object
-    */
-
-
-    GameObject.prototype.add = function(object) {
-      this.children.add(object);
-      console.log(this.children.length);
-      return object.parent = this;
-    };
-
-    /*
-    @description Permanently remove an object from the draw/update loop
-    @param {Shape} object
-    */
-
-
-    GameObject.prototype.remove = function(objectOrIndex) {
-      return this.children.remove(objectOrIndex);
-    };
-
-    /*
-    @description Passthrough to @children Pool
-    @param {Number|Object} index Object/index to activate
-    */
-
-
-    GameObject.prototype.activate = function(index) {
-      return this.children.activate(index);
-    };
-
-    /*
-    @description Passthrough to @children Pool
-    */
-
-
-    GameObject.prototype.deactivate = function(index) {
-      return this.children.deactivate(index);
     };
 
     return GameObject;
@@ -877,7 +837,7 @@
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (this.shadow.x && this.shadow.y && this.shadow.blur) {
+      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
         context.shadowOffsetX = this.shadow.x;
         context.shadowOffsetY = this.shadow.y;
         context.shadowBlur = this.shadow.blur;
@@ -952,12 +912,12 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Pool.prototype.add = function(object) {
       this.children.push(object);
-      this.length += 1;
       if (this.length < this.children.length) {
         this.tmp = this.children[this.children.length - 1];
         this.children[this.children.length - 1] = this.children[this.length];
         this.children[this.length] = this.tmp;
       }
+      this.length += 1;
       return this.length;
     };
 
@@ -987,17 +947,14 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
-    @description Get an active object
+    @description Get an active object by either reference or index
     */
 
 
-    Pool.prototype.activate = function(object) {
+    Pool.prototype.activate = function(objectOrIndex) {
       var index;
-      if (object == null) {
-        object = null;
-      }
-      if (object !== null) {
-        index = this.children.indexOf(object);
+      if (objectOrIndex !== void 0) {
+        index = objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
         if (!((this.length > index && index > 0))) {
           return;
         }
@@ -1007,7 +964,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         this.length += 1;
         return this.children[this.length];
       }
-      if (object === null && this.length < this.children.length) {
+      if (objectOrIndex === void 0 && this.length < this.children.length) {
         this.tmp = this.children[this.length];
         if (typeof this.tmp.reset === 'function') {
           this.tmp.reset();
@@ -1187,6 +1144,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       return Scene.__super__.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
     };
 
+    Scene.prototype.destroy = function() {
+      return console.log('pass');
+    };
+
     /*
      * Getter/setter for camera target
     */
@@ -1280,7 +1241,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (this.shadow.x && this.shadow.y && this.shadow.blur) {
+      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
         context.shadowOffsetX = this.shadow.x;
         context.shadowOffsetY = this.shadow.y;
         context.shadowBlur = this.shadow.blur;
