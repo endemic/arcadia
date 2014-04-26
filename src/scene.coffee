@@ -46,7 +46,7 @@ class Scene extends GameObject
    * @param {CanvasRenderingContext2D} context
   ###
   draw: (context) ->
-      if typeof @clearColor == "string"
+      if @clearColor?
         # Clear w/ clear color
         context.save()
         context.fillStyle = @clearColor
@@ -60,7 +60,7 @@ class Scene extends GameObject
       super context, @camera.viewport.width / 2 - @camera.position.x, @camera.viewport.height / 2 - @camera.position.y
 
   destroy: ->
-    console.log 'pass'
+    console.log 'Scene#destroy'
 
   ###
    * Getter/setter for camera target

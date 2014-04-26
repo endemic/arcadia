@@ -18,8 +18,11 @@ Arcadia =
   Pool: require('./pool.coffee')
   Scene: require('./scene.coffee')
   Shape: require('./shape.coffee')
+  Sprite: require('./sprite.coffee')
 
 module.exports = Arcadia
+
+Arcadia.fps = 0
 
 ###
 @description Get information about the current environment

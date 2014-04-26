@@ -4,18 +4,13 @@
 var Enemy = function () {
     Arcadia.Shape.apply(this, arguments);
 
-    this.colors = {
-        'red': 255,
-        'green': 0,
-        'blue': 0,
-        'alpha': 1
-    };
-
-    this.glow = 20;
+    this.color = 'rgba(255, 0, 0, 1)';
+    // this.shadow.x = this.shadow.y = 0;
+    // this.shadow.blur = 20;
+    // this.shadow.color = this.color;
     this.speed = 40;
     this.size = 20;
-    this.shape = 'triangle';
-    // this.active = false;
+    this.vertices = 3;
     this.bulletTimer = 0;
     this.lineWidth = 3;
 };

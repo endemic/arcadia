@@ -5,11 +5,13 @@ var Player = function () {
     Arcadia.Shape.apply(this, arguments);
 
     this.speed = 100;
-    this.shape = 'triangle';
+    this.vertices = 3;
     this.size = 20;
     this.lineWidth = 3;
     this.rotation = 270 * Math.PI / 180;
-    this.glow = 20;
+    // this.shadow.x = this.shadow.y = 0;
+    // this.shadow.blur = 20;
+    // this.shadow.color = this.color;
 };
 
 Player.prototype = new Arcadia.Shape();

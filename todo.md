@@ -1,5 +1,8 @@
 # TODO
 
+* Pool keeps returning the same object
+* What the hell, made major changes to which objects get returned in Pool and no tests broke,
+  write extra tests which assert the object that is returned/rearranged when activated/deactivated
 * Work on emitter
 * [ ] Rename Emitter to "Particles" or something
 * [ ] Update particle emitter to emit particles infinitely; can turn on/off

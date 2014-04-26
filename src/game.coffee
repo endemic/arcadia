@@ -71,20 +71,20 @@ class Game
     # Map of current input, used to prevent duplicate events being sent to handlers
     # ("keydown" events fire continuously while a key is held)
     @input =
-        'left': false
-        'up': false
-        'right': false
-        'down': false
-        'w': false
-        'a': false
-        's': false
-        'd': false
-        'enter': false
-        'escape': false
-        'space': false
-        'control': false
-        'z': false
-        'x': false
+      'left': false
+      'up': false
+      'right': false
+      'down': false
+      'w': false
+      'a': false
+      's': false
+      'd': false
+      'enter': false
+      'escape': false
+      'space': false
+      'control': false
+      'z': false
+      'x': false
 
     # Stores objects representing mouse/touch input
     @points =
@@ -131,6 +131,7 @@ class Game
   onPointStart: (event) ->
     Arcadia.getPoints event
 
+    # TODO: Get rid of this event listener, use an instance variable
     if event.type.indexOf('mouse') != -1
       @element.addEventListener 'mousemove', @onPointMove, false
 
@@ -146,10 +147,12 @@ class Game
 
   ###
   @description Mouse/touch event callback
+  TODO: Generates garbage
   ###
   onPointEnd: (event) ->
     Arcadia.getPoints event
 
+    # TODO: Get rid of this event listener, use an instance variable
     if event.type.indexOf('mouse') != -1
       @element.removeEventListener('mousemove', @onPointMove, false)
 
@@ -157,6 +160,7 @@ class Game
 
   ###
   @description Keyboard event callback
+  TODO: Generates garbage
   ###
   onKeyDown: (event) ->
     key = @getKey event.keyCode
@@ -171,6 +175,7 @@ class Game
 
   ###
   @description Keyboard event callback
+  TODO: Generates garbage
   ###
   onKeyUp: (event) ->
     key = @getKey event.keyCode
@@ -185,6 +190,9 @@ class Game
   ###
   getKey: (keyCode) ->
     switch keyCode
+      # TODO: Make an implemention something like this
+      # when 37 then @input['left'] = true
+      # when 38 then @input['up'] = true
       when 37 then return 'left'
       when 38 then return 'up'
       when 39 then return 'right'
@@ -213,8 +221,11 @@ class Game
       delta = currentDelta - previousDelta
 
       previousDelta = currentDelta
+      
+      # delta = milliseconds
+      Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1
 
-      @update(delta / 1000)
+      @update(delta / 1000) # call update() using seconds
 
       @updateId = window.requestAnimationFrame update
 
@@ -268,5 +279,6 @@ class Game
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
     @element.setAttribute "style", "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
     @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
+    # @canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + width + 'px; height: ' + height + 'px;');
 
 module.exports = Game

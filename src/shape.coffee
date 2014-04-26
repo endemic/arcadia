@@ -8,18 +8,19 @@ class Shape extends GameObject
    * @param {String} shape String representing what to draw
    * @param {Number} size Size of shape in pixels
   ###
-  constructor: (x, y, shape = 'square', size = 10) ->
+  constructor: (x, y, vertices = 4, size = 10) ->
     super x, y
 
-    @shape = shape
+    @vertices = vertices
     @size = size
     @lineWidth = 1
-    @lineJoin = 'round'            # miter, round, bevel
+    @lineJoin = 'round'        # miter, round, bevel
     @speed = 1
     @velocity =
       x: 0
       y: 0
     @solid = false
+    @path = null # custom draw function
 
   ###
    * @description Draw object
@@ -31,36 +32,35 @@ class Shape extends GameObject
     # Draw child objects first, so they will be on the "bottom"
     super context, @position.x + offsetX, @position.y + offsetY
 
-    context.save()
-
     context.translate @position.x + offsetX, @position.y + offsetY
     context.scale @scale, @scale if @scale != 1
     context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
 
-    if typeof @shadow.x == 'number' and typeof @shadow.y == 'number' and typeof @shadow.blur == 'number' and typeof @shadow.color == 'string'
+    if @shadow.x != null and @shadow.y != null and @shadow.blur != null and @shadow.color != null
       context.shadowOffsetX = @shadow.x
       context.shadowOffsetY = @shadow.y
       context.shadowBlur = @shadow.blur
       context.shadowColor = @shadow.color
 
-    context.lineWidth = @lineWidth
-    context.lineJoin = @lineJoin
+    context.globalAlpha = @alpha if @alpha < 1
+    context.lineWidth = @lineWidth if context.lineWidth != @lineWidth
+    context.lineJoin = @lineJoin if context.lineJoin != @lineJoin
 
     # Allow sprite objects to have custom draw functions
-    if typeof @path == "function"
+    if @path != null
         @path(context)
     else
       context.beginPath()
 
-      switch @shape
-        when 'triangle'
+      switch @vertices
+        when 0
+          context.arc(0, 0, @size / 2, Math.PI * 2, false)
+        when 3
           context.moveTo(@size / 2 * Math.cos(0), @size / 2 * Math.sin(0))
           context.lineTo(@size / 2 * Math.cos(120 * Math.PI / 180), @size / 2 * Math.sin(120 * Math.PI / 180))
           context.lineTo(@size / 2 * Math.cos(240 * Math.PI / 180), @size / 2 * Math.sin(240 * Math.PI / 180))
           context.lineTo(@size / 2 * Math.cos(0), @size / 2 * Math.sin(0))
-        when 'circle'
-          context.arc(0, 0, @size / 2, Math.PI * 2, false)
-        when 'square'
+        when 4
           context.moveTo(@size / 2, @size / 2)
           context.lineTo(@size / 2, -@size / 2)
           context.lineTo(-@size / 2, -@size / 2)
@@ -70,13 +70,17 @@ class Shape extends GameObject
       context.closePath()
 
       if @solid
-        context.fillStyle = @color
+        context.fillStyle = @color if context.fillStyle != @color
         context.fill()
       else
-        context.strokeStyle = @color
+        context.strokeStyle = @color if context.strokeStyle != @color
         context.stroke()
 
-    context.restore()
+    # Reset scale/rotation/alpha
+    context.rotate -@rotation if @rotation != 0 && @rotation != Math.PI * 2
+    context.translate -@position.x - offsetX, -@position.y - offsetY
+    context.scale 1, 1 if @scale != 1
+    context.globalAlpha = 1 if @alpha < 1
 
   ###
   @description Update object
@@ -93,7 +97,7 @@ class Shape extends GameObject
    * @param {Shape} other Shape object to test collision with
   ###
   collidesWith: (other) ->
-    if @shape == 'square'
+    if @vertices == 4
       return Math.abs(@position.x - other.position.x) < @size / 2 + other.size / 2 && Math.abs(@position.y - other.position.y) < @size / 2 + other.size / 2
     else
       return Math.sqrt(Math.pow(other.position.x - @position.x, 2) + Math.pow(other.position.y - @position.y, 2)) < @size / 2 + other.size / 2
