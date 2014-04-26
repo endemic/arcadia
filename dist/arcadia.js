@@ -22,10 +22,13 @@
     Label: require('./label.coffee'),
     Pool: require('./pool.coffee'),
     Scene: require('./scene.coffee'),
-    Shape: require('./shape.coffee')
+    Shape: require('./shape.coffee'),
+    Sprite: require('./sprite.coffee')
   };
 
   module.exports = Arcadia;
+
+  Arcadia.fps = 0;
 
   /*
   @description Get information about the current environment
@@ -166,7 +169,7 @@
 }).call(this);
 
 
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9}],2:[function(require,module,exports){
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(require,module,exports){
 (function() {
   var Button, GameObject,
     __hasProp = {}.hasOwnProperty,
@@ -206,7 +209,7 @@
       this.width = this.label.width(context);
       context.save();
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
-      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
+      if (this.shadow.x !== null && this.shadow.y !== null && this.shadow.blur !== null && this.shadow.color !== null) {
         context.shadowOffsetX = this.shadow.x;
         context.shadowOffsetY = this.shadow.y;
         context.shadowBlur = this.shadow.blur;
@@ -308,19 +311,23 @@
     */
 
 
-    function Emitter(shape, size, count) {
-      var particle;
+    function Emitter(factory, count) {
+      if (count == null) {
+        count = 25;
+      }
+      if (typeof factory !== 'function') {
+        throw 'Emitter requires a factory function';
+      }
       Emitter.__super__.constructor.apply(this, arguments);
       this.duration = 1;
       this.fade = false;
+      this.scale = 1.0;
       this.speed = 200;
-      count = count || 25;
+      this.i = this.particle = null;
       while (count--) {
-        particle = new Shape(0, 0, shape || 'square', size || 5);
-        particle.solid = true;
-        this.add(particle);
+        this.children.add(factory());
       }
-      return;
+      this.children.deactivateAll();
     }
 
     /*
@@ -330,9 +337,10 @@
     */
 
 
-    Emitter.prototype.start = function(x, y) {
+    Emitter.prototype.startAt = function(x, y) {
       var direction;
       this.children.activateAll();
+      this.reset();
       this.i = this.children.length;
       while (this.i--) {
         this.particle = this.children.at(this.i);
@@ -342,9 +350,7 @@
         this.particle.velocity.x = Math.cos(direction);
         this.particle.velocity.y = Math.sin(direction);
         this.particle.speed = Math.random() * this.speed;
-        this.particle.color = this.color;
       }
-      this.active = true;
       this.timer = 0;
       this.position.x = x;
       return this.position.y = y;
@@ -356,17 +362,28 @@
       this.i = this.children.length;
       while (this.i--) {
         this.particle = this.children.at(this.i);
-        if (this.fade) {
-          this.particle.colors.alpha -= delta / this.duration;
-        }
         if (this.timer >= this.duration) {
           this.children.deactivate(this.i);
+        }
+        if (this.scale !== 1.0) {
+          this.particle.scale += this.scale * delta / this.duration;
         }
       }
     };
 
     Emitter.prototype.reset = function() {
-      return this.i;
+      var _results;
+      this.i = this.children.length;
+      _results = [];
+      while (this.i--) {
+        this.particle = this.children.at(this.i);
+        if (typeof this.particle.reset === 'function') {
+          _results.push(this.particle.reset());
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     return Emitter;
@@ -547,6 +564,7 @@
 
     /*
     @description Mouse/touch event callback
+    TODO: Generates garbage
     */
 
 
@@ -562,6 +580,7 @@
 
     /*
     @description Keyboard event callback
+    TODO: Generates garbage
     */
 
 
@@ -579,6 +598,7 @@
 
     /*
     @description Keyboard event callback
+    TODO: Generates garbage
     */
 
 
@@ -646,6 +666,7 @@
         var delta;
         delta = currentDelta - previousDelta;
         previousDelta = currentDelta;
+        Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1;
         _this.update(delta / 1000);
         return _this.updateId = window.requestAnimationFrame(update);
       };
@@ -742,7 +763,8 @@
       this.fixed = false;
       this.scale = 1;
       this.rotation = 0;
-      this.color = 'rgba(255, 255, 255, 1)';
+      this.color = 'rgb(255, 255, 255)';
+      this.alpha = 1;
       this.shadow = {
         x: null,
         y: null,
@@ -837,7 +859,7 @@
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
+      if (this.shadow.x !== null && this.shadow.y !== null && this.shadow.blur !== null && this.shadow.color !== null) {
         context.shadowOffsetX = this.shadow.x;
         context.shadowOffsetY = this.shadow.y;
         context.shadowBlur = this.shadow.blur;
@@ -955,30 +977,29 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       var index;
       if (objectOrIndex !== void 0) {
         index = objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
-        if (!((this.length > index && index > 0))) {
-          return;
+        if (!((this.children.length > index && index >= this.length))) {
+          return null;
         }
         this.tmp = this.children[this.length];
         this.children[this.length] = this.children[index];
         this.children[index] = this.tmp;
+        this.tmp = null;
         this.length += 1;
-        return this.children[this.length];
+        return this.children[this.length - 1];
       }
       if (objectOrIndex === void 0 && this.length < this.children.length) {
-        this.tmp = this.children[this.length];
-        if (typeof this.tmp.reset === 'function') {
-          this.tmp.reset();
-        }
         this.length += 1;
-        return this.tmp;
+        if (typeof this.children[this.length - 1].reset === 'function') {
+          this.children[this.length - 1].reset();
+        }
+        return this.children[this.length - 1];
       }
       if (typeof this.factory !== 'function') {
         throw 'A Recycle Pool needs a factory defined!';
       }
-      this.tmp = this.factory();
-      this.children.push(this.tmp);
+      this.children.push(this.factory());
       this.length += 1;
-      return this.tmp;
+      return this.children[this.length - 1];
     };
 
     /*
@@ -994,10 +1015,11 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return null;
       }
       this.tmp = this.children[index];
-      this.children[index] = this.children[this.children.length - 1];
+      this.children[index] = this.children[this.length - 1];
       this.children[this.length - 1] = this.tmp;
+      this.tmp = null;
       this.length -= 1;
-      return this.tmp;
+      return this.children[this.length];
     };
 
     /*
@@ -1133,7 +1155,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Scene.prototype.draw = function(context) {
-      if (typeof this.clearColor === "string") {
+      if (this.clearColor != null) {
         context.save();
         context.fillStyle = this.clearColor;
         context.fillRect(0, 0, context.canvas.width, context.canvas.height);
@@ -1145,7 +1167,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     Scene.prototype.destroy = function() {
-      return console.log('pass');
+      return console.log('Scene#destroy');
     };
 
     /*
@@ -1196,15 +1218,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    function Shape(x, y, shape, size) {
-      if (shape == null) {
-        shape = 'square';
+    function Shape(x, y, vertices, size) {
+      if (vertices == null) {
+        vertices = 4;
       }
       if (size == null) {
         size = 10;
       }
       Shape.__super__.constructor.call(this, x, y);
-      this.shape = shape;
+      this.vertices = vertices;
       this.size = size;
       this.lineWidth = 1;
       this.lineJoin = 'round';
@@ -1214,6 +1236,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         y: 0
       };
       this.solid = false;
+      this.path = null;
     }
 
     /*
@@ -1233,7 +1256,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         offsetX = offsetY = 0;
       }
       Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-      context.save();
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
       if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
@@ -1241,29 +1263,36 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
+      if (this.shadow.x !== null && this.shadow.y !== null && this.shadow.blur !== null && this.shadow.color !== null) {
         context.shadowOffsetX = this.shadow.x;
         context.shadowOffsetY = this.shadow.y;
         context.shadowBlur = this.shadow.blur;
         context.shadowColor = this.shadow.color;
       }
-      context.lineWidth = this.lineWidth;
-      context.lineJoin = this.lineJoin;
-      if (typeof this.path === "function") {
+      if (this.alpha < 1) {
+        context.globalAlpha = this.alpha;
+      }
+      if (context.lineWidth !== this.lineWidth) {
+        context.lineWidth = this.lineWidth;
+      }
+      if (context.lineJoin !== this.lineJoin) {
+        context.lineJoin = this.lineJoin;
+      }
+      if (this.path !== null) {
         this.path(context);
       } else {
         context.beginPath();
-        switch (this.shape) {
-          case 'triangle':
+        switch (this.vertices) {
+          case 0:
+            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
+            break;
+          case 3:
             context.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
             context.lineTo(this.size / 2 * Math.cos(120 * Math.PI / 180), this.size / 2 * Math.sin(120 * Math.PI / 180));
             context.lineTo(this.size / 2 * Math.cos(240 * Math.PI / 180), this.size / 2 * Math.sin(240 * Math.PI / 180));
             context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
             break;
-          case 'circle':
-            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
-            break;
-          case 'square':
+          case 4:
             context.moveTo(this.size / 2, this.size / 2);
             context.lineTo(this.size / 2, -this.size / 2);
             context.lineTo(-this.size / 2, -this.size / 2);
@@ -1272,14 +1301,27 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         }
         context.closePath();
         if (this.solid) {
-          context.fillStyle = this.color;
+          if (context.fillStyle !== this.color) {
+            context.fillStyle = this.color;
+          }
           context.fill();
         } else {
-          context.strokeStyle = this.color;
+          if (context.strokeStyle !== this.color) {
+            context.strokeStyle = this.color;
+          }
           context.stroke();
         }
       }
-      return context.restore();
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(-this.rotation);
+      }
+      context.translate(-this.position.x - offsetX, -this.position.y - offsetY);
+      if (this.scale !== 1) {
+        context.scale(1, 1);
+      }
+      if (this.alpha < 1) {
+        return context.globalAlpha = 1;
+      }
     };
 
     /*
@@ -1301,7 +1343,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.collidesWith = function(other) {
-      if (this.shape === 'square') {
+      if (this.vertices === 4) {
         return Math.abs(this.position.x - other.position.x) < this.size / 2 + other.size / 2 && Math.abs(this.position.y - other.position.y) < this.size / 2 + other.size / 2;
       } else {
         return Math.sqrt(Math.pow(other.position.x - this.position.x, 2) + Math.pow(other.position.y - this.position.y, 2)) < this.size / 2 + other.size / 2;
@@ -1313,6 +1355,102 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
   })(GameObject);
 
   module.exports = Shape;
+
+}).call(this);
+
+
+},{"./gameobject.coffee":5}],10:[function(require,module,exports){
+(function() {
+  var GameObject, Sprite,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  GameObject = require('./gameobject.coffee');
+
+  Sprite = (function(_super) {
+    __extends(Sprite, _super);
+
+    /*
+    @description Sprite constructor
+    @param {Object} options Possible keys: x, y, size, imgsrc
+    */
+
+
+    function Sprite(options) {
+      if (options == null) {
+        options = {};
+      }
+      Sprite.__super__.constructor.call(this, options.x, options.y);
+      this.size = options.size;
+      this.speed = 1;
+      this.velocity = {
+        x: 0,
+        y: 0
+      };
+      this.img = new Image();
+      this.img.src = options.imgsrc;
+    }
+
+    /*
+    @description Draw object
+    @param {CanvasRenderingContext2D} context
+    */
+
+
+    Sprite.prototype.draw = function(context, offsetX, offsetY) {
+      if (offsetX == null) {
+        offsetX = 0;
+      }
+      if (offsetY == null) {
+        offsetY = 0;
+      }
+      if (this.fixed) {
+        offsetX = offsetY = 0;
+      }
+      Sprite.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+      context.save();
+      context.translate(this.position.x + offsetX, this.position.y + offsetY);
+      if (this.scale !== 1) {
+        context.scale(this.scale, this.scale);
+      }
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(this.rotation);
+      }
+      context.drawImage(this.img, 0, 0);
+      return context.restore();
+    };
+
+    /*
+    @description Update object
+    @param {Number} delta Time since last update (in seconds)
+    */
+
+
+    Sprite.prototype.update = function(delta) {
+      Sprite.__super__.update.call(this, delta);
+      this.position.x += this.velocity.x * this.speed * delta;
+      return this.position.y += this.velocity.y * this.speed * delta;
+    };
+
+    /*
+    @description Basic collision detection
+    @param {Sprite} other Sprite object to test collision with
+    */
+
+
+    Sprite.prototype.collidesWith = function(other) {
+      if (this.vertices === 4) {
+        return Math.abs(this.position.x - other.position.x) < this.size / 2 + other.size / 2 && Math.abs(this.position.y - other.position.y) < this.size / 2 + other.size / 2;
+      } else {
+        return Math.sqrt(Math.pow(other.position.x - this.position.x, 2) + Math.pow(other.position.y - this.position.y, 2)) < this.size / 2 + other.size / 2;
+      }
+    };
+
+    return Sprite;
+
+  })(GameObject);
+
+  module.exports = Sprite;
 
 }).call(this);
 

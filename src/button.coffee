@@ -39,7 +39,7 @@ class Button extends GameObject
     context.save()
     context.translate @position.x + offsetX, @position.y + offsetY
 
-    if typeof @shadow.x == 'number' and typeof @shadow.y == 'number' and typeof @shadow.blur == 'number' and typeof @shadow.color == 'string'
+    if @shadow.x != null and @shadow.y != null and @shadow.blur != null and @shadow.color != null
       context.shadowOffsetX = @shadow.x
       context.shadowOffsetY = @shadow.y
       context.shadowBlur = @shadow.blur

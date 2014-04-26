@@ -2,12 +2,15 @@ Pool = require './pool.coffee'
 
 class GameObject
   constructor: (x = 0, y = 0) ->
-    @position = { x: x, y: y }
+    @position = 
+      x: x
+      y: y
     @children = new Pool()
     @fixed = false     # static positioning for UI elements
     @scale = 1
     @rotation = 0
-    @color = 'rgba(255, 255, 255, 1)'
+    @color = 'rgb(255, 255, 255)'
+    @alpha = 1
     @shadow =
       x: null
       y: null

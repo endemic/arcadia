@@ -9,7 +9,6 @@ var Game = function () {
     this.gameOverLabel = new Arcadia.Label(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 4, "GAME OVER");
     this.gameOverLabel.font = '40px monospace';
     this.gameOverLabel.color = 'rgba(255, 255, 255, 0.8)';
-    this.gameOverLabel.glow = 10;
 
     this.children.add(this.gameOverLabel);
     this.children.deactivate(this.gameOverLabel);
@@ -18,7 +17,6 @@ var Game = function () {
     this.tryAgainButton.font = '20px monospace';
     this.tryAgainButton.solid = false;
     this.tryAgainButton.padding = 20;
-    this.tryAgainButton.glow = 20;
     this.tryAgainButton.onUp = function () {
         Arcadia.changeScene(Game);
     };
@@ -26,18 +24,29 @@ var Game = function () {
     this.children.add(this.tryAgainButton);
     this.children.deactivate(this.tryAgainButton);
 
+    this.fps = new Arcadia.Label(50, 10, "FPS");
+    this.fps.font = '20px monospace';
+    this.fps.color = 'rgba(255, 255, 255, 0.8)';
+    this.fps.shadow.x = 0;
+    this.fps.shadow.y = 0;
+    this.fps.shadow.blur = 10;
+    this.fps.shadow.color = 'rgba(255, 255, 255, 0.5)';
+    this.children.add(this.fps);
+
     // Score label
     this.label = new Arcadia.Label(10, 20, "Score: 0");
     this.label.font = '16px monospace';
     this.label.alignment = 'left';
-    this.label.glow = 10;
+    this.label.shadow.x = this.label.shadow.y = 0;
+    this.label.shadow.blur = 10;
+    this.label.shadow.color = '#fff';
     this.children.add(this.label);
     this.score = 0;
 
     // Player
     this.player = new Player(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 1.5);
     this.children.add(this.player);
-    this.camera.target = this.player;
+    this.target = this.player;
 
     // Other game objects
     this.playerBullets = new Arcadia.Pool();
@@ -45,49 +54,59 @@ var Game = function () {
         return new PlayerBullet();
     };
     this.children.add(this.playerBullets);
+    while (this.playerBullets.length < 50) {
+        this.playerBullets.activate();
+    }
+    this.playerBullets.deactivateAll();
 
     this.enemyBullets = new Arcadia.Pool();
     this.enemyBullets.factory = function () {
         return new EnemyBullet();
     };
     this.children.add(this.enemyBullets);
+    while (this.enemyBullets.length < 50) {
+        this.enemyBullets.activate();
+    }
+    this.enemyBullets.deactivateAll();
 
     this.enemies = new Arcadia.Pool();
     this.enemies.factory = function () {
         return new Enemy();
     };
     this.children.add(this.enemies);
+    while (this.enemies.length < 20) {
+        this.enemies.activate();
+    }
+    this.enemies.deactivateAll();
 
     this.spawnTimer = 999;  // Immediately spawn an enemy
 
     // Particle emitters
     this.particles = new Arcadia.Pool();
     this.particles.factory = function () {
-        var obj = new Arcadia.Emitter('circle', 4, 30);
-        obj.color = 'rgba(255, 0, 0, 1)';
-        obj.duration = 0.5;
-        return obj;
+        var emitter,
+            factory;
+
+        factory = function () {
+            var shape = new Arcadia.Shape(0, 0, 0, 5);
+            shape.solid = true;
+            shape.color = 'rgb(255, 0, 0)';
+            return shape;
+        };
+        emitter = new Arcadia.Emitter(factory);
+        emitter.duration = 0.5;
+        return emitter;
     };
+    while (this.particles.length < 5) {
+        this.particles.activate();
+    }
+    this.particles.deactivateAll();
     this.children.add(this.particles);
-
-    // i = 5;
-    // while (i--) {
-    //     // shape, size, color, count, duration, fade
-    //     obj = new Arcadia.Emitter('circle', 4, 30);
-    //     obj.color = 'rgba(255, 0, 0, 1)';
-    //     obj.duration = 0.5;
-    //     this.particles.add(obj);
-    // }
-
-    this.playerExplosion = new Arcadia.Emitter('circle', 4, 30);
-    this.playerExplosion.color = 'rgba(255, 255, 255, 1)';
-    this.playerExplosion.duration = 0.5;
-    this.children.add(this.playerExplosion);
 
     // Add a starfield background
     this.stars = new Arcadia.Pool();
     this.stars.factory = function () {
-        var star = new Arcadia.Shape(Math.random() * Arcadia.WIDTH, Math.random() * Arcadia.HEIGHT, 'circle', Math.random() * 4 + 1);
+        var star = new Arcadia.Shape(Math.random() * Arcadia.WIDTH, Math.random() * Arcadia.HEIGHT, 0, Math.random() * 4 + 1);
         star.solid = true;
         star.velocity.y = 40 / star.size;
         star.update = function (delta) {
@@ -115,47 +134,46 @@ Game.prototype = new Arcadia.Scene();
 Game.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
 
+    this.fps.text = "FPS: " + parseInt(Arcadia.fps, 10);
+
     var angle,
         bullet,
         enemy,
-        particles,
         i,
         j;
 
-    // Check for player bullet collisions
-    i = this.playerBullets.length;
-    while (i--) {
-        bullet = this.playerBullets.at(i);
+    // // Check for player bullet collisions
+    // i = this.playerBullets.length;
+    // while (i--) {
+    //     bullet = this.playerBullets.at(i);
 
-        if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
-            // Remove bullets if they go offscreen
-            this.playerBullets.deactivate(i);
-            continue;
-        } else {
-            j = this.enemies.length;
-            while (j--) {
-                enemy = this.enemies.at(j);
+    //     if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
+    //         // Remove bullets if they go offscreen
+    //         this.playerBullets.deactivate(i);
+    //         continue;
+    //     } else {
+    //         j = this.enemies.length;
+    //         while (j--) {
+    //             enemy = this.enemies.at(j);
 
-                // Remove both enemy and bullet if they collide
-                if (enemy.collidesWith(bullet) === true) {
-                    // Create particle effect
-                    particles = this.particles.activate();
-                    particles.start(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
+    //             // Remove both enemy and bullet if they collide
+    //             if (enemy.collidesWith(bullet) === true) {
+    //                 this.particles.activate().startAt(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
 
-                    // Spawn a new enemy
-                    enemy = this.enemies.activate();
-                    enemy.position.y = 0;
-                    enemy.position.x = Math.random() * Arcadia.WIDTH;
+    //                 // Spawn a new enemy
+    //                 enemy = this.enemies.activate();
+    //                 enemy.position.y = 0;
+    //                 enemy.position.x = Math.random() * Arcadia.WIDTH;
 
-                    this.enemies.deactivate(j);
-                    this.playerBullets.deactivate(i);
-                    this.score += 10;
-                    this.label.text = "Score: " + this.score;
-                    continue;
-                }
-            }
-        }
-    }
+    //                 this.enemies.deactivate(j);
+    //                 this.playerBullets.deactivate(i);
+    //                 this.score += 10;
+    //                 this.label.text = "Score: " + this.score;
+    //                 continue;
+    //             }
+    //         }
+    //     }
+    // }
 
     if (this.gameOver === true) {
         return;
@@ -194,19 +212,19 @@ Game.prototype.update = function (delta) {
         }
     }
 
-    // Check for enemy bullet collisons
-    i = this.enemyBullets.length;
-    while (i--) {
-        bullet = this.enemyBullets.at(i);
+    // // Check for enemy bullet collisons
+    // i = this.enemyBullets.length;
+    // while (i--) {
+    //     bullet = this.enemyBullets.at(i);
 
-        if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
-            this.enemyBullets.deactivate(i);
-        } else if (bullet.collidesWith(this.player) === true) {
-            this.playerExplosion.start(this.player.position.x, this.player.position.y);
-            this.showGameOver();
-            break;
-        }
-    }
+    //     if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
+    //         this.enemyBullets.deactivate(i);
+    //     } else if (bullet.collidesWith(this.player) === true) {
+    //         this.particles.activate().startAt(this.player.position.x, this.player.position.y);
+    //         this.showGameOver();
+    //         break;
+    //     }
+    // }
 };
 
 /**
@@ -265,7 +283,6 @@ Game.prototype.onKeyDown = function (key) {
 
     if (key === "z" || key === "space") {
         b = this.playerBullets.activate();
-
         b.position.x = this.player.position.x;
         b.position.y = this.player.position.y - this.player.size / 2;
     }

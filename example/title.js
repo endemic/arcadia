@@ -14,6 +14,15 @@ var Title = function () {
     title.shadow.color = 'rgba(255, 255, 255, 0.5)';
     this.children.add(title);
 
+    this.fps = new Arcadia.Label(50, 10, Arcadia.fps);
+    this.fps.font = '20px monospace';
+    this.fps.color = 'rgba(255, 255, 255, 0.8)';
+    this.fps.shadow.x = 0;
+    this.fps.shadow.y = 0;
+    this.fps.shadow.blur = 10;
+    this.fps.shadow.color = 'rgba(255, 255, 255, 0.5)';
+    this.children.add(this.fps);
+
     this.button = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "START"); // x, y, text
     this.button.font = '20px monospace';
     this.button.solid = false;
@@ -30,7 +39,7 @@ var Title = function () {
     // Add a starfield background
     this.stars = new Arcadia.Pool();
     this.stars.factory = function () {
-        var star = new Arcadia.Shape(Math.random() * Arcadia.WIDTH, Math.random() * Arcadia.HEIGHT, 'circle', Math.random() * 4 + 1);
+        var star = new Arcadia.Shape(Math.random() * Arcadia.WIDTH, Math.random() * Arcadia.HEIGHT, 0, Math.random() * 4 + 1);
         star.solid = true;
         star.velocity.y = 60 / star.size;
         star.update = function (delta) {
@@ -54,3 +63,8 @@ var Title = function () {
 };
 
 Title.prototype = new Arcadia.Scene();
+
+Title.prototype.update = function (delta) {
+    Arcadia.Scene.prototype.update.call(this, delta);
+    this.fps.text = "FPS: " + parseInt(Arcadia.fps, 10);
+};
