@@ -8,7 +8,7 @@
 		window.onload = function (e) {
 			var pool = new Arcadia.Pool();
 			pool.factory = function () {
-				return {};
+				return new Arcadia.Shape();
 			};
 
 			var game = new Arcadia.Game(640, 480, Object);
@@ -20,12 +20,14 @@
 				while (pool.length < 10000) {
 					pool.activate();
 				}
+				console.log("Pool length: " + pool.length);
 			});
 
 			document.getElementById('deactivate-pool').addEventListener('click', function (e) {
 				while (pool.length > 0) {
-					pool.deactivate(0);
+					pool.deactivate(pool.length - 1);
 				}
+				console.log("Pool length: " + pool.length);
 			});
 
 			document.getElementById('draw-shape').addEventListener('click', function (e) {

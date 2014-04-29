@@ -30,6 +30,10 @@
 
   Arcadia.fps = 0;
 
+  Arcadia.garbageCollected = false;
+
+  Arcadia.lastUsedHeap = 0;
+
   /*
   @description Get information about the current environment
   */
@@ -397,7 +401,8 @@
 
 },{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
 (function() {
-  var Game;
+  var Game,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Game = (function() {
     /*
@@ -409,6 +414,7 @@
     */
 
     function Game(width, height, SceneClass, scaleToFit) {
+      this.update = __bind(this.update, this);
       width = parseInt(width, 10) || 640;
       height = parseInt(height, 10) || 480;
       scaleToFit = scaleToFit || true;
@@ -655,22 +661,13 @@
 
 
     Game.prototype.start = function() {
-      var previousDelta, update,
-        _this = this;
       if (window.performance !== void 0) {
-        previousDelta = window.performance.now();
+        this.previousDelta = window.performance.now();
       } else {
-        previousDelta = Date.now();
+        this.previousDelta = Date.now();
       }
-      update = function(currentDelta) {
-        var delta;
-        delta = currentDelta - previousDelta;
-        previousDelta = currentDelta;
-        Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1;
-        _this.update(delta / 1000);
-        return _this.updateId = window.requestAnimationFrame(update);
-      };
-      return this.updateId = window.requestAnimationFrame(update);
+      Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
+      return this.updateId = window.requestAnimationFrame(this.update);
     };
 
     /*
@@ -687,9 +684,19 @@
     */
 
 
-    Game.prototype.update = function(delta) {
+    Game.prototype.update = function(currentDelta) {
+      var delta;
+      delta = currentDelta - this.previousDelta;
+      this.previousDelta = currentDelta;
+      Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1;
+      if (window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap) {
+        Arcadia.garbageCollected = true;
+      }
+      Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
       this.active.draw(this.context);
-      return this.active.update(delta);
+      this.active.update(delta / 1000);
+      Arcadia.garbageCollected = false;
+      return this.updateId = window.requestAnimationFrame(this.update);
     };
 
     /*
@@ -729,7 +736,7 @@
       Arcadia.OFFSET.x = (window.innerWidth - width) / 2;
       Arcadia.OFFSET.y = (window.innerHeight - height) / 2;
       this.element.setAttribute("style", "position: relative; width: " + width + "px; height: " + height + "px; margin: " + margin + ";");
-      return this.canvas.setAttribute("style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Arcadia.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Arcadia.SCALE + "); transform-origin: 0 0;");
+      return this.canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + width + 'px; height: ' + height + 'px;');
     };
 
     return Game;
@@ -995,7 +1002,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return this.children[this.length - 1];
       }
       if (typeof this.factory !== 'function') {
-        throw 'A Recycle Pool needs a factory defined!';
+        return null;
       }
       this.children.push(this.factory());
       this.length += 1;

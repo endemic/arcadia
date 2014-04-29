@@ -213,24 +213,14 @@ class Game
   ###
   start: ->
     if window.performance != undefined
-      previousDelta = window.performance.now()
+      @previousDelta = window.performance.now()
     else
-      previousDelta = Date.now()
+      @previousDelta = Date.now()
 
-    update = (currentDelta) =>
-      delta = currentDelta - previousDelta
-
-      previousDelta = currentDelta
-      
-      # delta = milliseconds
-      Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1
-
-      @update(delta / 1000) # call update() using seconds
-
-      @updateId = window.requestAnimationFrame update
+    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize
 
     # Start game loop
-    @updateId = window.requestAnimationFrame update
+    @updateId = window.requestAnimationFrame @update
 
   ###
   @description Cancel draw/update loops
@@ -241,9 +231,19 @@ class Game
   ###
   @description Update callback
   ###
-  update: (delta) ->
+  update: (currentDelta) =>
+    delta = currentDelta - @previousDelta
+    @previousDelta = currentDelta
+    
+    Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
+    Arcadia.garbageCollected = true if window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
+    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize
+
     @active.draw @context
-    @active.update delta
+    @active.update (delta / 1000) # call update() using seconds
+
+    Arcadia.garbageCollected = false
+    @updateId = window.requestAnimationFrame @update
 
   ###
   @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
@@ -278,7 +278,7 @@ class Game
     Arcadia.OFFSET.x = (window.innerWidth - width) / 2
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
     @element.setAttribute "style", "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
-    # @canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + width + 'px; height: ' + height + 'px;');
+    # @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
+    @canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + width + 'px; height: ' + height + 'px;');
 
 module.exports = Game

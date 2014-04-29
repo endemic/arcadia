@@ -69,7 +69,8 @@ class Pool
       @children[@length - 1].reset() if typeof @children[@length - 1].reset == 'function'
       return @children[@length - 1]
 
-    throw 'A Recycle Pool needs a factory defined!' if typeof @factory != 'function'
+    return null if typeof @factory != 'function'
+    
     @children.push @factory()
     @length += 1
     return @children[@length - 1]
