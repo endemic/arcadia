@@ -22,7 +22,10 @@ Arcadia =
 
 module.exports = Arcadia
 
+# Static variables tracking performance
 Arcadia.fps = 0
+Arcadia.garbageCollected = false
+Arcadia.lastUsedHeap = 0
 
 ###
 @description Get information about the current environment

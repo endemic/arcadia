@@ -24,6 +24,11 @@ var Game = function () {
     this.children.add(this.tryAgainButton);
     this.children.deactivate(this.tryAgainButton);
 
+    this.flash = new Arcadia.Shape(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, 4, Arcadia.HEIGHT);
+    this.flash.solid = true;
+    this.children.add(this.flash);
+    this.children.deactivate(this.flash);
+
     this.fps = new Arcadia.Label(50, 10, "FPS");
     this.fps.font = '20px monospace';
     this.fps.color = 'rgba(255, 255, 255, 0.8)';
@@ -50,32 +55,35 @@ var Game = function () {
 
     // Other game objects
     this.playerBullets = new Arcadia.Pool();
-    this.playerBullets.factory = function () {
-        return new PlayerBullet();
-    };
+    // this.playerBullets.factory = function () {
+    //     return new PlayerBullet();
+    // };
     this.children.add(this.playerBullets);
-    while (this.playerBullets.length < 50) {
-        this.playerBullets.activate();
+    while (this.playerBullets.length < 100) {
+        // this.playerBullets.activate();
+        this.playerBullets.add(new PlayerBullet());
     }
     this.playerBullets.deactivateAll();
 
     this.enemyBullets = new Arcadia.Pool();
-    this.enemyBullets.factory = function () {
-        return new EnemyBullet();
-    };
+    // this.enemyBullets.factory = function () {
+    //     return new EnemyBullet();
+    // };
     this.children.add(this.enemyBullets);
-    while (this.enemyBullets.length < 50) {
-        this.enemyBullets.activate();
+    while (this.enemyBullets.length < 500) {
+        // this.enemyBullets.activate();
+        this.enemyBullets.add(new EnemyBullet());
     }
     this.enemyBullets.deactivateAll();
 
     this.enemies = new Arcadia.Pool();
-    this.enemies.factory = function () {
-        return new Enemy();
-    };
+    // this.enemies.factory = function () {
+    //     return new Enemy();
+    // };
     this.children.add(this.enemies);
-    while (this.enemies.length < 20) {
-        this.enemies.activate();
+    while (this.enemies.length < 100) {
+        // this.enemies.activate();
+        this.enemies.add(new Enemy());
     }
     this.enemies.deactivateAll();
 
@@ -136,44 +144,60 @@ Game.prototype.update = function (delta) {
 
     this.fps.text = "FPS: " + parseInt(Arcadia.fps, 10);
 
+    if (Arcadia.garbageCollected) {
+        this.children.activate(this.flash);
+    } else {
+        this.children.deactivate(this.flash);
+    }
+
     var angle,
         bullet,
         enemy,
         i,
         j;
 
-    // // Check for player bullet collisions
-    // i = this.playerBullets.length;
-    // while (i--) {
-    //     bullet = this.playerBullets.at(i);
+    // Check for player bullet collisions
+    i = this.playerBullets.length;
+    while (i--) {
+        bullet = this.playerBullets.at(i);
 
-    //     if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
-    //         // Remove bullets if they go offscreen
-    //         this.playerBullets.deactivate(i);
-    //         continue;
-    //     } else {
-    //         j = this.enemies.length;
-    //         while (j--) {
-    //             enemy = this.enemies.at(j);
+        if (bullet === null) {
+            continue;
+        }
 
-    //             // Remove both enemy and bullet if they collide
-    //             if (enemy.collidesWith(bullet) === true) {
-    //                 this.particles.activate().startAt(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
+        if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
+            // Remove bullets if they go offscreen
+            this.playerBullets.deactivate(i);
+            continue;
+        } else {
+            j = this.enemies.length;
+            while (j--) {
+                enemy = this.enemies.at(j);
 
-    //                 // Spawn a new enemy
-    //                 enemy = this.enemies.activate();
-    //                 enemy.position.y = 0;
-    //                 enemy.position.x = Math.random() * Arcadia.WIDTH;
+                if (enemy === null) {
+                    continue;
+                }
 
-    //                 this.enemies.deactivate(j);
-    //                 this.playerBullets.deactivate(i);
-    //                 this.score += 10;
-    //                 this.label.text = "Score: " + this.score;
-    //                 continue;
-    //             }
-    //         }
-    //     }
-    // }
+                // Remove both enemy and bullet if they collide
+                if (enemy.collidesWith(bullet) === true) {
+                    // this.particles.activate().startAt(this.playerBullets.at(i).position.x, this.playerBullets.at(i).position.y);
+
+                    // Spawn a new enemy
+                    enemy = this.enemies.activate();
+                    if (enemy !== null) {
+                        enemy.position.y = 0;
+                        enemy.position.x = Math.random() * Arcadia.WIDTH;
+                    }
+
+                    this.enemies.deactivate(j);
+                    this.playerBullets.deactivate(i);
+                    this.score += 10;
+                    this.label.text = "Score: " + this.score;
+                    continue;
+                }
+            }
+        }
+    }
 
     if (this.gameOver === true) {
         return;
@@ -185,14 +209,19 @@ Game.prototype.update = function (delta) {
         this.spawnTimer = 0;
 
         enemy = this.enemies.activate();
-        enemy.position.y = 0;
-        enemy.position.x = Math.random() * Arcadia.WIDTH;
+        if (enemy !== null) {
+            enemy.position.y = 0;
+            enemy.position.x = Math.random() * Arcadia.WIDTH;
+        }
     }
 
     // Update enemy velocity
     i = this.enemies.length;
     while (i--) {
         enemy = this.enemies.at(i);
+        if (enemy === null) {
+            continue;
+        }
 
         angle = Math.atan2(this.player.position.y - enemy.position.y, this.player.position.x - enemy.position.x);
         enemy.rotation = angle;
@@ -205,26 +234,28 @@ Game.prototype.update = function (delta) {
             enemy.bulletTimer = 0;
 
             bullet = this.enemyBullets.activate();
-            bullet.position.x = enemy.position.x + enemy.velocity.x;
-            bullet.position.y = enemy.position.y + enemy.velocity.y;
-            bullet.velocity.x = enemy.velocity.x;
-            bullet.velocity.y = enemy.velocity.y;
+            if (bullet !== null) {
+                bullet.position.x = enemy.position.x + enemy.velocity.x;
+                bullet.position.y = enemy.position.y + enemy.velocity.y;
+                bullet.velocity.x = enemy.velocity.x;
+                bullet.velocity.y = enemy.velocity.y;
+            }
         }
     }
 
-    // // Check for enemy bullet collisons
-    // i = this.enemyBullets.length;
-    // while (i--) {
-    //     bullet = this.enemyBullets.at(i);
+    // Check for enemy bullet collisons
+    i = this.enemyBullets.length;
+    while (i--) {
+        bullet = this.enemyBullets.at(i);
 
-    //     if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
-    //         this.enemyBullets.deactivate(i);
-    //     } else if (bullet.collidesWith(this.player) === true) {
-    //         this.particles.activate().startAt(this.player.position.x, this.player.position.y);
-    //         this.showGameOver();
-    //         break;
-    //     }
-    // }
+        if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
+            this.enemyBullets.deactivate(i);
+        } else if (bullet.collidesWith(this.player) === true) {
+            // this.particles.activate().startAt(this.player.position.x, this.player.position.y);
+            this.showGameOver();
+            break;
+        }
+    }
 };
 
 /**

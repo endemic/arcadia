@@ -23,6 +23,11 @@ var Title = function () {
     this.fps.shadow.color = 'rgba(255, 255, 255, 0.5)';
     this.children.add(this.fps);
 
+    this.flash = new Arcadia.Shape(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, 4, Arcadia.HEIGHT);
+    this.flash.solid = true;
+    this.children.add(this.flash);
+    this.children.deactivate(this.flash);
+
     this.button = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "START"); // x, y, text
     this.button.font = '20px monospace';
     this.button.solid = false;
@@ -67,4 +72,10 @@ Title.prototype = new Arcadia.Scene();
 Title.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
     this.fps.text = "FPS: " + parseInt(Arcadia.fps, 10);
+
+    if (Arcadia.garbageCollected) {
+        this.children.activate(this.flash);
+    } else {
+        this.children.deactivate(this.flash);
+    }
 };
