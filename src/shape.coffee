@@ -21,20 +21,21 @@ class Shape extends GameObject
       y: 0
     @solid = false
     @path = null # custom draw function
+    @canvas = document.createElement 'canvas' # Internal shape cache
+
+    @generateCache()
 
   ###
-   * @description Draw object
-   * @param {CanvasRenderingContext2D} context
-  ###
-  draw: (context, offsetX = 0, offsetY = 0) ->
-    offsetX = offsetY = 0 if @fixed
+  @description Draw object onto internal <canvas> cache
+  ###  
+  generateCache: ->
+    # TODO: resize to handle shadow
+    @canvas.setAttribute 'width', @size + @lineWidth
+    @canvas.setAttribute 'height', @size + @lineWidth
 
-    # Draw child objects first, so they will be on the "bottom"
-    super context, @position.x + offsetX, @position.y + offsetY
-
-    context.translate @position.x + offsetX, @position.y + offsetY
-    context.scale @scale, @scale if @scale != 1
-    context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
+    context = @canvas.getContext '2d'
+    context.lineWidth = @lineWidth
+    context.lineJoin = @lineJoin
 
     if @shadow.x != null and @shadow.y != null and @shadow.blur != null and @shadow.color != null
       context.shadowOffsetX = @shadow.x
@@ -42,15 +43,13 @@ class Shape extends GameObject
       context.shadowBlur = @shadow.blur
       context.shadowColor = @shadow.color
 
-    context.globalAlpha = @alpha if @alpha < 1
-    context.lineWidth = @lineWidth if context.lineWidth != @lineWidth
-    context.lineJoin = @lineJoin if context.lineJoin != @lineJoin
-
     # Allow sprite objects to have custom draw functions
     if @path != null
         @path(context)
     else
       context.beginPath()
+      # TODO: Handle shadow offset
+      context.translate @size / 2 + @lineWidth / 2, @size / 2 + @lineWidth / 2 # Move to center of canvas
 
       switch @vertices
         when 0
@@ -70,11 +69,30 @@ class Shape extends GameObject
       context.closePath()
 
       if @solid
-        context.fillStyle = @color if context.fillStyle != @color
+        context.fillStyle = @color
         context.fill()
       else
-        context.strokeStyle = @color if context.strokeStyle != @color
+        context.strokeStyle = @color
         context.stroke()
+
+  ###
+  @description Draw object
+  @param {CanvasRenderingContext2D} context
+  ###
+  draw: (context, offsetX = 0, offsetY = 0) ->
+    offsetX = offsetY = 0 if @fixed
+
+    # Draw child objects first, so they will be on the "bottom"
+    super context, @position.x + offsetX, @position.y + offsetY
+
+    # Set scale/rotation/alpha
+    context.translate @position.x + offsetX, @position.y + offsetY
+    context.scale @scale, @scale if @scale != 1
+    context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
+    context.globalAlpha = @alpha if @alpha < 1
+
+    # Draw vector shape cache
+    context.drawImage @canvas, -@size / 2, -@size / 2
 
     # Reset scale/rotation/alpha
     context.rotate -@rotation if @rotation != 0 && @rotation != Math.PI * 2
