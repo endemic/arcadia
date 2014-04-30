@@ -13,6 +13,7 @@ var Enemy = function () {
     this.vertices = 3;
     this.bulletTimer = 0;
     this.lineWidth = 3;
+    this.generateCache();
 };
 
 Enemy.prototype = new Arcadia.Shape();
