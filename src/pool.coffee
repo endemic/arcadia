@@ -117,6 +117,7 @@ class Pool
     @tmp = @length
     while @tmp--
       @children[@tmp].update delta
+    return
 
   ###
   @description Passthrough method to draw active child objects
@@ -125,5 +126,6 @@ class Pool
     @tmp = @length
     while @tmp--
       @children[@tmp].draw context, offsetX, offsetY
+    return
 
 module.exports = Pool
