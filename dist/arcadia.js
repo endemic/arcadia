@@ -1060,13 +1060,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.update = function(delta) {
-      var _results;
       this.tmp = this.length;
-      _results = [];
       while (this.tmp--) {
-        _results.push(this.children[this.tmp].update(delta));
+        this.children[this.tmp].update(delta);
       }
-      return _results;
     };
 
     /*
@@ -1075,7 +1072,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.draw = function(context, offsetX, offsetY) {
-      var _results;
       if (offsetX == null) {
         offsetX = 0;
       }
@@ -1083,11 +1079,9 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         offsetY = 0;
       }
       this.tmp = this.length;
-      _results = [];
       while (this.tmp--) {
-        _results.push(this.children[this.tmp].draw(context, offsetX, offsetY));
+        this.children[this.tmp].draw(context, offsetX, offsetY);
       }
-      return _results;
     };
 
     return Pool;
@@ -1244,11 +1238,64 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       };
       this.solid = false;
       this.path = null;
+      this.canvas = document.createElement('canvas');
+      this.generateCache();
     }
 
     /*
-     * @description Draw object
-     * @param {CanvasRenderingContext2D} context
+    @description Draw object onto internal <canvas> cache
+    */
+
+
+    Shape.prototype.generateCache = function() {
+      var context;
+      this.canvas.setAttribute('width', this.size + this.lineWidth);
+      this.canvas.setAttribute('height', this.size + this.lineWidth);
+      context = this.canvas.getContext('2d');
+      context.lineWidth = this.lineWidth;
+      context.lineJoin = this.lineJoin;
+      if (this.shadow.x !== null && this.shadow.y !== null && this.shadow.blur !== null && this.shadow.color !== null) {
+        context.shadowOffsetX = this.shadow.x;
+        context.shadowOffsetY = this.shadow.y;
+        context.shadowBlur = this.shadow.blur;
+        context.shadowColor = this.shadow.color;
+      }
+      if (this.path !== null) {
+        return this.path(context);
+      } else {
+        context.beginPath();
+        context.translate(this.size / 2 + this.lineWidth / 2, this.size / 2 + this.lineWidth / 2);
+        switch (this.vertices) {
+          case 0:
+            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
+            break;
+          case 3:
+            context.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
+            context.lineTo(this.size / 2 * Math.cos(120 * Math.PI / 180), this.size / 2 * Math.sin(120 * Math.PI / 180));
+            context.lineTo(this.size / 2 * Math.cos(240 * Math.PI / 180), this.size / 2 * Math.sin(240 * Math.PI / 180));
+            context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
+            break;
+          case 4:
+            context.moveTo(this.size / 2, this.size / 2);
+            context.lineTo(this.size / 2, -this.size / 2);
+            context.lineTo(-this.size / 2, -this.size / 2);
+            context.lineTo(-this.size / 2, this.size / 2);
+            context.lineTo(this.size / 2, this.size / 2);
+        }
+        context.closePath();
+        if (this.solid) {
+          context.fillStyle = this.color;
+          return context.fill();
+        } else {
+          context.strokeStyle = this.color;
+          return context.stroke();
+        }
+      }
+    };
+
+    /*
+    @description Draw object
+    @param {CanvasRenderingContext2D} context
     */
 
 
@@ -1270,55 +1317,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (this.shadow.x !== null && this.shadow.y !== null && this.shadow.blur !== null && this.shadow.color !== null) {
-        context.shadowOffsetX = this.shadow.x;
-        context.shadowOffsetY = this.shadow.y;
-        context.shadowBlur = this.shadow.blur;
-        context.shadowColor = this.shadow.color;
-      }
       if (this.alpha < 1) {
         context.globalAlpha = this.alpha;
       }
-      if (context.lineWidth !== this.lineWidth) {
-        context.lineWidth = this.lineWidth;
-      }
-      if (context.lineJoin !== this.lineJoin) {
-        context.lineJoin = this.lineJoin;
-      }
-      if (this.path !== null) {
-        this.path(context);
-      } else {
-        context.beginPath();
-        switch (this.vertices) {
-          case 0:
-            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
-            break;
-          case 3:
-            context.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-            context.lineTo(this.size / 2 * Math.cos(120 * Math.PI / 180), this.size / 2 * Math.sin(120 * Math.PI / 180));
-            context.lineTo(this.size / 2 * Math.cos(240 * Math.PI / 180), this.size / 2 * Math.sin(240 * Math.PI / 180));
-            context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-            break;
-          case 4:
-            context.moveTo(this.size / 2, this.size / 2);
-            context.lineTo(this.size / 2, -this.size / 2);
-            context.lineTo(-this.size / 2, -this.size / 2);
-            context.lineTo(-this.size / 2, this.size / 2);
-            context.lineTo(this.size / 2, this.size / 2);
-        }
-        context.closePath();
-        if (this.solid) {
-          if (context.fillStyle !== this.color) {
-            context.fillStyle = this.color;
-          }
-          context.fill();
-        } else {
-          if (context.strokeStyle !== this.color) {
-            context.strokeStyle = this.color;
-          }
-          context.stroke();
-        }
-      }
+      context.drawImage(this.canvas, -this.size / 2, -this.size / 2);
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(-this.rotation);
       }
