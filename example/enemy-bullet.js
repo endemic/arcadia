@@ -9,6 +9,7 @@ var EnemyBullet = function () {
     this.color = 'rgb(0, 255, 0)';
     this.speed = 75;
     this.lineWidth = 3;
+    this.generateCache();
 };
 
 EnemyBullet.prototype = new Arcadia.Shape();

@@ -21,10 +21,11 @@ var Title = function () {
     this.fps.shadow.y = 0;
     this.fps.shadow.blur = 10;
     this.fps.shadow.color = 'rgba(255, 255, 255, 0.5)';
-    this.children.add(this.fps);
+    // this.children.add(this.fps);
 
     this.flash = new Arcadia.Shape(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, 4, Arcadia.HEIGHT);
     this.flash.solid = true;
+    this.flash.generateCache();
     this.children.add(this.flash);
     this.children.deactivate(this.flash);
 
@@ -47,6 +48,7 @@ var Title = function () {
         var star = new Arcadia.Shape(Math.random() * Arcadia.WIDTH, Math.random() * Arcadia.HEIGHT, 0, Math.random() * 4 + 1);
         star.solid = true;
         star.velocity.y = 60 / star.size;
+        star.generateCache();
         star.update = function (delta) {
             Arcadia.Shape.prototype.update.call(this, delta);   // "super"
 

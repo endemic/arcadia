@@ -9,6 +9,7 @@ var PlayerBullet = function () {
     this.lineWidth = 3;
     this.speed = 150;
     this.velocity.y = -1;
+    this.generateCache();
 };
 
 PlayerBullet.prototype = new Arcadia.Shape();

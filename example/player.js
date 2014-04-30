@@ -12,6 +12,7 @@ var Player = function () {
     // this.shadow.x = this.shadow.y = 0;
     // this.shadow.blur = 20;
     // this.shadow.color = this.color;
+    this.generateCache();
 };
 
 Player.prototype = new Arcadia.Shape();
