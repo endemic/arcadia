@@ -13,28 +13,27 @@ class Shape extends GameObject
 
     @vertices = args.vertices || 4
     @size = args.size || 10
-    @lineWidth = args.lineWidth || 1
-    @lineJoin = args.lineJoin || 'round'        # miter, round, bevel
     @speed = args.speed || 1
     @velocity = args.velocity || { x: 0, y: 0 }
-    @solid = args.solid || false
-    @color = args.color || '#fff'
+
+    @_color = args.color || '#fff'
+    @_border = args.border || { width: 0, color: null }
+    @_shadow = args.shadow || { x: 0, y: 0, blur: 0, color: null }
     @path = args.path || null # custom draw function
 
     @canvas = document.createElement 'canvas' # Internal shape cache
-    @generateCache()
+    @drawCanvasCache()
 
   ###
   @description Draw object onto internal <canvas> cache
   ###  
-  generateCache: ->
+  drawCanvasCache: ->
     # TODO: resize to handle shadow
-    @canvas.setAttribute 'width', @size + @lineWidth + @shadow.x
-    @canvas.setAttribute 'height', @size + @lineWidth + @shadow.y
+    @canvas.setAttribute 'width', @size + @_border.width + @_shadow.x
+    @canvas.setAttribute 'height', @size + @_border.width + @_shadow.y
 
     context = @canvas.getContext '2d'
-    context.lineWidth = @lineWidth
-    context.lineJoin = @lineJoin
+    context.lineJoin = 'round'
 
     if @shadow.x != null and @shadow.y != null and @shadow.blur != null and @shadow.color != null
       context.shadowOffsetX = @shadow.x
@@ -48,7 +47,7 @@ class Shape extends GameObject
     else
       context.beginPath()
       # TODO: Handle shadow offset
-      context.translate @size / 2 + @lineWidth / 2, @size / 2 + @lineWidth / 2 # Move to center of canvas
+      context.translate @size / 2 + @_border.width / 2, @size / 2 + @_border.width / 2 # Move to center of canvas
 
       i = @vertices
       slice = 2 * Math.PI / @vertices
@@ -68,11 +67,13 @@ class Shape extends GameObject
 
       context.closePath()
 
-      if @solid
-        context.fillStyle = @color
+      if @_color
+        context.fillStyle = @_color
         context.fill()
-      else
-        context.strokeStyle = @color
+
+      if @_border.width && @_border.color
+        context.lineWidth = @_border.width
+        context.strokeStyle = @_border.color
         context.stroke()
 
   ###

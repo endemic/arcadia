@@ -23,8 +23,10 @@ var Title = function () {
     // this.fps.shadow.color = 'rgba(255, 255, 255, 0.5)';
     // this.children.add(this.fps);
 
-    console.log("last one");
-    this.children.add(new Arcadia.Shape({ position: { x: Arcadia.WIDTH / 2, y: Arcadia.HEIGHT / 2 }, vertices: 3, size: 100 }));
+    this.shape = new Arcadia.Shape({ position: { x: Arcadia.WIDTH / 2, y: Arcadia.HEIGHT / 2 }, vertices: 5, size: 100 });
+    this.shape.color = 'rgb(255, 0, 0)';
+    this.shape.border = '1px #fff';
+    this.children.add(this.shape);
 
     // this.flash = new Arcadia.Shape(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, 4, Arcadia.HEIGHT);
     // this.flash.solid = true;
@@ -77,6 +79,7 @@ Title.prototype = new Arcadia.Scene();
 Title.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
     // this.fps.text = "FPS: " + parseInt(Arcadia.fps, 10);
+    this.shape.rotation += 1 * delta;
 
     if (Arcadia.garbageCollected) {
         // this.children.activate(this.flash);
