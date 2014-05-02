@@ -768,17 +768,78 @@
       this.fixed = args.fixed || false;
       this.scale = args.scale || 1;
       this.rotation = args.rotation || 0;
-      this.color = args.color || 'rgb(255, 255, 255)';
       this.alpha = args.alpha || 1;
-      this.shadow = {
-        x: null,
-        y: null,
-        blur: null,
+      this._color = args.color || 'rgb(255, 255, 255)';
+      this._border = {
+        width: 0,
+        color: null
+      };
+      this._shadow = {
+        x: 0,
+        y: 0,
+        blur: 0,
         color: null
       };
       this.children = new Pool();
       this.tmp = 0;
     }
+
+    /*
+    @description Getter/setter for color
+    */
+
+
+    GameObject.property('color', {
+      get: function() {
+        return this._color;
+      },
+      set: function(color) {
+        this._color = color;
+        return this.drawCanvasCache();
+      }
+    });
+
+    /*
+    @description Getter/setter for border
+    */
+
+
+    GameObject.property('border', {
+      get: function() {
+        return this._border.width + 'px ' + this._border.color;
+      },
+      set: function(border) {
+        var values;
+        values = border.match(/^(\d+px) (.+)$/);
+        if (values.length === 3) {
+          this._border.width = parseInt(values[1], 10);
+          this._border.color = values[2];
+          return this.drawCanvasCache();
+        }
+      }
+    });
+
+    /*
+    @description Getter/setter for shadow
+    */
+
+
+    GameObject.property('shadow', {
+      get: function() {
+        return this._shadow.x + 'px ' + this._shadow.y + 'px ' + this._shadow.blur + 'px ' + this._shadow.color;
+      },
+      set: function(shadow) {
+        var values;
+        values = border.match(/^(\d+px) (\d+px) (\d+px) (.+)$/);
+        if (values.length === 5) {
+          this._shadow.x = parseInt(values[1], 10);
+          this._shadow.y = parseInt(values[2], 10);
+          this._shadow.blur = parseInt(values[3], 10);
+          this._shadow.color = values[4];
+          return this.drawCanvasCache();
+        }
+      }
+    });
 
     /*
     @description Draw child objects
@@ -806,17 +867,41 @@
       return this.children.update(delta);
     };
 
+    /*
+    @description Add child object
+    @param {Object} object Object to be added
+    */
+
+
     GameObject.prototype.add = function(object) {
       return this.children.add(object);
     };
+
+    /*
+    @description Remove child object
+    @param {Object} objectOrIndex Object or index of object to be removed
+    */
+
 
     GameObject.prototype.remove = function(objectOrIndex) {
       return this.children.remove(objectOrIndex);
     };
 
+    /*
+    @description Activate child object
+    @param {Object} objectOrIndex Object or index of object to be activated
+    */
+
+
     GameObject.prototype.activate = function(objectOrIndex) {
       return this.children.activate(objectOrIndex);
     };
+
+    /*
+    @description Deactivate child object
+    @param {Object} objectOrIndex Object or index of object to be deactivated
+    */
+
 
     GameObject.prototype.deactivate = function(objectOrIndex) {
       return this.children.deactivate(objectOrIndex);
@@ -979,11 +1064,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (index === -1) {
         return;
       }
-      object = this.children[index];
+      object = this.children.splice(index, 1)[0];
       if (typeof object.destroy === 'function') {
         object.destroy();
       }
-      this.children.splice(index, 1);
       if (index < this.length) {
         this.length -= 1;
       }
@@ -1242,18 +1326,25 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       Shape.__super__.constructor.call(this, args);
       this.vertices = args.vertices || 4;
       this.size = args.size || 10;
-      this.lineWidth = args.lineWidth || 1;
-      this.lineJoin = args.lineJoin || 'round';
       this.speed = args.speed || 1;
       this.velocity = args.velocity || {
         x: 0,
         y: 0
       };
-      this.solid = args.solid || false;
-      this.color = args.color || '#fff';
+      this._color = args.color || '#fff';
+      this._border = args.border || {
+        width: 0,
+        color: null
+      };
+      this._shadow = args.shadow || {
+        x: 0,
+        y: 0,
+        blur: 0,
+        color: null
+      };
       this.path = args.path || null;
       this.canvas = document.createElement('canvas');
-      this.generateCache();
+      this.drawCanvasCache();
     }
 
     /*
@@ -1261,13 +1352,12 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Shape.prototype.generateCache = function() {
+    Shape.prototype.drawCanvasCache = function() {
       var context, i, offset, slice;
-      this.canvas.setAttribute('width', this.size + this.lineWidth + this.shadow.x);
-      this.canvas.setAttribute('height', this.size + this.lineWidth + this.shadow.y);
+      this.canvas.setAttribute('width', this.size + this._border.width + this._shadow.x);
+      this.canvas.setAttribute('height', this.size + this._border.width + this._shadow.y);
       context = this.canvas.getContext('2d');
-      context.lineWidth = this.lineWidth;
-      context.lineJoin = this.lineJoin;
+      context.lineJoin = 'round';
       if (this.shadow.x !== null && this.shadow.y !== null && this.shadow.blur !== null && this.shadow.color !== null) {
         context.shadowOffsetX = this.shadow.x;
         context.shadowOffsetY = this.shadow.y;
@@ -1278,7 +1368,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return this.path(context);
       } else {
         context.beginPath();
-        context.translate(this.size / 2 + this.lineWidth / 2, this.size / 2 + this.lineWidth / 2);
+        context.translate(this.size / 2 + this._border.width / 2, this.size / 2 + this._border.width / 2);
         i = this.vertices;
         slice = 2 * Math.PI / this.vertices;
         switch (this.vertices) {
@@ -1305,11 +1395,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
           context.lineTo(this.size / 2 * Math.cos(i * slice + offset), this.size / 2 * Math.sin(i * slice + offset));
         }
         context.closePath();
-        if (this.solid) {
-          context.fillStyle = this.color;
-          return context.fill();
-        } else {
-          context.strokeStyle = this.color;
+        if (this._color) {
+          context.fillStyle = this._color;
+          context.fill();
+        }
+        if (this._border.width && this._border.color) {
+          context.lineWidth = this._border.width;
+          context.strokeStyle = this._border.color;
           return context.stroke();
         }
       }

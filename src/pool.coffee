@@ -40,11 +40,10 @@ class Pool
 
     index = if objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
     return if index is -1
-
-    object = @children[index]
+    
+    object = @children.splice(index, 1)[0]
     object.destroy() if typeof object.destroy is 'function'
-
-    @children.splice index, 1
+    
     @length -= 1 if index < @length
     object
 
