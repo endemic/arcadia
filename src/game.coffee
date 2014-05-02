@@ -6,11 +6,9 @@ class Game
    * @param {Number} [height=480] Height of game view
    * @param {Boolean} [scaleToFit=true] Full screen or not
   ###
-  constructor: (width, height, SceneClass, scaleToFit) ->
+  constructor: (width, height, SceneClass, scaleToFit = true) ->
     width = parseInt(width, 10) || 640
     height = parseInt(height, 10) || 480
-
-    scaleToFit = scaleToFit || true
 
     Arcadia.WIDTH = width
     Arcadia.HEIGHT = height

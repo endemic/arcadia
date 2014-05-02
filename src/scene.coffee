@@ -66,13 +66,13 @@ class Scene extends GameObject
    * Getter/setter for camera target
   ###
   @property 'target',
-      get: ->
-        return @camera.target
-      set: (shape) ->
-        return if not shape?.position
+    get: ->
+      return @camera.target
+    set: (shape) ->
+      return if not shape?.position
 
-        @camera.target = shape
-        @camera.position.x = shape.position.x
-        @camera.position.y = shape.position.y
+      @camera.target = shape
+      @camera.position.x = shape.position.x
+      @camera.position.y = shape.position.y
 
 module.exports = Scene

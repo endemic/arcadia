@@ -69,7 +69,7 @@ class Pool
       @children[@length - 1].reset() if typeof @children[@length - 1].reset == 'function'
       return @children[@length - 1]
 
-    return null if typeof @factory != 'function'
+    throw 'Pools need a factory function' if typeof @factory != 'function'
     
     @children.push @factory()
     @length += 1
@@ -77,6 +77,7 @@ class Pool
 
   ###
   @description Deactivate an active object at a particular object/index
+  TODO: Change this to "objectOrIndex"
   ###
   deactivate: (index) ->
     index = @children.indexOf(index) if typeof index == 'object'
