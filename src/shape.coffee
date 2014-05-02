@@ -8,21 +8,20 @@ class Shape extends GameObject
    * @param {String} shape String representing what to draw
    * @param {Number} size Size of shape in pixels
   ###
-  constructor: (x, y, vertices = 4, size = 10) ->
-    super x, y
+  constructor: (args = {}) ->
+    super args
 
-    @vertices = vertices
-    @size = size
-    @lineWidth = 1
-    @lineJoin = 'round'        # miter, round, bevel
-    @speed = 1
-    @velocity =
-      x: 0
-      y: 0
-    @solid = false
-    @path = null # custom draw function
+    @vertices = args.vertices || 4
+    @size = args.size || 10
+    @lineWidth = args.lineWidth || 1
+    @lineJoin = args.lineJoin || 'round'        # miter, round, bevel
+    @speed = args.speed || 1
+    @velocity = args.velocity || { x: 0, y: 0 }
+    @solid = args.solid || false
+    @color = args.color || '#fff'
+    @path = args.path || null # custom draw function
+
     @canvas = document.createElement 'canvas' # Internal shape cache
-
     @generateCache()
 
   ###
@@ -30,8 +29,8 @@ class Shape extends GameObject
   ###  
   generateCache: ->
     # TODO: resize to handle shadow
-    @canvas.setAttribute 'width', @size + @lineWidth
-    @canvas.setAttribute 'height', @size + @lineWidth
+    @canvas.setAttribute 'width', @size + @lineWidth + @shadow.x
+    @canvas.setAttribute 'height', @size + @lineWidth + @shadow.y
 
     context = @canvas.getContext '2d'
     context.lineWidth = @lineWidth
@@ -51,20 +50,21 @@ class Shape extends GameObject
       # TODO: Handle shadow offset
       context.translate @size / 2 + @lineWidth / 2, @size / 2 + @lineWidth / 2 # Move to center of canvas
 
+      i = @vertices
+      slice = 2 * Math.PI / @vertices
+
+      # Make shapes point @ 90 degrees
       switch @vertices
-        when 0
-          context.arc(0, 0, @size / 2, Math.PI * 2, false)
-        when 3
-          context.moveTo(@size / 2 * Math.cos(0), @size / 2 * Math.sin(0))
-          context.lineTo(@size / 2 * Math.cos(120 * Math.PI / 180), @size / 2 * Math.sin(120 * Math.PI / 180))
-          context.lineTo(@size / 2 * Math.cos(240 * Math.PI / 180), @size / 2 * Math.sin(240 * Math.PI / 180))
-          context.lineTo(@size / 2 * Math.cos(0), @size / 2 * Math.sin(0))
-        when 4
-          context.moveTo(@size / 2, @size / 2)
-          context.lineTo(@size / 2, -@size / 2)
-          context.lineTo(-@size / 2, -@size / 2)
-          context.lineTo(-@size / 2, @size / 2)
-          context.lineTo(@size / 2, @size / 2)
+        when 3 then offset = -Math.PI / 2
+        when 4 then offset = -Math.PI / 4
+        when 5 then offset = -Math.PI / 10
+        when 7 then offset = Math.PI / 14
+        when 9 then offset = -Math.PI / 18
+        else offset = 0
+
+      context.moveTo(@size / 2 * Math.cos(0 + offset), @size / 2 * Math.sin(0 + offset))
+      while i--
+        context.lineTo(@size / 2 * Math.cos(i * slice + offset), @size / 2 * Math.sin(i * slice + offset))
 
       context.closePath()
 

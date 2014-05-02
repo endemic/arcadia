@@ -414,10 +414,12 @@
     */
 
     function Game(width, height, SceneClass, scaleToFit) {
+      if (scaleToFit == null) {
+        scaleToFit = true;
+      }
       this.update = __bind(this.update, this);
       width = parseInt(width, 10) || 640;
       height = parseInt(height, 10) || 480;
-      scaleToFit = scaleToFit || true;
       Arcadia.WIDTH = width;
       Arcadia.HEIGHT = height;
       Arcadia.SCALE = 1;
@@ -755,29 +757,26 @@
   Pool = require('./pool.coffee');
 
   GameObject = (function() {
-    function GameObject(x, y) {
-      if (x == null) {
-        x = 0;
+    function GameObject(args) {
+      if (args == null) {
+        args = {};
       }
-      if (y == null) {
-        y = 0;
-      }
-      this.position = {
-        x: x,
-        y: y
+      this.position = args.position || {
+        x: 0,
+        y: 0
       };
-      this.children = new Pool();
-      this.fixed = false;
-      this.scale = 1;
-      this.rotation = 0;
-      this.color = 'rgb(255, 255, 255)';
-      this.alpha = 1;
+      this.fixed = args.fixed || false;
+      this.scale = args.scale || 1;
+      this.rotation = args.rotation || 0;
+      this.color = args.color || 'rgb(255, 255, 255)';
+      this.alpha = args.alpha || 1;
       this.shadow = {
         x: null,
         y: null,
         blur: null,
         color: null
       };
+      this.children = new Pool();
       this.tmp = 0;
     }
 
@@ -805,6 +804,22 @@
 
     GameObject.prototype.update = function(delta) {
       return this.children.update(delta);
+    };
+
+    GameObject.prototype.add = function(object) {
+      return this.children.add(object);
+    };
+
+    GameObject.prototype.remove = function(objectOrIndex) {
+      return this.children.remove(objectOrIndex);
+    };
+
+    GameObject.prototype.activate = function(objectOrIndex) {
+      return this.children.activate(objectOrIndex);
+    };
+
+    GameObject.prototype.deactivate = function(objectOrIndex) {
+      return this.children.deactivate(objectOrIndex);
     };
 
     return GameObject;
@@ -1002,7 +1017,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return this.children[this.length - 1];
       }
       if (typeof this.factory !== 'function') {
-        return null;
+        throw 'Pools need a factory function';
       }
       this.children.push(this.factory());
       this.length += 1;
@@ -1011,6 +1026,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     /*
     @description Deactivate an active object at a particular object/index
+    TODO: Change this to "objectOrIndex"
     */
 
 
@@ -1219,25 +1235,23 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    function Shape(x, y, vertices, size) {
-      if (vertices == null) {
-        vertices = 4;
+    function Shape(args) {
+      if (args == null) {
+        args = {};
       }
-      if (size == null) {
-        size = 10;
-      }
-      Shape.__super__.constructor.call(this, x, y);
-      this.vertices = vertices;
-      this.size = size;
-      this.lineWidth = 1;
-      this.lineJoin = 'round';
-      this.speed = 1;
-      this.velocity = {
+      Shape.__super__.constructor.call(this, args);
+      this.vertices = args.vertices || 4;
+      this.size = args.size || 10;
+      this.lineWidth = args.lineWidth || 1;
+      this.lineJoin = args.lineJoin || 'round';
+      this.speed = args.speed || 1;
+      this.velocity = args.velocity || {
         x: 0,
         y: 0
       };
-      this.solid = false;
-      this.path = null;
+      this.solid = args.solid || false;
+      this.color = args.color || '#fff';
+      this.path = args.path || null;
       this.canvas = document.createElement('canvas');
       this.generateCache();
     }
@@ -1248,9 +1262,9 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.generateCache = function() {
-      var context;
-      this.canvas.setAttribute('width', this.size + this.lineWidth);
-      this.canvas.setAttribute('height', this.size + this.lineWidth);
+      var context, i, offset, slice;
+      this.canvas.setAttribute('width', this.size + this.lineWidth + this.shadow.x);
+      this.canvas.setAttribute('height', this.size + this.lineWidth + this.shadow.y);
       context = this.canvas.getContext('2d');
       context.lineWidth = this.lineWidth;
       context.lineJoin = this.lineJoin;
@@ -1265,22 +1279,30 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       } else {
         context.beginPath();
         context.translate(this.size / 2 + this.lineWidth / 2, this.size / 2 + this.lineWidth / 2);
+        i = this.vertices;
+        slice = 2 * Math.PI / this.vertices;
         switch (this.vertices) {
-          case 0:
-            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
-            break;
           case 3:
-            context.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-            context.lineTo(this.size / 2 * Math.cos(120 * Math.PI / 180), this.size / 2 * Math.sin(120 * Math.PI / 180));
-            context.lineTo(this.size / 2 * Math.cos(240 * Math.PI / 180), this.size / 2 * Math.sin(240 * Math.PI / 180));
-            context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
+            offset = -Math.PI / 2;
             break;
           case 4:
-            context.moveTo(this.size / 2, this.size / 2);
-            context.lineTo(this.size / 2, -this.size / 2);
-            context.lineTo(-this.size / 2, -this.size / 2);
-            context.lineTo(-this.size / 2, this.size / 2);
-            context.lineTo(this.size / 2, this.size / 2);
+            offset = -Math.PI / 4;
+            break;
+          case 5:
+            offset = -Math.PI / 10;
+            break;
+          case 7:
+            offset = Math.PI / 14;
+            break;
+          case 9:
+            offset = -Math.PI / 18;
+            break;
+          default:
+            offset = 0;
+        }
+        context.moveTo(this.size / 2 * Math.cos(0 + offset), this.size / 2 * Math.sin(0 + offset));
+        while (i--) {
+          context.lineTo(this.size / 2 * Math.cos(i * slice + offset), this.size / 2 * Math.sin(i * slice + offset));
         }
         context.closePath();
         if (this.solid) {
