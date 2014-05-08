@@ -57,8 +57,8 @@ Arcadia.changeScene = (SceneClass) ->
 
   # Clean up previous scene
   Arcadia.instance.active.destroy()
-
   Arcadia.instance.active = new SceneClass()
+  Arcadia.instance.active.transition()
 
 ###
 @description Static method to translate mouse/touch input to coordinates the game will understand
