@@ -18,8 +18,8 @@ class Game
 
     # If game element is not at (0, 0), clicks/touches need to be offset
     Arcadia.OFFSET =
-        x: 0
-        y: 0
+      x: 0
+      y: 0
 
     # Static reference to current game instance
     Arcadia.instance = @
@@ -27,13 +27,8 @@ class Game
     @element = document.createElement 'div'
     @element.setAttribute 'id', 'arcadia'
 
-    @canvas = document.createElement('canvas')
-    @canvas.setAttribute('width', width)
-    @canvas.setAttribute('height', height)
-    @context = @canvas.getContext('2d')
-
-    @element.appendChild(@canvas)
-    document.body.appendChild(@element)
+    # @element.appendChild @canvas
+    document.body.appendChild @element
 
     # Bind event handler callbacks
     @onResize = @onResize.bind @
@@ -59,12 +54,12 @@ class Game
 
     # Fit <canvas> to window
     if scaleToFit == true
-        @onResize()
-        window.addEventListener('resize', @onResize, false)
+      @onResize()
+      window.addEventListener('resize', @onResize, false)
 
     if window.cordova != undefined
-        document.addEventListener('pause', @pause, false)
-        document.addEventListener('resume', @resume, false)
+      document.addEventListener('pause', @pause, false)
+      document.addEventListener('resume', @resume, false)
 
     # Map of current input, used to prevent duplicate events being sent to handlers
     # ("keydown" events fire continuously while a key is held)
@@ -102,6 +97,7 @@ class Game
 
     # Instantiate initial scene
     @active = new SceneClass()
+    @active.transition()
 
     # Start animation request
     @start()
@@ -237,8 +233,8 @@ class Game
     Arcadia.garbageCollected = true if window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
     Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize
 
-    @active.draw @context
-    @active.update (delta / 1000) # call update() using seconds
+    @active.draw()
+    @active.update(delta / 1000) # call update() using seconds
 
     Arcadia.garbageCollected = false
     @updateId = window.requestAnimationFrame @update
@@ -276,7 +272,6 @@ class Game
     Arcadia.OFFSET.x = (window.innerWidth - width) / 2
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
     @element.setAttribute "style", "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    # @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
-    @canvas.setAttribute('style', 'position: absolute; left: 0; top: 0; width: ' + width + 'px; height: ' + height + 'px;');
+    @active.resize()
 
 module.exports = Game
