@@ -3,6 +3,10 @@ GameObject = require './gameobject.coffee'
 class Scene extends GameObject
   constructor: ->
     super
+
+    @canvas = document.createElement 'canvas'
+    @context = @canvas.getContext '2d'
+
     # implement a camera view/drawing offset
     @camera =
       target: null
@@ -45,22 +49,41 @@ class Scene extends GameObject
    * @description Clear context, then re-draw all child objects
    * @param {CanvasRenderingContext2D} context
   ###
-  draw: (context) ->
-      if @clearColor?
-        # Clear w/ clear color
-        context.save()
-        context.fillStyle = @clearColor
-        context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-        context.restore()
-      else
-        # Just erase
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+  draw: ->
+    if @color
+      @context.fillStyle = @color
+      @context.fillRect(0, 0, @canvas.width, @canvas.height)
+    else
+      @context.clearRect(0, 0, @canvas.width, @canvas.height)
 
-      # Draw child objects
-      super context, @camera.viewport.width / 2 - @camera.position.x, @camera.viewport.height / 2 - @camera.position.y
+    # Draw child objects
+    super @context, @camera.viewport.width / 2 - @camera.position.x, @camera.viewport.height / 2 - @camera.position.y
 
+  ###
+  @description Move scene's <canvas> into place
+  ###
+  transition: ->
+    @canvas.setAttribute 'width', Arcadia.WIDTH
+    @canvas.setAttribute 'height', Arcadia.HEIGHT
+    @resize()
+    Arcadia.instance.element.appendChild @canvas
+    # @canvas.style['top'] = '-100%'
+    # @canvas.style['-webkit-transition'] = '-webkit-transform 0.5s ease-in-out'
+    # @canvas.style['-webkit-transform'] = 'translateY(100%)'
+    # @canvas.style['transition'] = 'transform 0.5s ease-in-out'
+    # @canvas.style['transform'] = 'translateY(100%)'
+
+  ###
+  TODO: Handle removing event listeners, etc.?
+  ###
   destroy: ->
-    console.log 'Scene#destroy'
+    Arcadia.instance.element.removeChild @canvas
+
+  ###
+  @description Resize scene's <canvas>
+  ###
+  resize: ->
+    @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
 
   ###
    * Getter/setter for camera target
