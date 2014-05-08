@@ -8,15 +8,9 @@ class GameObject
     @rotation = args.rotation || 0
     @alpha = args.alpha || 1
 
-    @_color = args.color || 'rgb(255, 255, 255)'
-    @_border =
-      width: 0
-      color: null
-    @_shadow =
-      x: 0
-      y: 0
-      blur: 0
-      color: null
+    @_color = args.color || '#fff'
+    @_border = args.border || { width: 0, color: '#f00' }
+    @_shadow = args.shadow || { x: 0, y: 0, blur: 0, color: '#000' }
 
     @children = new Pool()
     @tmp = 0
@@ -34,7 +28,7 @@ class GameObject
   @description Getter/setter for border
   ###
   @property 'border',
-    get: -> return @_border.width + 'px ' + @_border.color
+    get: -> return "#{@_border.width}px #{@_border.color}"
     set: (border) ->
       values = border.match(/^(\d+px) (.+)$/)
 
@@ -47,9 +41,9 @@ class GameObject
   @description Getter/setter for shadow
   ###
   @property 'shadow',
-    get: -> return @_shadow.x + 'px ' + @_shadow.y + 'px ' + @_shadow.blur + 'px ' + @_shadow.color
+    get: -> return "#{@_shadow.x}px #{@_shadow.y}px #{@_shadow.blur}px #{@_shadow.color}"
     set: (shadow) ->
-      values = border.match(/^(\d+px) (\d+px) (\d+px) (.+)$/)
+      values = shadow.match(/^(\d+px) (\d+px) (\d+px) (.+)$/)
       
       if values.length == 5
         @_shadow.x = parseInt values[1], 10
@@ -57,6 +51,12 @@ class GameObject
         @_shadow.blur = parseInt values[3], 10
         @_shadow.color = values[4]
         @drawCanvasCache()
+
+  ###
+  @description Overridden in child objects
+  ###
+  drawCanvasCache: ->
+    null
 
   ###
   @description Draw child objects

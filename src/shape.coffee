@@ -15,14 +15,25 @@ class Shape extends GameObject
     @size = args.size || 10
     @speed = args.speed || 1
     @velocity = args.velocity || { x: 0, y: 0 }
+    @angularVelocity = args.angularVelocity || 0
 
     @_color = args.color || '#fff'
     @_border = args.border || { width: 0, color: null }
     @_shadow = args.shadow || { x: 0, y: 0, blur: 0, color: null }
-    @path = args.path || null # custom draw function
+    @_path = args.path || null # custom draw function
+    @debug = args.debug || false
 
     @canvas = document.createElement 'canvas' # Internal shape cache
     @drawCanvasCache()
+
+  ###
+  @description Getter/setter for color
+  ###
+  @property 'path',
+    get: -> return @_path
+    set: (path) ->
+      @_path = path
+      @drawCanvasCache()
 
   ###
   @description Draw object onto internal <canvas> cache
@@ -35,15 +46,15 @@ class Shape extends GameObject
     context = @canvas.getContext '2d'
     context.lineJoin = 'round'
 
-    if @shadow.x != null and @shadow.y != null and @shadow.blur != null and @shadow.color != null
-      context.shadowOffsetX = @shadow.x
-      context.shadowOffsetY = @shadow.y
-      context.shadowBlur = @shadow.blur
-      context.shadowColor = @shadow.color
+    # Debug
+    if @debug
+      context.lineWidth = 1
+      context.strokeStyle = '#f00'
+      context.strokeRect 0, 0, @canvas.width, @canvas.height
 
     # Allow sprite objects to have custom draw functions
-    if @path != null
-        @path(context)
+    if @_path?
+        @_path(context)
     else
       context.beginPath()
       # TODO: Handle shadow offset
@@ -67,9 +78,21 @@ class Shape extends GameObject
 
       context.closePath()
 
+      if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
+        context.shadowOffsetX = @_shadow.x
+        context.shadowOffsetY = @_shadow.y
+        context.shadowBlur = @_shadow.blur
+        context.shadowColor = @_shadow.color
+
       if @_color
         context.fillStyle = @_color
         context.fill()
+
+      # Don't allow border to cast a shadow
+      if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
+        context.shadowOffsetX = 0
+        context.shadowOffsetY = 0
+        context.shadowBlur = 0
 
       if @_border.width && @_border.color
         context.lineWidth = @_border.width
@@ -110,6 +133,8 @@ class Shape extends GameObject
 
     @position.x += @velocity.x * @speed * delta
     @position.y += @velocity.y * @speed * delta
+
+    @rotation += @angularVelocity * delta
 
   ###
    * @description Basic collision detection
