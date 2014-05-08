@@ -3,36 +3,34 @@
 
 var Title = function () {
     Arcadia.Scene.apply(this, arguments);
-    this.clearColor = 'rgba(0, 0, 0, 0.10)';
+    this.color = 'rgba(0, 0, 0, 0.10)';
 
-    // var title = new Arcadia.Label(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 4, "ARMADA");
-    // title.font = '40px monospace';
-    // title.color = 'rgba(255, 255, 255, 0.8)';
-    // title.shadow.x = 0;
-    // title.shadow.y = 0;
-    // title.shadow.blur = 10;
-    // title.shadow.color = 'rgba(255, 255, 255, 0.5)';
-    // this.children.add(title);
-
-    // this.fps = new Arcadia.Label(50, 10, Arcadia.fps);
-    // this.fps.font = '20px monospace';
-    // this.fps.color = 'rgba(255, 255, 255, 0.8)';
-    // this.fps.shadow.x = 0;
-    // this.fps.shadow.y = 0;
-    // this.fps.shadow.blur = 10;
-    // this.fps.shadow.color = 'rgba(255, 255, 255, 0.5)';
-    // this.children.add(this.fps);
+    var title = new Arcadia.Label({
+        position: {
+            x: Arcadia.WIDTH / 2,
+            y: Arcadia.HEIGHT / 4
+        },
+        font: {
+            size: 80,
+            family: 'sans-serif'
+        },
+        // shadow: {
+        //     x: 0,
+        //     y: 0,
+        //     blur: 10,
+        //     color: '#fff'
+        // },
+        text: 'ARMADA',
+        debug: true
+    });
+    // this.add(title);
 
     this.shape = new Arcadia.Shape({ position: { x: Arcadia.WIDTH / 2, y: Arcadia.HEIGHT / 2 }, vertices: 5, size: 100 });
     this.shape.color = 'rgb(255, 0, 0)';
-    this.shape.border = '1px #fff';
-    this.children.add(this.shape);
-
-    // this.flash = new Arcadia.Shape(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, 4, Arcadia.HEIGHT);
-    // this.flash.solid = true;
-    // this.flash.generateCache();
-    // this.children.add(this.flash);
-    // this.children.deactivate(this.flash);
+    this.shape.border = '5px white';
+    this.shape.shadow = '10px 0px 20px green';
+    // this.shape.debug = true;
+    this.add(this.shape);
 
     // this.button = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "START"); // x, y, text
     // this.button.font = '20px monospace';
@@ -45,45 +43,44 @@ var Title = function () {
     // this.button.onUp = function () {
     //     Arcadia.changeScene(Game);
     // };
-    // this.children.add(this.button);
+    // this.add(this.button);
 
     // Add a starfield background
-    // this.stars = new Arcadia.Pool();
-    // this.stars.factory = function () {
-    //     var star = new Arcadia.Shape(Math.random() * Arcadia.WIDTH, Math.random() * Arcadia.HEIGHT, 0, Math.random() * 4 + 1);
-    //     star.solid = true;
-    //     star.velocity.y = 60 / star.size;
-    //     star.generateCache();
-    //     star.update = function (delta) {
-    //         Arcadia.Shape.prototype.update.call(this, delta);   // "super"
+    this.stars = new Arcadia.Pool();
+    this.stars.factory = function () {
+        var star = new Arcadia.Shape({
+            position: {
+                x: Math.random() * Arcadia.WIDTH,
+                y: Math.random() * Arcadia.HEIGHT
+            },
+            vertices: 4,
+            size: Math.random() * 10 + 5,
+            color: '#fff',
+            angularVelocity: Math.random() * (Math.random() > 0.5 ? 1 : -1)
+        });
+        star.velocity.y = 200 / star.size;
+        star.update = function (delta) {
+            Arcadia.Shape.prototype.update.call(this, delta);   // "super"
 
-    //         // Reset star position if it goes off the bottom of the screen
-    //         if (this.position.y > Arcadia.HEIGHT) {
-    //             this.position.y = 0;
-    //         }
-    //     };
+            // Reset star position if it goes off the bottom of the screen
+            if (this.position.y > Arcadia.HEIGHT) {
+                this.position.y = 0;
+            }
+        };
 
-    //     return star;
-    // };
+        return star;
+    };
 
-    // this.children.add(this.stars);
+    this.add(this.stars);
 
-    // // Create 50 star objects
-    // while (this.stars.length < 50) {
-    //     this.stars.activate();
-    // }
+    // Create 50 star objects
+    while (this.stars.length < 50) {
+        this.stars.activate();
+    }
 };
 
 Title.prototype = new Arcadia.Scene();
 
 Title.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
-    // this.fps.text = "FPS: " + parseInt(Arcadia.fps, 10);
-    this.shape.rotation += 1 * delta;
-
-    if (Arcadia.garbageCollected) {
-        // this.children.activate(this.flash);
-    } else {
-        // this.children.deactivate(this.flash);
-    }
 };
