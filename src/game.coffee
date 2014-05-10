@@ -25,9 +25,14 @@ class Game
     Arcadia.instance = @
 
     @element = document.createElement 'div'
-    @element.setAttribute 'id', 'arcadia'
+    @element['id'] = 'arcadia'
 
-    # @element.appendChild @canvas
+    textDimensionElement = document.createElement 'div'
+    textDimensionElement['id'] = 'text-dimensions'
+    textDimensionElement.style['position'] = 'absolute'
+    textDimensionElement.style['top'] = '-9999px'
+    @element.appendChild textDimensionElement
+
     document.body.appendChild @element
 
     # Bind event handler callbacks
@@ -41,13 +46,13 @@ class Game
     @resume = @resume.bind @
 
     # Set up event listeners Mouse and touch use the same ones
-    document.addEventListener('keydown', @onKeyDown, false)
-    document.addEventListener('keyup', @onKeyUp, false)
-    @element.addEventListener('mousedown', @onPointStart, false)
-    @element.addEventListener('mouseup', @onPointEnd, false)
-    @element.addEventListener('touchstart', @onPointStart, false)
-    @element.addEventListener('touchmove', @onPointMove, false)
-    @element.addEventListener('touchend', @onPointEnd, false)
+    document.addEventListener 'keydown', @onKeyDown, false
+    document.addEventListener 'keyup', @onKeyUp, false
+    @element.addEventListener 'mousedown', @onPointStart, false
+    @element.addEventListener 'mouseup', @onPointEnd, false
+    @element.addEventListener 'touchstart', @onPointStart, false
+    @element.addEventListener 'touchmove', @onPointMove, false
+    @element.addEventListener 'touchend', @onPointEnd, false
 
     # Prevent the page from scrolling when touching game element
     @element.addEventListener 'touchmove', (e) -> e.preventDefault()
@@ -55,11 +60,11 @@ class Game
     # Fit <canvas> to window
     if scaleToFit == true
       @onResize()
-      window.addEventListener('resize', @onResize, false)
+      window.addEventListener 'resize', @onResize, false
 
     if window.cordova != undefined
-      document.addEventListener('pause', @pause, false)
-      document.addEventListener('resume', @resume, false)
+      document.addEventListener 'pause', @pause, false
+      document.addEventListener 'resume', @resume, false
 
     # Map of current input, used to prevent duplicate events being sent to handlers
     # ("keydown" events fire continuously while a key is held)

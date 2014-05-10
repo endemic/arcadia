@@ -415,6 +415,7 @@
     */
 
     function Game(width, height, SceneClass, scaleToFit) {
+      var textDimensionElement;
       if (scaleToFit == null) {
         scaleToFit = true;
       }
@@ -430,7 +431,12 @@
       };
       Arcadia.instance = this;
       this.element = document.createElement('div');
-      this.element.setAttribute('id', 'arcadia');
+      this.element['id'] = 'arcadia';
+      textDimensionElement = document.createElement('div');
+      textDimensionElement['id'] = 'text-dimensions';
+      textDimensionElement.style['position'] = 'absolute';
+      textDimensionElement.style['top'] = '-9999px';
+      this.element.appendChild(textDimensionElement);
       document.body.appendChild(this.element);
       this.onResize = this.onResize.bind(this);
       this.onPointStart = this.onPointStart.bind(this);
@@ -956,15 +962,19 @@
 
 
     Label.prototype.drawCanvasCache = function() {
-      var context;
+      var context, element;
       context = this.canvas.getContext('2d');
-      context.font = this.font;
-      context.textAlign = this.alignment;
-      this.width = context.measureText(this.text).width;
-      this.height = this._font.size;
+      element = document.getElementById('text-dimensions');
+      element.style['font'] = this.font;
+      element.style['line-height'] = 1;
+      element.innerHTML = this.text;
+      this.width = element.offsetWidth;
+      this.height = element.offsetHeight;
       this.canvas.width = this.width + this._border.width + this._shadow.x;
       this.canvas.height = this.height + this._border.width + this._shadow.y;
       context.font = this.font;
+      context.textAlign = this.alignment;
+      context.textBaseline = 'ideographic';
       if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
         context.shadowOffsetX = this._shadow.x;
         context.shadowOffsetY = this._shadow.y;
@@ -976,7 +986,7 @@
         context.strokeStyle = '#f00';
         context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
       }
-      context.translate(this._border.width / 2, this.height / 1.5 + this._border.width / 2);
+      context.translate(this.width / 2 + this._border.width / 2, this.height + this._border.width / 2);
       if (this._color) {
         context.fillStyle = this._color;
         context.fillText(this.text, 0, 0, Arcadia.WIDTH);
@@ -1030,18 +1040,19 @@
 
     /*
     @description Getter/setter for font
+    TODO: Handle bold text
     */
 
 
     Label.property('font', {
       get: function() {
-        return "" + this._font.size + "px " + this._font.family;
+        return "" + this._font.size + " " + this._font.family;
       },
       set: function(font) {
         var values;
-        values = font.match(/^(\d+px) (.+)$/);
+        values = font.match(/^(\d+) (.+)$/);
         if (values.length === 3) {
-          this._font.size = parseInt(values[1], 10);
+          this._font.size = values[1];
           this._font.family = values[2];
           return this.drawCanvasCache();
         }
