@@ -11,19 +11,20 @@ var Title = function () {
             y: Arcadia.HEIGHT / 4
         },
         font: {
-            size: 80,
+            size: '80px',
             family: 'sans-serif'
         },
-        // shadow: {
-        //     x: 0,
-        //     y: 0,
-        //     blur: 10,
-        //     color: '#fff'
-        // },
-        text: 'ARMADA',
-        debug: true
+        shadow: {
+            x: 0,
+            y: 0,
+            blur: 10,
+            color: '#fff'
+        },
+        text: "Arcadia"
+        // debug: true
     });
-    // this.add(title);
+    console.log(title.font);
+    this.add(title);
 
     this.shape = new Arcadia.Shape({ position: { x: Arcadia.WIDTH / 2, y: Arcadia.HEIGHT / 2 }, vertices: 5, size: 100 });
     this.shape.color = 'rgb(255, 0, 0)';

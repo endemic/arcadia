@@ -18,20 +18,22 @@ class Label extends GameObject
   ###  
   drawCanvasCache: ->
     context = @canvas.getContext '2d'
-    context.font = @font
-    context.textAlign = @alignment
-    # TODO: investigate textBaseline
-    # context.textBaseline = 'top' # middle, alphabetic, bottom
 
-    @width = context.measureText(@text).width
-    @height = @_font.size
+    # Determine width/height of text using offscreen <div>
+    element = document.getElementById 'text-dimensions'
+    element.style['font'] = @font
+    element.style['line-height'] = 1
+    element.innerHTML = @text
+    @width = element.offsetWidth
+    @height = element.offsetHeight
 
     # TODO: Account for shadow blur
     @canvas.width = @width + @_border.width + @_shadow.x
     @canvas.height = @height + @_border.width + @_shadow.y
 
-    # Changing canvas size resets the font apparently
     context.font = @font
+    context.textAlign = @alignment
+    context.textBaseline = 'ideographic' # top, hanging, middle, alphabetic, ideographic, bottom
 
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
       context.shadowOffsetX = @_shadow.x
@@ -47,7 +49,7 @@ class Label extends GameObject
 
     # TODO: Handle shadow offset
     # context.translate @position.x + offsetX, @position.y + parseInt(@font, 10) / 3 + offsetY
-    context.translate @_border.width / 2, @height / 1.5 + @_border.width / 2 # Move to center of canvas
+    context.translate @width / 2 + @_border.width / 2, @height + @_border.width / 2 # Move to center of canvas
 
     if @_color
       context.fillStyle = @_color
@@ -85,14 +87,15 @@ class Label extends GameObject
 
   ###
   @description Getter/setter for font
+  TODO: Handle bold text
   ###
   @property 'font',
-    get: -> return "#{@_font.size}px #{@_font.family}"
+    get: -> return "#{@_font.size} #{@_font.family}"
     set: (font) ->
-      values = font.match(/^(\d+px) (.+)$/)
+      values = font.match(/^(\d+) (.+)$/)
 
       if values.length == 3
-        @_font.size = parseInt values[1], 10
+        @_font.size = values[1]
         @_font.family = values[2]
         @drawCanvasCache()
 
