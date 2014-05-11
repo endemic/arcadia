@@ -19,7 +19,7 @@ class Shape extends GameObject
 
     @_color = args.color || '#fff'
     @_border = args.border || { width: 0, color: null }
-    @_shadow = args.shadow || { x: 0, y: 0, blur: 0, color: null }
+
     @_path = args.path || null # custom draw function
     @debug = args.debug || false
 

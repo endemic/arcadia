@@ -4,7 +4,8 @@
   write extra tests which assert the object that is returned/rearranged when activated/deactivated
 * [ ] Handle making canvas cache large enough for shadow/blur
 * [ ] Allow strings to be passed for border, font, shadow, etc. instead of objects - use setter methods
-* [ ] Text positioning/sizing is wonk, width/height is unreliable, possibly use DOM to get width/height values
+* [X] Text positioning/sizing is wonk, width/height is unreliable, possibly use DOM to get width/height values
+* [ ] Move Label width/height check element into the Label, not the overall game
 * [X] Update Shape to use setters/getters to mark the object as "dirty" and regenerate its cached <canvas>
 * [ ] Rename Emitter to "Particles" or something
 * [ ] Update particle emitter to emit particles infinitely; can turn on/off

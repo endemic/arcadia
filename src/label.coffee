@@ -4,9 +4,15 @@ class Label extends GameObject
   constructor: (args = {}) ->
     super args
 
+    @_font = { size: 10, family: 'monospace' }
+    if typeof args.font is 'object'
+      @_font.size = args.font.size
+      @_font.family = args.font.family
+    else if typeof args.font is 'string'
+      @font = args.font
+
     @text = args.text || 'text goes here'
     @fixed = args.fixed || true # By default, does not move with camera
-    @_font = args.font || { size: 10, family: 'monospace' }
     @alignment = args.alignment || 'center' # allowed values: "left", "right", "center", "start", "end"
     @debug = args.debug || false
 
@@ -27,19 +33,12 @@ class Label extends GameObject
     @width = element.offsetWidth
     @height = element.offsetHeight
 
-    # TODO: Account for shadow blur
-    @canvas.width = @width + @_border.width + @_shadow.x
-    @canvas.height = @height + @_border.width + @_shadow.y
+    @canvas.width = @width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
+    @canvas.height = @height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
     context.font = @font
     context.textAlign = @alignment
     context.textBaseline = 'ideographic' # top, hanging, middle, alphabetic, ideographic, bottom
-
-    if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
-      context.shadowOffsetX = @_shadow.x
-      context.shadowOffsetY = @_shadow.y
-      context.shadowBlur = @_shadow.blur
-      context.shadowColor = @_shadow.color
 
     # Debug
     if @debug
@@ -47,9 +46,13 @@ class Label extends GameObject
       context.strokeStyle = '#f00'
       context.strokeRect 0, 0, @canvas.width, @canvas.height
 
-    # TODO: Handle shadow offset
-    # context.translate @position.x + offsetX, @position.y + parseInt(@font, 10) / 3 + offsetY
-    context.translate @width / 2 + @_border.width / 2, @height + @_border.width / 2 # Move to center of canvas
+    if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
+      context.shadowOffsetX = @_shadow.x
+      context.shadowOffsetY = @_shadow.y
+      context.shadowBlur = @_shadow.blur
+      context.shadowColor = @_shadow.color
+
+    context.translate @width / 2 + @_border.width / 2 + Math.abs(@_shadow.x) + @_shadow.blur / 2, @height + @_border.width / 2 + Math.abs(@_shadow.y) + @_shadow.blur / 2
 
     if @_color
       context.fillStyle = @_color
@@ -92,11 +95,11 @@ class Label extends GameObject
   @property 'font',
     get: -> return "#{@_font.size} #{@_font.family}"
     set: (font) ->
-      values = font.match(/^(\d+) (.+)$/)
+      values = font.match(/^(.+) (.+)$/)
 
       if values.length == 3
         @_font.size = values[1]
         @_font.family = values[2]
-        @drawCanvasCache()
+        @drawCanvasCache() if @canvas
 
 module.exports = Label
