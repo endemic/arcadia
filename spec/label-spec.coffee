@@ -3,7 +3,11 @@ describe 'Arcadia.Label', ->
   beforeEach ->
     @canvas = document.createElement 'canvas'
     @context = @canvas.getContext '2d'
-    @label = new Arcadia.Label 0, 0, 'Hey you guys!'
+    @label = new Arcadia.Label
+      position:
+        x: 0
+        y: 0
+      text: 'Hey you guys!'
 
   afterEach ->
     @label = null

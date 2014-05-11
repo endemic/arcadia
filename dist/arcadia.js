@@ -777,12 +777,20 @@
         width: 0,
         color: '#f00'
       };
-      this._shadow = args.shadow || {
+      this._shadow = {
         x: 0,
         y: 0,
         blur: 0,
-        color: '#000'
+        color: null
       };
+      if (typeof args.shadow === 'object') {
+        this._shadow.x = args.shadow.x;
+        this._shadow.y = args.shadow.y;
+        this._shadow.blur = args.shadow.blur;
+        this._shadow.color = args.shadow.color;
+      } else if (typeof args.shadow === 'string') {
+        this.shadow = args.shadow;
+      }
       this.children = new Pool();
       this.tmp = 0;
     }
@@ -798,7 +806,9 @@
       },
       set: function(color) {
         this._color = color;
-        return this.drawCanvasCache();
+        if (this.canvas) {
+          return this.drawCanvasCache();
+        }
       }
     });
 
@@ -817,7 +827,9 @@
         if (values.length === 3) {
           this._border.width = parseInt(values[1], 10);
           this._border.color = values[2];
-          return this.drawCanvasCache();
+          if (this.canvas) {
+            return this.drawCanvasCache();
+          }
         }
       }
     });
@@ -833,13 +845,15 @@
       },
       set: function(shadow) {
         var values;
-        values = shadow.match(/^(\d+px) (\d+px) (\d+px) (.+)$/);
+        values = shadow.match(/^(.+) (.+) (.+) (.+)$/);
         if (values.length === 5) {
           this._shadow.x = parseInt(values[1], 10);
           this._shadow.y = parseInt(values[2], 10);
           this._shadow.blur = parseInt(values[3], 10);
           this._shadow.color = values[4];
-          return this.drawCanvasCache();
+          if (this.canvas) {
+            return this.drawCanvasCache();
+          }
         }
       }
     });
@@ -944,12 +958,18 @@
         args = {};
       }
       Label.__super__.constructor.call(this, args);
-      this.text = args.text || 'text goes here';
-      this.fixed = args.fixed || true;
-      this._font = args.font || {
+      this._font = {
         size: 10,
         family: 'monospace'
       };
+      if (typeof args.font === 'object') {
+        this._font.size = args.font.size;
+        this._font.family = args.font.family;
+      } else if (typeof args.font === 'string') {
+        this.font = args.font;
+      }
+      this.text = args.text || 'text goes here';
+      this.fixed = args.fixed || true;
       this.alignment = args.alignment || 'center';
       this.debug = args.debug || false;
       this.canvas = document.createElement('canvas');
@@ -970,23 +990,23 @@
       element.innerHTML = this.text;
       this.width = element.offsetWidth;
       this.height = element.offsetHeight;
-      this.canvas.width = this.width + this._border.width + this._shadow.x;
-      this.canvas.height = this.height + this._border.width + this._shadow.y;
+      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
+      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
       context.font = this.font;
       context.textAlign = this.alignment;
       context.textBaseline = 'ideographic';
+      if (this.debug) {
+        context.lineWidth = 1;
+        context.strokeStyle = '#f00';
+        context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+      }
       if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
         context.shadowOffsetX = this._shadow.x;
         context.shadowOffsetY = this._shadow.y;
         context.shadowBlur = this._shadow.blur;
         context.shadowColor = this._shadow.color;
       }
-      if (this.debug) {
-        context.lineWidth = 1;
-        context.strokeStyle = '#f00';
-        context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
-      }
-      context.translate(this.width / 2 + this._border.width / 2, this.height + this._border.width / 2);
+      context.translate(this.width / 2 + this._border.width / 2 + Math.abs(this._shadow.x) + this._shadow.blur / 2, this.height + this._border.width / 2 + Math.abs(this._shadow.y) + this._shadow.blur / 2);
       if (this._color) {
         context.fillStyle = this._color;
         context.fillText(this.text, 0, 0, Arcadia.WIDTH);
@@ -1050,11 +1070,13 @@
       },
       set: function(font) {
         var values;
-        values = font.match(/^(\d+) (.+)$/);
+        values = font.match(/^(.+) (.+)$/);
         if (values.length === 3) {
           this._font.size = values[1];
           this._font.family = values[2];
-          return this.drawCanvasCache();
+          if (this.canvas) {
+            return this.drawCanvasCache();
+          }
         }
       }
     });
@@ -1422,12 +1444,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       this._color = args.color || '#fff';
       this._border = args.border || {
         width: 0,
-        color: null
-      };
-      this._shadow = args.shadow || {
-        x: 0,
-        y: 0,
-        blur: 0,
         color: null
       };
       this._path = args.path || null;

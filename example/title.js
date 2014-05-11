@@ -10,27 +10,27 @@ var Title = function () {
             x: Arcadia.WIDTH / 2,
             y: Arcadia.HEIGHT / 4
         },
-        font: {
-            size: '80px',
-            family: 'sans-serif'
-        },
-        shadow: {
-            x: 0,
-            y: 0,
-            blur: 10,
-            color: '#fff'
-        },
-        text: "Arcadia"
-        // debug: true
+        font: '80px sans-serif',
+        shadow: '-10px 0 20px #fff',
+        text: "Arcadia",
+        debug: true
     });
-    console.log(title.font);
+    title.position.x = title.width / 2;
+    title.position.y = title.height / 2;
     this.add(title);
 
-    this.shape = new Arcadia.Shape({ position: { x: Arcadia.WIDTH / 2, y: Arcadia.HEIGHT / 2 }, vertices: 5, size: 100 });
+    this.shape = new Arcadia.Shape({
+        position: {
+            x: Arcadia.WIDTH / 2,
+            y: Arcadia.HEIGHT / 2
+        },
+        vertices: 5,
+        size: 100,
+        shadow: '10px 0px 20px green'
+    });
     this.shape.color = 'rgb(255, 0, 0)';
     this.shape.border = '5px white';
-    this.shape.shadow = '10px 0px 20px green';
-    // this.shape.debug = true;
+    this.shape.debug = true;
     this.add(this.shape);
 
     // this.button = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "START"); // x, y, text
@@ -57,7 +57,7 @@ var Title = function () {
             vertices: 4,
             size: Math.random() * 10 + 5,
             color: '#fff',
-            angularVelocity: Math.random() * (Math.random() > 0.5 ? 1 : -1)
+            angularVelocity: 4 * Math.random() * (Math.random() > 0.5 ? 1 : -1)
         });
         star.velocity.y = 200 / star.size;
         star.update = function (delta) {
