@@ -39,9 +39,11 @@ class Shape extends GameObject
   @description Draw object onto internal <canvas> cache
   ###  
   drawCanvasCache: ->
+    return if @canvas is undefined
+
     # TODO: resize to handle shadow
-    @canvas.setAttribute 'width', @size + @_border.width + @_shadow.x
-    @canvas.setAttribute 'height', @size + @_border.width + @_shadow.y
+    @canvas.setAttribute 'width', @size + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
+    @canvas.setAttribute 'height', @size + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
     context = @canvas.getContext '2d'
     context.lineJoin = 'round'
@@ -58,7 +60,7 @@ class Shape extends GameObject
     else
       context.beginPath()
       # TODO: Handle shadow offset
-      context.translate @size / 2 + @_border.width / 2, @size / 2 + @_border.width / 2 # Move to center of canvas
+      context.translate @size / 2 + @_border.width / 2 + Math.abs(@_shadow.x) + @_shadow.blur / 2, @size / 2 + @_border.width / 2 + Math.abs(@_shadow.y) + @_shadow.blur / 2 # Move to center of canvas
 
       i = @vertices
       slice = 2 * Math.PI / @vertices

@@ -23,10 +23,20 @@ class Label extends GameObject
   @description Draw object onto internal <canvas> cache
   ###  
   drawCanvasCache: ->
+    return if @canvas is undefined
+    
     context = @canvas.getContext '2d'
 
     # Determine width/height of text using offscreen <div>
     element = document.getElementById 'text-dimensions'
+    
+    if !element
+      element = document.createElement 'div'
+      element['id'] = 'text-dimensions'
+      element.style['position'] = 'absolute'
+      element.style['top'] = '-9999px'
+      document.body.appendChild element
+
     element.style['font'] = @font
     element.style['line-height'] = 1
     element.innerHTML = @text
@@ -100,6 +110,6 @@ class Label extends GameObject
       if values.length == 3
         @_font.size = values[1]
         @_font.family = values[2]
-        @drawCanvasCache() if @canvas
+        @drawCanvasCache()
 
 module.exports = Label

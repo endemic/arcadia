@@ -26,7 +26,8 @@ var Title = function () {
         },
         vertices: 5,
         size: 100,
-        shadow: '10px 0px 20px green'
+        // shadow: '10px 0px 20px green',
+        angularVelocity: -1
     });
     this.shape.color = 'rgb(255, 0, 0)';
     this.shape.border = '5px white';

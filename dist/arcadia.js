@@ -415,7 +415,6 @@
     */
 
     function Game(width, height, SceneClass, scaleToFit) {
-      var textDimensionElement;
       if (scaleToFit == null) {
         scaleToFit = true;
       }
@@ -432,11 +431,6 @@
       Arcadia.instance = this;
       this.element = document.createElement('div');
       this.element['id'] = 'arcadia';
-      textDimensionElement = document.createElement('div');
-      textDimensionElement['id'] = 'text-dimensions';
-      textDimensionElement.style['position'] = 'absolute';
-      textDimensionElement.style['top'] = '-9999px';
-      this.element.appendChild(textDimensionElement);
       document.body.appendChild(this.element);
       this.onResize = this.onResize.bind(this);
       this.onPointStart = this.onPointStart.bind(this);
@@ -983,8 +977,18 @@
 
     Label.prototype.drawCanvasCache = function() {
       var context, element;
+      if (this.canvas === void 0) {
+        return;
+      }
       context = this.canvas.getContext('2d');
       element = document.getElementById('text-dimensions');
+      if (!element) {
+        element = document.createElement('div');
+        element['id'] = 'text-dimensions';
+        element.style['position'] = 'absolute';
+        element.style['top'] = '-9999px';
+        document.body.appendChild(element);
+      }
       element.style['font'] = this.font;
       element.style['line-height'] = 1;
       element.innerHTML = this.text;
@@ -1074,9 +1078,7 @@
         if (values.length === 3) {
           this._font.size = values[1];
           this._font.family = values[2];
-          if (this.canvas) {
-            return this.drawCanvasCache();
-          }
+          return this.drawCanvasCache();
         }
       }
     });
@@ -1474,8 +1476,11 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Shape.prototype.drawCanvasCache = function() {
       var context, i, offset, slice;
-      this.canvas.setAttribute('width', this.size + this._border.width + this._shadow.x);
-      this.canvas.setAttribute('height', this.size + this._border.width + this._shadow.y);
+      if (this.canvas === void 0) {
+        return;
+      }
+      this.canvas.setAttribute('width', this.size + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur);
+      this.canvas.setAttribute('height', this.size + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur);
       context = this.canvas.getContext('2d');
       context.lineJoin = 'round';
       if (this.debug) {
@@ -1487,7 +1492,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return this._path(context);
       } else {
         context.beginPath();
-        context.translate(this.size / 2 + this._border.width / 2, this.size / 2 + this._border.width / 2);
+        context.translate(this.size / 2 + this._border.width / 2 + Math.abs(this._shadow.x) + this._shadow.blur / 2, this.size / 2 + this._border.width / 2 + Math.abs(this._shadow.y) + this._shadow.blur / 2);
         i = this.vertices;
         slice = 2 * Math.PI / this.vertices;
         switch (this.vertices) {

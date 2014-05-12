@@ -15,5 +15,6 @@ describe 'Arcadia.Label', ->
   it 'can draw itself', ->
     expect(=> @label.draw(@context)).not.toThrow()
 
-  it 'can get its width', ->
-    expect(@label.width).toBe 84 # implementation dependent?
+  it 'can get its height/width', ->
+    expect(@label.width).toBe 94
+    expect(@label.height).toBe 16
