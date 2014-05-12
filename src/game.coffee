@@ -26,13 +26,6 @@ class Game
 
     @element = document.createElement 'div'
     @element['id'] = 'arcadia'
-
-    textDimensionElement = document.createElement 'div'
-    textDimensionElement['id'] = 'text-dimensions'
-    textDimensionElement.style['position'] = 'absolute'
-    textDimensionElement.style['top'] = '-9999px'
-    @element.appendChild textDimensionElement
-
     document.body.appendChild @element
 
     # Bind event handler callbacks
