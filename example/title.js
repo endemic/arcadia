@@ -24,14 +24,14 @@ var Title = function () {
             x: Arcadia.WIDTH / 2,
             y: Arcadia.HEIGHT / 2
         },
-        vertices: 5,
+        vertices: 14,
         size: 100,
-        // shadow: '10px 0px 20px green',
-        angularVelocity: -1
+        shadow: '10px 0px 10px green',
+        // angularVelocity: -1,
+        color: 'rgb(255, 0, 0)',
+        // border: '5px white',
+        debug: true
     });
-    this.shape.color = 'rgb(255, 0, 0)';
-    this.shape.border = '5px white';
-    this.shape.debug = true;
     this.add(this.shape);
 
     // this.button = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "START"); // x, y, text

@@ -767,10 +767,16 @@
       this.rotation = args.rotation || 0;
       this.alpha = args.alpha || 1;
       this._color = args.color || '#fff';
-      this._border = args.border || {
+      this._border = {
         width: 0,
         color: '#f00'
       };
+      if (typeof args.border === 'object') {
+        this._border.width = args.border.width;
+        this._border.color = args.border.color;
+      } else if (typeof args.border === 'string') {
+        this.border = args.border;
+      }
       this._shadow = {
         x: 0,
         y: 0,
@@ -1437,17 +1443,17 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       Shape.__super__.constructor.call(this, args);
       this.vertices = args.vertices || 4;
       this.size = args.size || 10;
+      this.width = this.height = this.size;
+      this.anchor = {
+        x: this.width / 2,
+        y: this.height / 2
+      };
       this.speed = args.speed || 1;
       this.velocity = args.velocity || {
         x: 0,
         y: 0
       };
       this.angularVelocity = args.angularVelocity || 0;
-      this._color = args.color || '#fff';
-      this._border = args.border || {
-        width: 0,
-        color: null
-      };
       this._path = args.path || null;
       this.debug = args.debug || false;
       this.canvas = document.createElement('canvas');
@@ -1475,7 +1481,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.drawCanvasCache = function() {
-      var context, i, offset, slice;
+      var context, i, offset, slice, x, y;
       if (this.canvas === void 0) {
         return;
       }
@@ -1492,7 +1498,19 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return this._path(context);
       } else {
         context.beginPath();
-        context.translate(this.size / 2 + this._border.width / 2 + Math.abs(this._shadow.x) + this._shadow.blur / 2, this.size / 2 + this._border.width / 2 + Math.abs(this._shadow.y) + this._shadow.blur / 2);
+        x = this.width / 2 + this._border.width / 2;
+        y = this.height / 2 + this._border.width / 2;
+        if (this._shadow.x < 0) {
+          x -= this._shadow.x;
+        }
+        if (this._shadow.y < 0) {
+          y -= this._shadow.y;
+        }
+        if (this._shadow.blur > 0) {
+          x += this._shadow.blur - this._shadow.x;
+          y += this._shadow.blur - this._shadow.y;
+        }
+        context.translate(x, y);
         i = this.vertices;
         slice = 2 * Math.PI / this.vertices;
         switch (this.vertices) {
@@ -1569,7 +1587,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.alpha < 1) {
         context.globalAlpha = this.alpha;
       }
-      context.drawImage(this.canvas, -this.size / 2, -this.size / 2);
+      context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(-this.rotation);
       }
