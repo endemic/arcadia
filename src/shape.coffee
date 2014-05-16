@@ -13,12 +13,11 @@ class Shape extends GameObject
 
     @vertices = args.vertices || 4
     @size = args.size || 10
+    @width = @height = @size
+    @anchor = { x: @width / 2, y: @height / 2 }
     @speed = args.speed || 1
     @velocity = args.velocity || { x: 0, y: 0 }
     @angularVelocity = args.angularVelocity || 0
-
-    @_color = args.color || '#fff'
-    @_border = args.border || { width: 0, color: null }
 
     @_path = args.path || null # custom draw function
     @debug = args.debug || false
@@ -37,7 +36,7 @@ class Shape extends GameObject
 
   ###
   @description Draw object onto internal <canvas> cache
-  ###  
+  ###
   drawCanvasCache: ->
     return if @canvas is undefined
 
@@ -59,8 +58,17 @@ class Shape extends GameObject
         @_path(context)
     else
       context.beginPath()
-      # TODO: Handle shadow offset
-      context.translate @size / 2 + @_border.width / 2 + Math.abs(@_shadow.x) + @_shadow.blur / 2, @size / 2 + @_border.width / 2 + Math.abs(@_shadow.y) + @_shadow.blur / 2 # Move to center of canvas
+      x = @width / 2 + @_border.width / 2
+      y = @height / 2 + @_border.width / 2
+      # Only move further right/down if shadow is negative
+      x -= @_shadow.x if @_shadow.x < 0
+      y -= @_shadow.y if @_shadow.y < 0
+      # TODO: Handle shadow blur offset
+      if @_shadow.blur > 0
+        x += @_shadow.blur - @_shadow.x
+        y += @_shadow.blur - @_shadow.y
+
+      context.translate x, y
 
       i = @vertices
       slice = 2 * Math.PI / @vertices
@@ -118,7 +126,7 @@ class Shape extends GameObject
     context.globalAlpha = @alpha if @alpha < 1
 
     # Draw vector shape cache
-    context.drawImage @canvas, -@size / 2, -@size / 2
+    context.drawImage @canvas, -@anchor.x, -@anchor.y
 
     # Reset scale/rotation/alpha
     context.rotate -@rotation if @rotation != 0 && @rotation != Math.PI * 2
