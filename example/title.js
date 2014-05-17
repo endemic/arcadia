@@ -10,13 +10,14 @@ var Title = function () {
             x: Arcadia.WIDTH / 2,
             y: Arcadia.HEIGHT / 4
         },
+        color: 'rgba(255, 255, 255, 0.5)',
         font: '80px sans-serif',
-        shadow: '-10px 0 20px #fff',
+        shadow: '0px 10px 10px #fff',
         text: "Arcadia",
         debug: true
     });
-    title.position.x = title.width / 2;
-    title.position.y = title.height / 2;
+    // title.position.x = title.width / 2;
+    // title.position.y = title.height / 2;
     this.add(title);
 
     this.shape = new Arcadia.Shape({
@@ -26,9 +27,9 @@ var Title = function () {
         },
         vertices: 14,
         size: 100,
-        shadow: '10px 0px 10px green',
+        shadow: '0px 0px 10px green',
         // angularVelocity: -1,
-        color: 'rgb(255, 0, 0)',
+        color: 'rgb(0, 0, 255)',
         // border: '5px white',
         debug: true
     });

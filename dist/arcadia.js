@@ -1,6 +1,6 @@
 !function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Arcadia=e():"undefined"!=typeof global?global.Arcadia=e():"undefined"!=typeof self&&(self.Arcadia=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
-  var Arcadia;
+  var Arcadia, nowOffset;
 
   if (window.requestAnimationFrame === void 0) {
     window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -8,6 +8,15 @@
 
   if (window.cancelAnimationFrame === void 0) {
     window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
+  }
+
+  if (window.performance === void 0) {
+    nowOffset = Date.now();
+    window.performance = {
+      now: function() {
+        return Date.now() - nowOffset;
+      }
+    };
   }
 
   Function.prototype.property = function(prop, desc) {
@@ -660,12 +669,10 @@
 
 
     Game.prototype.start = function() {
-      if (window.performance !== void 0) {
-        this.previousDelta = window.performance.now();
-      } else {
-        this.previousDelta = Date.now();
+      this.previousDelta = window.performance.now();
+      if (window.performance.memory != null) {
+        Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
       }
-      Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
       return this.updateId = window.requestAnimationFrame(this.update);
     };
 
@@ -688,10 +695,12 @@
       delta = currentDelta - this.previousDelta;
       this.previousDelta = currentDelta;
       Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1;
-      if (window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap) {
+      if ((window.performance.memory != null) && window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap) {
         Arcadia.garbageCollected = true;
       }
-      Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
+      if (window.performance.memory != null) {
+        Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
+      }
       this.active.draw();
       this.active.update(delta / 1000);
       Arcadia.garbageCollected = false;
@@ -982,7 +991,7 @@
 
 
     Label.prototype.drawCanvasCache = function() {
-      var context, element;
+      var context, element, x, y;
       if (this.canvas === void 0) {
         return;
       }
@@ -1000,26 +1009,51 @@
       element.innerHTML = this.text;
       this.width = element.offsetWidth;
       this.height = element.offsetHeight;
+      this.anchor = {
+        x: this.width / 2,
+        y: this.height / 2
+      };
       this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
       this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
       context.font = this.font;
       context.textAlign = this.alignment;
-      context.textBaseline = 'ideographic';
+      context.textBaseline = 'middle';
+      x = this.width / 2 + this._border.width / 2;
+      y = this.height / 2 + this._border.width / 2;
+      if (this._shadow.blur > 0) {
+        x += this._shadow.blur / 2;
+        y += this._shadow.blur / 2;
+      }
+      if (this._shadow.x < 0) {
+        x -= this._shadow.x;
+      }
+      if (this._shadow.y < 0) {
+        y -= this._shadow.y;
+      }
+      this.anchor.x = x;
+      this.anchor.y = y;
       if (this.debug) {
         context.lineWidth = 1;
         context.strokeStyle = '#f00';
         context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+        context.arc(x, y, 3, 0, 2 * Math.PI, false);
+        context.stroke();
       }
+      context.translate(x, y);
       if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
         context.shadowOffsetX = this._shadow.x;
         context.shadowOffsetY = this._shadow.y;
         context.shadowBlur = this._shadow.blur;
         context.shadowColor = this._shadow.color;
       }
-      context.translate(this.width / 2 + this._border.width / 2 + Math.abs(this._shadow.x) + this._shadow.blur / 2, this.height + this._border.width / 2 + Math.abs(this._shadow.y) + this._shadow.blur / 2);
       if (this._color) {
         context.fillStyle = this._color;
         context.fillText(this.text, 0, 0, Arcadia.WIDTH);
+      }
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = 0;
       }
       if (this._border.width && this._border.color) {
         context.lineWidth = this._border.width;
@@ -1055,7 +1089,7 @@
       if (this.alpha < 1) {
         context.globalAlpha = this.alpha;
       }
-      context.drawImage(this.canvas, -this.width / 2, -this.height / 2);
+      context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(-this.rotation);
       }
@@ -1485,32 +1519,36 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.canvas === void 0) {
         return;
       }
-      this.canvas.setAttribute('width', this.size + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur);
-      this.canvas.setAttribute('height', this.size + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur);
+      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
+      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
       context = this.canvas.getContext('2d');
       context.lineJoin = 'round';
+      context.beginPath();
+      x = this.width / 2 + this._border.width / 2;
+      y = this.height / 2 + this._border.width / 2;
+      if (this._shadow.blur > 0) {
+        x += this._shadow.blur / 2;
+        y += this._shadow.blur / 2;
+      }
+      if (this._shadow.x < 0) {
+        x -= this._shadow.x;
+      }
+      if (this._shadow.y < 0) {
+        y -= this._shadow.y;
+      }
+      this.anchor.x = x;
+      this.anchor.y = y;
       if (this.debug) {
         context.lineWidth = 1;
         context.strokeStyle = '#f00';
         context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+        context.arc(x, y, 3, 0, 2 * Math.PI, false);
+        context.stroke();
       }
-      if (this._path != null) {
-        return this._path(context);
+      context.translate(x, y);
+      if (this.path) {
+        this._path(context);
       } else {
-        context.beginPath();
-        x = this.width / 2 + this._border.width / 2;
-        y = this.height / 2 + this._border.width / 2;
-        if (this._shadow.x < 0) {
-          x -= this._shadow.x;
-        }
-        if (this._shadow.y < 0) {
-          y -= this._shadow.y;
-        }
-        if (this._shadow.blur > 0) {
-          x += this._shadow.blur - this._shadow.x;
-          y += this._shadow.blur - this._shadow.y;
-        }
-        context.translate(x, y);
         i = this.vertices;
         slice = 2 * Math.PI / this.vertices;
         switch (this.vertices) {
@@ -1536,27 +1574,27 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         while (i--) {
           context.lineTo(this.size / 2 * Math.cos(i * slice + offset), this.size / 2 * Math.sin(i * slice + offset));
         }
-        context.closePath();
-        if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
-          context.shadowOffsetX = this._shadow.x;
-          context.shadowOffsetY = this._shadow.y;
-          context.shadowBlur = this._shadow.blur;
-          context.shadowColor = this._shadow.color;
-        }
-        if (this._color) {
-          context.fillStyle = this._color;
-          context.fill();
-        }
-        if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
-          context.shadowOffsetX = 0;
-          context.shadowOffsetY = 0;
-          context.shadowBlur = 0;
-        }
-        if (this._border.width && this._border.color) {
-          context.lineWidth = this._border.width;
-          context.strokeStyle = this._border.color;
-          return context.stroke();
-        }
+      }
+      context.closePath();
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = this._shadow.x;
+        context.shadowOffsetY = this._shadow.y;
+        context.shadowBlur = this._shadow.blur;
+        context.shadowColor = this._shadow.color;
+      }
+      if (this._color) {
+        context.fillStyle = this._color;
+        context.fill();
+      }
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = 0;
+      }
+      if (this._border.width && this._border.color) {
+        context.lineWidth = this._border.width;
+        context.strokeStyle = this._border.color;
+        return context.stroke();
       }
     };
 

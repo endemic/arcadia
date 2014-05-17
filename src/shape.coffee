@@ -41,35 +41,40 @@ class Shape extends GameObject
     return if @canvas is undefined
 
     # TODO: resize to handle shadow
-    @canvas.setAttribute 'width', @size + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
-    @canvas.setAttribute 'height', @size + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
+    @canvas.width = @width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
+    @canvas.height = @height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
     context = @canvas.getContext '2d'
     context.lineJoin = 'round'
+
+    context.beginPath()
+    # TODO: ensure correctness of this
+    x = @width / 2 + @_border.width / 2
+    y = @height / 2 + @_border.width / 2
+
+    if @_shadow.blur > 0
+      x += @_shadow.blur / 2
+      y += @_shadow.blur / 2
+
+    x -= @_shadow.x if @_shadow.x < 0
+    y -= @_shadow.y if @_shadow.y < 0
+
+    @anchor.x = x
+    @anchor.y = y
 
     # Debug
     if @debug
       context.lineWidth = 1
       context.strokeStyle = '#f00'
       context.strokeRect 0, 0, @canvas.width, @canvas.height
+      context.arc x, y, 3, 0, 2 * Math.PI, false
+      context.stroke()
 
-    # Allow sprite objects to have custom draw functions
-    if @_path?
-        @_path(context)
+    context.translate x, y
+
+    if @path
+      @_path context
     else
-      context.beginPath()
-      x = @width / 2 + @_border.width / 2
-      y = @height / 2 + @_border.width / 2
-      # Only move further right/down if shadow is negative
-      x -= @_shadow.x if @_shadow.x < 0
-      y -= @_shadow.y if @_shadow.y < 0
-      # TODO: Handle shadow blur offset
-      if @_shadow.blur > 0
-        x += @_shadow.blur - @_shadow.x
-        y += @_shadow.blur - @_shadow.y
-
-      context.translate x, y
-
       i = @vertices
       slice = 2 * Math.PI / @vertices
 
@@ -86,28 +91,28 @@ class Shape extends GameObject
       while i--
         context.lineTo(@size / 2 * Math.cos(i * slice + offset), @size / 2 * Math.sin(i * slice + offset))
 
-      context.closePath()
+    context.closePath()
 
-      if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
-        context.shadowOffsetX = @_shadow.x
-        context.shadowOffsetY = @_shadow.y
-        context.shadowBlur = @_shadow.blur
-        context.shadowColor = @_shadow.color
+    if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
+      context.shadowOffsetX = @_shadow.x
+      context.shadowOffsetY = @_shadow.y
+      context.shadowBlur = @_shadow.blur
+      context.shadowColor = @_shadow.color
 
-      if @_color
-        context.fillStyle = @_color
-        context.fill()
+    if @_color
+      context.fillStyle = @_color
+      context.fill()
 
-      # Don't allow border to cast a shadow
-      if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
-        context.shadowOffsetX = 0
-        context.shadowOffsetY = 0
-        context.shadowBlur = 0
+    # Don't allow border to cast a shadow
+    if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
+      context.shadowOffsetX = 0
+      context.shadowOffsetY = 0
+      context.shadowBlur = 0
 
-      if @_border.width && @_border.color
-        context.lineWidth = @_border.width
-        context.strokeStyle = @_border.color
-        context.stroke()
+    if @_border.width && @_border.color
+      context.lineWidth = @_border.width
+      context.strokeStyle = @_border.color
+      context.stroke()
 
   ###
   @description Draw object
