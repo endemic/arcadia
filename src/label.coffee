@@ -42,19 +42,37 @@ class Label extends GameObject
     element.innerHTML = @text
     @width = element.offsetWidth
     @height = element.offsetHeight
+    @anchor = { x: @width / 2, y: @height / 2 }
 
     @canvas.width = @width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
     @canvas.height = @height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
     context.font = @font
     context.textAlign = @alignment
-    context.textBaseline = 'ideographic' # top, hanging, middle, alphabetic, ideographic, bottom
+    context.textBaseline = 'middle' # top, hanging, middle, alphabetic, ideographic, bottom
+
+    x = @width / 2 + @_border.width / 2
+    y = @height / 2 + @_border.width / 2
+
+    if @_shadow.blur > 0
+      x += @_shadow.blur / 2
+      y += @_shadow.blur / 2
+
+    x -= @_shadow.x if @_shadow.x < 0
+    y -= @_shadow.y if @_shadow.y < 0
+
+    @anchor.x = x
+    @anchor.y = y
 
     # Debug
     if @debug
       context.lineWidth = 1
       context.strokeStyle = '#f00'
       context.strokeRect 0, 0, @canvas.width, @canvas.height
+      context.arc x, y, 3, 0, 2 * Math.PI, false
+      context.stroke()
+
+    context.translate x, y
 
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
       context.shadowOffsetX = @_shadow.x
@@ -62,11 +80,15 @@ class Label extends GameObject
       context.shadowBlur = @_shadow.blur
       context.shadowColor = @_shadow.color
 
-    context.translate @width / 2 + @_border.width / 2 + Math.abs(@_shadow.x) + @_shadow.blur / 2, @height + @_border.width / 2 + Math.abs(@_shadow.y) + @_shadow.blur / 2
-
     if @_color
       context.fillStyle = @_color
       context.fillText @text, 0, 0, Arcadia.WIDTH
+
+    # Don't allow border to cast a shadow
+    if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
+      context.shadowOffsetX = 0
+      context.shadowOffsetY = 0
+      context.shadowBlur = 0
 
     if @_border.width && @_border.color
       context.lineWidth = @_border.width
@@ -90,7 +112,7 @@ class Label extends GameObject
     context.globalAlpha = @alpha if @alpha < 1
 
     # Draw vector shape cache
-    context.drawImage @canvas, -@width / 2, -@height / 2
+    context.drawImage @canvas, -@anchor.x, -@anchor.y
 
     # Reset scale/rotation/alpha
     context.rotate -@rotation if @rotation != 0 && @rotation != Math.PI * 2

@@ -6,6 +6,13 @@ if window.requestAnimationFrame == undefined
 if window.cancelAnimationFrame == undefined
   window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame
 
+# Normalize window.performance
+if window.performance == undefined
+  nowOffset = Date.now();
+  window.performance =
+    now: ->
+      Date.now() - nowOffset;
+
 Function::property = (prop, desc) ->
   Object.defineProperty @prototype, prop, desc
 

@@ -204,12 +204,9 @@ class Game
    * @description Start the event/animation loops
   ###
   start: ->
-    if window.performance != undefined
-      @previousDelta = window.performance.now()
-    else
-      @previousDelta = Date.now()
+    @previousDelta = window.performance.now()
 
-    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize
+    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize if window.performance.memory?
 
     # Start game loop
     @updateId = window.requestAnimationFrame @update
@@ -228,8 +225,8 @@ class Game
     @previousDelta = currentDelta
     
     Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
-    Arcadia.garbageCollected = true if window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
-    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize
+    Arcadia.garbageCollected = true if window.performance.memory? && window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
+    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize if window.performance.memory?
 
     @active.draw()
     @active.update(delta / 1000) # call update() using seconds
