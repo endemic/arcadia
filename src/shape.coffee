@@ -26,7 +26,7 @@ class Shape extends GameObject
     @drawCanvasCache()
 
   ###
-  @description Getter/setter for color
+  @description Getter/setter for path
   ###
   @property 'path',
     get: -> return @_path
