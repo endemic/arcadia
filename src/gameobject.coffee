@@ -45,10 +45,12 @@ class GameObject
     set: (border) ->
       values = border.match(/^(\d+px) (.+)$/)
 
-      if values.length == 3
+      if values?.length == 3
         @_border.width = parseInt values[1], 10
         @_border.color = values[2]
         @drawCanvasCache() if @canvas
+      else
+        throw new Error 'Use format "(width)px (color)" when setting borders'
 
   ###
   @description Getter/setter for shadow
@@ -58,12 +60,14 @@ class GameObject
     set: (shadow) ->
       values = shadow.match(/^(.+) (.+) (.+) (.+)$/)
 
-      if values.length == 5
+      if values?.length == 5
         @_shadow.x = parseInt values[1], 10
         @_shadow.y = parseInt values[2], 10
         @_shadow.blur = parseInt values[3], 10
         @_shadow.color = values[4]
         @drawCanvasCache() if @canvas
+      else
+        throw new Error 'Use format "(x)px (y)px (blur)px (color)" when setting shadows'
 
   ###
   @description Overridden in child objects
