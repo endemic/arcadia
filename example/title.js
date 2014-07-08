@@ -3,6 +3,7 @@
 
 var Title = function () {
     Arcadia.Scene.apply(this, arguments);
+
     this.color = 'rgba(0, 0, 0, 0.10)';
 
     var title = new Arcadia.Label({
@@ -10,43 +11,27 @@ var Title = function () {
             x: Arcadia.WIDTH / 2,
             y: Arcadia.HEIGHT / 4
         },
-        color: 'rgba(255, 255, 255, 0.5)',
-        font: '80px sans-serif',
-        shadow: '0px 10px 10px #fff',
-        text: "Arcadia",
-        debug: true
+        color: 'rgba(255, 255, 255, 0.8)',
+        font: '70px monospace',
+        shadow: '0 0 10px #fff',
+        text: "ARMADA"
     });
-    // title.position.x = title.width / 2;
-    // title.position.y = title.height / 2;
     this.add(title);
 
-    this.shape = new Arcadia.Shape({
+    this.button = new Arcadia.Button({
         position: {
             x: Arcadia.WIDTH / 2,
             y: Arcadia.HEIGHT / 2
         },
-        vertices: 14,
-        size: 100,
-        shadow: '0px 0px 10px green',
-        // angularVelocity: -1,
-        color: 'rgb(0, 0, 255)',
-        // border: '5px white',
-        debug: true
+        border: '5px rgba(255, 255, 255, 0.8)',
+        font: '20px monospace',
+        shadow: '0 0 10px #fff',
+        text: "START"
     });
-    this.add(this.shape);
-
-    // this.button = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "START"); // x, y, text
-    // this.button.font = '20px monospace';
-    // this.button.solid = false;
-    // this.button.padding = 20;
-    // this.button.shadow.x = 0;
-    // this.button.shadow.y = 0;
-    // this.button.shadow.blur = 10;
-    // this.button.shadow.color = 'rgba(255, 255, 255, 0.5)';
-    // this.button.onUp = function () {
-    //     Arcadia.changeScene(Game);
-    // };
-    // this.add(this.button);
+    this.button.onUp = function () {
+        Arcadia.changeScene(Game);
+    };
+    this.add(this.button);
 
     // Add a starfield background
     this.stars = new Arcadia.Pool();
@@ -57,7 +42,7 @@ var Title = function () {
                 y: Math.random() * Arcadia.HEIGHT
             },
             vertices: 4,
-            size: Math.random() * 10 + 5,
+            size: Math.random() * 5 + 5,
             color: '#fff',
             angularVelocity: 4 * Math.random() * (Math.random() > 0.5 ? 1 : -1)
         });
@@ -73,7 +58,6 @@ var Title = function () {
 
         return star;
     };
-
     this.add(this.stars);
 
     // Create 50 star objects

@@ -4,12 +4,12 @@
 var EnemyBullet = function () {
     Arcadia.Shape.apply(this, arguments);
 
-    this.vertices = 0;
-    this.size = 4;
+    this.vertices = 3;
+    this.size = 10;
     this.color = 'rgb(0, 255, 0)';
     this.speed = 75;
     this.lineWidth = 3;
-    this.generateCache();
+    this.angularVelocity = -1;
 };
 
 EnemyBullet.prototype = new Arcadia.Shape();
