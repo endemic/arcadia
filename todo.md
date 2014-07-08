@@ -2,6 +2,7 @@
 
 * What the hell, made major changes to which objects get returned in Pool and no tests broke,
   write extra tests which assert the object that is returned/rearranged when activated/deactivated
+* [ ] Make setters for size & vertices
 * [ ] Handle making canvas cache large enough for shadow/blur
 * [ ] Allow strings to be passed for border, font, shadow, etc. instead of objects - use setter methods
 * [ ] Ensure correct anchor point for shapes when using large shadows
