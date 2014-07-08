@@ -6,13 +6,9 @@ var Player = function () {
 
     this.speed = 100;
     this.vertices = 3;
-    this.size = 20;
-    this.lineWidth = 3;
-    this.rotation = 270 * Math.PI / 180;
-    // this.shadow.x = this.shadow.y = 0;
-    // this.shadow.blur = 20;
-    // this.shadow.color = this.color;
-    this.generateCache();
+    this.width = this.height = this.size = 20;
+    this.shadow = '0 0 10px ' + this.color;
+    this.drawCanvasCache();
 };
 
 Player.prototype = new Arcadia.Shape();
