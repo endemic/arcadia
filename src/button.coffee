@@ -5,17 +5,19 @@ class Button extends GameObject
     super
 
     # Create label that goes inside button border
-    @label = new Arcadia.Label args.font
-    @children.add @label
-    @label.shadow = @shadow
-
-    # Default border/background
-    @_backgroundColor = args.backgroundColor || '#fff'
+    @label = new Arcadia.Label args
+    @label.position =
+      x: 0
+      y: 0
+    @label.fixed = false
+    @add @label
 
     @height = @label.height
     @width = @label.width
-    @anchor = { x: @width / 2, y: @height / 2 }
-    @padding = 10
+    @padding = args.padding || 10
+    @anchor =
+      x: @width / 2
+      y: @height / 2
     @fixed = true
 
     # Attach event listeners
@@ -37,7 +39,7 @@ class Button extends GameObject
 
     offsetX = offsetY = 0 if @fixed
 
-    # Set scale/rotation/alpha
+    # scale/rotation/alpha
     context.translate @position.x + offsetX, @position.y + offsetY
     context.scale @scale, @scale if @scale != 1
     context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
@@ -58,12 +60,12 @@ class Button extends GameObject
   drawCanvasCache: ->
     return if @canvas is undefined
 
-    @canvas.width = @width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
-    @canvas.height = @height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
+    @canvas.width = @width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur + @padding
+    @canvas.height = @height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur + @padding
 
     # Dynamically determine anchor point
-    x = @width / 2 + @_border.width / 2
-    y = @height / 2 + @_border.width / 2
+    x = @width / 2 + @_border.width / 2 + @padding / 2
+    y = @height / 2 + @_border.width / 2 + @padding / 2
 
     if @_shadow.blur > 0
       x += @_shadow.blur / 2

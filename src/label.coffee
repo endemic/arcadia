@@ -100,10 +100,10 @@ class Label extends GameObject
   @param {CanvasRenderingContext2D} context
   ###
   draw: (context, offsetX = 0, offsetY = 0) ->
-    offsetX = offsetY = 0 if @fixed
-
     # Draw child objects first, so they will be on the "bottom"
     super context, @position.x + offsetX, @position.y + offsetY
+
+    offsetX = offsetY = 0 if @fixed
 
     # Set scale/rotation/alpha
     context.translate @position.x + offsetX, @position.y + offsetY

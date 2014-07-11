@@ -23,10 +23,12 @@ var Title = function () {
             x: Arcadia.WIDTH / 2,
             y: Arcadia.HEIGHT / 2
         },
-        border: '5px rgba(255, 255, 255, 0.8)',
+        border: '1px rgba(255, 255, 255, 0.8)',
+        color: 'rgba(0, 0, 0, 0)',
         font: '20px monospace',
         shadow: '0 0 10px #fff',
-        text: "START"
+        text: "START",
+        padding: 15
     });
     this.button.onUp = function () {
         Arcadia.changeScene(Game);

@@ -194,19 +194,31 @@
   Button = (function(_super) {
     __extends(Button, _super);
 
-    function Button(x, y, text) {
+    function Button(args) {
+      if (args == null) {
+        args = {};
+      }
       Button.__super__.constructor.apply(this, arguments);
-      this.label = new Arcadia.Label(x, y, text);
-      this.children.add(this.label);
-      this.label.shadow = this.shadow;
-      this.backgroundColor = 'rgba(255, 255, 255, 1)';
-      this.height = parseInt(this.label.font, 10);
-      this.solid = true;
-      this.padding = 10;
+      this.label = new Arcadia.Label(args);
+      this.label.position = {
+        x: 0,
+        y: 0
+      };
+      this.label.fixed = false;
+      this.add(this.label);
+      this.height = this.label.height;
+      this.width = this.label.width;
+      this.padding = args.padding || 10;
+      this.anchor = {
+        x: this.width / 2,
+        y: this.height / 2
+      };
       this.fixed = true;
       this.onPointEnd = this.onPointEnd.bind(this);
       Arcadia.instance.element.addEventListener('mouseup', this.onPointEnd, false);
       Arcadia.instance.element.addEventListener('touchend', this.onPointEnd, false);
+      this.canvas = document.createElement('canvas');
+      this.drawCanvasCache();
     }
 
     /*
@@ -216,27 +228,95 @@
 
 
     Button.prototype.draw = function(context, offsetX, offsetY) {
+      if (offsetX == null) {
+        offsetX = 0;
+      }
+      if (offsetY == null) {
+        offsetY = 0;
+      }
       Button.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       if (this.fixed) {
         offsetX = offsetY = 0;
       }
-      this.width = this.label.width(context);
-      context.save();
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
-      if (this.shadow.x !== null && this.shadow.y !== null && this.shadow.blur !== null && this.shadow.color !== null) {
-        context.shadowOffsetX = this.shadow.x;
-        context.shadowOffsetY = this.shadow.y;
-        context.shadowBlur = this.shadow.blur;
-        context.shadowColor = this.shadow.color;
+      if (this.scale !== 1) {
+        context.scale(this.scale, this.scale);
       }
-      if (this.solid === true) {
-        context.fillStyle = this.backgroundColor;
-        context.fillRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
-      } else {
-        context.strokeStyle = this.backgroundColor;
-        context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(this.rotation);
       }
-      return context.restore();
+      if (this.alpha < 1) {
+        context.globalAlpha = this.alpha;
+      }
+      context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(-this.rotation);
+      }
+      context.translate(-this.position.x - offsetX, -this.position.y - offsetY);
+      if (this.scale !== 1) {
+        context.scale(1, 1);
+      }
+      if (this.alpha < 1) {
+        return context.globalAlpha = 1;
+      }
+    };
+
+    /*
+    @description Draw object onto internal <canvas> cache
+    */
+
+
+    Button.prototype.drawCanvasCache = function() {
+      var context, x, y;
+      if (this.canvas === void 0) {
+        return;
+      }
+      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur + this.padding;
+      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur + this.padding;
+      x = this.width / 2 + this._border.width / 2 + this.padding / 2;
+      y = this.height / 2 + this._border.width / 2 + this.padding / 2;
+      if (this._shadow.blur > 0) {
+        x += this._shadow.blur / 2;
+        y += this._shadow.blur / 2;
+      }
+      if (this._shadow.x < 0) {
+        x -= this._shadow.x;
+      }
+      if (this._shadow.y < 0) {
+        y -= this._shadow.y;
+      }
+      this.anchor.x = x;
+      this.anchor.y = y;
+      context = this.canvas.getContext('2d');
+      context.lineJoin = 'round';
+      context.beginPath();
+      context.translate(x, y);
+      context.moveTo(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2);
+      context.lineTo(this.width / 2 + this.padding / 2, -this.height / 2 - this.padding / 2);
+      context.lineTo(this.width / 2 + this.padding / 2, this.height / 2 + this.padding / 2);
+      context.lineTo(-this.width / 2 - this.padding / 2, this.height / 2 + this.padding / 2);
+      context.lineTo(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2);
+      context.closePath();
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = this._shadow.x;
+        context.shadowOffsetY = this._shadow.y;
+        context.shadowBlur = this._shadow.blur;
+        context.shadowColor = this._shadow.color;
+      }
+      if (this._color) {
+        context.fillStyle = this._color;
+        context.fill();
+      }
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = 0;
+      }
+      if (this._border.width && this._border.color) {
+        context.lineWidth = this._border.width;
+        context.strokeStyle = this._border.color;
+        return context.stroke();
+      }
     };
 
     /*
@@ -833,12 +913,14 @@
       set: function(border) {
         var values;
         values = border.match(/^(\d+px) (.+)$/);
-        if (values.length === 3) {
+        if ((values != null ? values.length : void 0) === 3) {
           this._border.width = parseInt(values[1], 10);
           this._border.color = values[2];
           if (this.canvas) {
             return this.drawCanvasCache();
           }
+        } else {
+          throw new Error('Use format "(width)px (color)" when setting borders');
         }
       }
     });
@@ -855,7 +937,7 @@
       set: function(shadow) {
         var values;
         values = shadow.match(/^(.+) (.+) (.+) (.+)$/);
-        if (values.length === 5) {
+        if ((values != null ? values.length : void 0) === 5) {
           this._shadow.x = parseInt(values[1], 10);
           this._shadow.y = parseInt(values[2], 10);
           this._shadow.blur = parseInt(values[3], 10);
@@ -863,6 +945,8 @@
           if (this.canvas) {
             return this.drawCanvasCache();
           }
+        } else {
+          throw new Error('Use format "(x)px (y)px (blur)px (color)" when setting shadows');
         }
       }
     });
@@ -1075,10 +1159,10 @@
       if (offsetY == null) {
         offsetY = 0;
       }
+      Label.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       if (this.fixed) {
         offsetX = offsetY = 0;
       }
-      Label.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
       if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
@@ -1495,7 +1579,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     }
 
     /*
-    @description Getter/setter for color
+    @description Getter/setter for path
     */
 
 
