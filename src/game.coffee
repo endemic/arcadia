@@ -6,11 +6,9 @@ class Game
    * @param {Number} [height=480] Height of game view
    * @param {Boolean} [scaleToFit=true] Full screen or not
   ###
-  constructor: (width, height, SceneClass, scaleToFit) ->
+  constructor: (width, height, SceneClass, scaleToFit = true) ->
     width = parseInt(width, 10) || 640
     height = parseInt(height, 10) || 480
-
-    scaleToFit = scaleToFit || true
 
     Arcadia.WIDTH = width
     Arcadia.HEIGHT = height
@@ -20,22 +18,15 @@ class Game
 
     # If game element is not at (0, 0), clicks/touches need to be offset
     Arcadia.OFFSET =
-        x: 0
-        y: 0
+      x: 0
+      y: 0
 
     # Static reference to current game instance
     Arcadia.instance = @
 
     @element = document.createElement 'div'
-    @element.setAttribute 'id', 'arcadia'
-
-    @canvas = document.createElement('canvas')
-    @canvas.setAttribute('width', width)
-    @canvas.setAttribute('height', height)
-    @context = @canvas.getContext('2d')
-
-    @element.appendChild(@canvas)
-    document.body.appendChild(@element)
+    @element['id'] = 'arcadia'
+    document.body.appendChild @element
 
     # Bind event handler callbacks
     @onResize = @onResize.bind @
@@ -48,43 +39,43 @@ class Game
     @resume = @resume.bind @
 
     # Set up event listeners Mouse and touch use the same ones
-    document.addEventListener('keydown', @onKeyDown, false)
-    document.addEventListener('keyup', @onKeyUp, false)
-    @element.addEventListener('mousedown', @onPointStart, false)
-    @element.addEventListener('mouseup', @onPointEnd, false)
-    @element.addEventListener('touchstart', @onPointStart, false)
-    @element.addEventListener('touchmove', @onPointMove, false)
-    @element.addEventListener('touchend', @onPointEnd, false)
+    document.addEventListener 'keydown', @onKeyDown, false
+    document.addEventListener 'keyup', @onKeyUp, false
+    @element.addEventListener 'mousedown', @onPointStart, false
+    @element.addEventListener 'mouseup', @onPointEnd, false
+    @element.addEventListener 'touchstart', @onPointStart, false
+    @element.addEventListener 'touchmove', @onPointMove, false
+    @element.addEventListener 'touchend', @onPointEnd, false
 
     # Prevent the page from scrolling when touching game element
     @element.addEventListener 'touchmove', (e) -> e.preventDefault()
 
     # Fit <canvas> to window
     if scaleToFit == true
-        @onResize()
-        window.addEventListener('resize', @onResize, false)
+      @onResize()
+      window.addEventListener 'resize', @onResize, false
 
     if window.cordova != undefined
-        document.addEventListener('pause', @pause, false)
-        document.addEventListener('resume', @resume, false)
+      document.addEventListener 'pause', @pause, false
+      document.addEventListener 'resume', @resume, false
 
     # Map of current input, used to prevent duplicate events being sent to handlers
     # ("keydown" events fire continuously while a key is held)
     @input =
-        'left': false
-        'up': false
-        'right': false
-        'down': false
-        'w': false
-        'a': false
-        's': false
-        'd': false
-        'enter': false
-        'escape': false
-        'space': false
-        'control': false
-        'z': false
-        'x': false
+      'left': false
+      'up': false
+      'right': false
+      'down': false
+      'w': false
+      'a': false
+      's': false
+      'd': false
+      'enter': false
+      'escape': false
+      'space': false
+      'control': false
+      'z': false
+      'x': false
 
     # Stores objects representing mouse/touch input
     @points =
@@ -104,6 +95,7 @@ class Game
 
     # Instantiate initial scene
     @active = new SceneClass()
+    @active.transition()
 
     # Start animation request
     @start()
@@ -131,6 +123,7 @@ class Game
   onPointStart: (event) ->
     Arcadia.getPoints event
 
+    # TODO: Get rid of this event listener, use an instance variable
     if event.type.indexOf('mouse') != -1
       @element.addEventListener 'mousemove', @onPointMove, false
 
@@ -146,10 +139,12 @@ class Game
 
   ###
   @description Mouse/touch event callback
+  TODO: Generates garbage
   ###
   onPointEnd: (event) ->
     Arcadia.getPoints event
 
+    # TODO: Get rid of this event listener, use an instance variable
     if event.type.indexOf('mouse') != -1
       @element.removeEventListener('mousemove', @onPointMove, false)
 
@@ -157,6 +152,7 @@ class Game
 
   ###
   @description Keyboard event callback
+  TODO: Generates garbage
   ###
   onKeyDown: (event) ->
     key = @getKey event.keyCode
@@ -171,6 +167,7 @@ class Game
 
   ###
   @description Keyboard event callback
+  TODO: Generates garbage
   ###
   onKeyUp: (event) ->
     key = @getKey event.keyCode
@@ -185,6 +182,9 @@ class Game
   ###
   getKey: (keyCode) ->
     switch keyCode
+      # TODO: Make an implemention something like this
+      # when 37 then @input['left'] = true
+      # when 38 then @input['up'] = true
       when 37 then return 'left'
       when 38 then return 'up'
       when 39 then return 'right'
@@ -204,22 +204,12 @@ class Game
    * @description Start the event/animation loops
   ###
   start: ->
-    if window.performance != undefined
-      previousDelta = window.performance.now()
-    else
-      previousDelta = Date.now()
+    @previousDelta = window.performance.now()
 
-    update = (currentDelta) =>
-      delta = currentDelta - previousDelta
-
-      previousDelta = currentDelta
-
-      @update(delta / 1000)
-
-      @updateId = window.requestAnimationFrame update
+    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize if window.performance.memory?
 
     # Start game loop
-    @updateId = window.requestAnimationFrame update
+    @updateId = window.requestAnimationFrame @update
 
   ###
   @description Cancel draw/update loops
@@ -230,9 +220,19 @@ class Game
   ###
   @description Update callback
   ###
-  update: (delta) ->
-    @active.draw @context
-    @active.update delta
+  update: (currentDelta) =>
+    delta = currentDelta - @previousDelta
+    @previousDelta = currentDelta
+    
+    Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
+    Arcadia.garbageCollected = true if window.performance.memory? && window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
+    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize if window.performance.memory?
+
+    @active.draw()
+    @active.update(delta / 1000) # call update() using seconds
+
+    Arcadia.garbageCollected = false
+    @updateId = window.requestAnimationFrame @update
 
   ###
   @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
@@ -267,6 +267,6 @@ class Game
     Arcadia.OFFSET.x = (window.innerWidth - width) / 2
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
     @element.setAttribute "style", "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    @canvas.setAttribute "style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
+    @active.resize()
 
 module.exports = Game

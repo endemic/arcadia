@@ -3,7 +3,11 @@ describe 'Arcadia.Label', ->
   beforeEach ->
     @canvas = document.createElement 'canvas'
     @context = @canvas.getContext '2d'
-    @label = new Arcadia.Label 0, 0, 'Hey you guys!'
+    @label = new Arcadia.Label
+      position:
+        x: 0
+        y: 0
+      text: 'Hey you guys!'
 
   afterEach ->
     @label = null
@@ -11,5 +15,6 @@ describe 'Arcadia.Label', ->
   it 'can draw itself', ->
     expect(=> @label.draw(@context)).not.toThrow()
 
-  it 'can get its width', ->
-    expect(@label.width(@context)).toBe 78 # implementation dependent?
+  it 'can get its height/width', ->
+    expect(@label.width).toBe 94
+    expect(@label.height).toBe 16

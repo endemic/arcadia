@@ -1,6 +1,6 @@
 !function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Arcadia=e():"undefined"!=typeof global?global.Arcadia=e():"undefined"!=typeof self&&(self.Arcadia=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
-  var Arcadia;
+  var Arcadia, nowOffset;
 
   if (window.requestAnimationFrame === void 0) {
     window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -8,6 +8,15 @@
 
   if (window.cancelAnimationFrame === void 0) {
     window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame;
+  }
+
+  if (window.performance === void 0) {
+    nowOffset = Date.now();
+    window.performance = {
+      now: function() {
+        return Date.now() - nowOffset;
+      }
+    };
   }
 
   Function.prototype.property = function(prop, desc) {
@@ -22,10 +31,17 @@
     Label: require('./label.coffee'),
     Pool: require('./pool.coffee'),
     Scene: require('./scene.coffee'),
-    Shape: require('./shape.coffee')
+    Shape: require('./shape.coffee'),
+    Sprite: require('./sprite.coffee')
   };
 
   module.exports = Arcadia;
+
+  Arcadia.fps = 0;
+
+  Arcadia.garbageCollected = false;
+
+  Arcadia.lastUsedHeap = 0;
 
   /*
   @description Get information about the current environment
@@ -59,7 +75,8 @@
       throw "Invalid scene!";
     }
     Arcadia.instance.active.destroy();
-    return Arcadia.instance.active = new SceneClass();
+    Arcadia.instance.active = new SceneClass();
+    return Arcadia.instance.active.transition();
   };
 
   /*
@@ -166,7 +183,7 @@
 }).call(this);
 
 
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9}],2:[function(require,module,exports){
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(require,module,exports){
 (function() {
   var Button, GameObject,
     __hasProp = {}.hasOwnProperty,
@@ -177,19 +194,31 @@
   Button = (function(_super) {
     __extends(Button, _super);
 
-    function Button(x, y, text) {
+    function Button(args) {
+      if (args == null) {
+        args = {};
+      }
       Button.__super__.constructor.apply(this, arguments);
-      this.label = new Arcadia.Label(x, y, text);
-      this.children.add(this.label);
-      this.label.shadow = this.shadow;
-      this.backgroundColor = 'rgba(255, 255, 255, 1)';
-      this.height = parseInt(this.label.font, 10);
-      this.solid = true;
-      this.padding = 10;
+      this.label = new Arcadia.Label(args);
+      this.label.position = {
+        x: 0,
+        y: 0
+      };
+      this.label.fixed = false;
+      this.add(this.label);
+      this.height = this.label.height;
+      this.width = this.label.width;
+      this.padding = args.padding || 10;
+      this.anchor = {
+        x: this.width / 2,
+        y: this.height / 2
+      };
       this.fixed = true;
       this.onPointEnd = this.onPointEnd.bind(this);
       Arcadia.instance.element.addEventListener('mouseup', this.onPointEnd, false);
       Arcadia.instance.element.addEventListener('touchend', this.onPointEnd, false);
+      this.canvas = document.createElement('canvas');
+      this.drawCanvasCache();
     }
 
     /*
@@ -199,27 +228,95 @@
 
 
     Button.prototype.draw = function(context, offsetX, offsetY) {
+      if (offsetX == null) {
+        offsetX = 0;
+      }
+      if (offsetY == null) {
+        offsetY = 0;
+      }
       Button.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       if (this.fixed) {
         offsetX = offsetY = 0;
       }
-      this.width = this.label.width(context);
-      context.save();
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
-      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
-        context.shadowOffsetX = this.shadow.x;
-        context.shadowOffsetY = this.shadow.y;
-        context.shadowBlur = this.shadow.blur;
-        context.shadowColor = this.shadow.color;
+      if (this.scale !== 1) {
+        context.scale(this.scale, this.scale);
       }
-      if (this.solid === true) {
-        context.fillStyle = this.backgroundColor;
-        context.fillRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
-      } else {
-        context.strokeStyle = this.backgroundColor;
-        context.strokeRect(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2, this.width + this.padding, this.height + this.padding);
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(this.rotation);
       }
-      return context.restore();
+      if (this.alpha < 1) {
+        context.globalAlpha = this.alpha;
+      }
+      context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(-this.rotation);
+      }
+      context.translate(-this.position.x - offsetX, -this.position.y - offsetY);
+      if (this.scale !== 1) {
+        context.scale(1, 1);
+      }
+      if (this.alpha < 1) {
+        return context.globalAlpha = 1;
+      }
+    };
+
+    /*
+    @description Draw object onto internal <canvas> cache
+    */
+
+
+    Button.prototype.drawCanvasCache = function() {
+      var context, x, y;
+      if (this.canvas === void 0) {
+        return;
+      }
+      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur + this.padding;
+      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur + this.padding;
+      x = this.width / 2 + this._border.width / 2 + this.padding / 2;
+      y = this.height / 2 + this._border.width / 2 + this.padding / 2;
+      if (this._shadow.blur > 0) {
+        x += this._shadow.blur / 2;
+        y += this._shadow.blur / 2;
+      }
+      if (this._shadow.x < 0) {
+        x -= this._shadow.x;
+      }
+      if (this._shadow.y < 0) {
+        y -= this._shadow.y;
+      }
+      this.anchor.x = x;
+      this.anchor.y = y;
+      context = this.canvas.getContext('2d');
+      context.lineJoin = 'round';
+      context.beginPath();
+      context.translate(x, y);
+      context.moveTo(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2);
+      context.lineTo(this.width / 2 + this.padding / 2, -this.height / 2 - this.padding / 2);
+      context.lineTo(this.width / 2 + this.padding / 2, this.height / 2 + this.padding / 2);
+      context.lineTo(-this.width / 2 - this.padding / 2, this.height / 2 + this.padding / 2);
+      context.lineTo(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2);
+      context.closePath();
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = this._shadow.x;
+        context.shadowOffsetY = this._shadow.y;
+        context.shadowBlur = this._shadow.blur;
+        context.shadowColor = this._shadow.color;
+      }
+      if (this._color) {
+        context.fillStyle = this._color;
+        context.fill();
+      }
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = 0;
+      }
+      if (this._border.width && this._border.color) {
+        context.lineWidth = this._border.width;
+        context.strokeStyle = this._border.color;
+        return context.stroke();
+      }
     };
 
     /*
@@ -308,19 +405,23 @@
     */
 
 
-    function Emitter(shape, size, count) {
-      var particle;
+    function Emitter(factory, count) {
+      if (count == null) {
+        count = 25;
+      }
+      if (typeof factory !== 'function') {
+        throw 'Emitter requires a factory function';
+      }
       Emitter.__super__.constructor.apply(this, arguments);
       this.duration = 1;
       this.fade = false;
+      this.scale = 1.0;
       this.speed = 200;
-      count = count || 25;
+      this.i = this.particle = null;
       while (count--) {
-        particle = new Shape(0, 0, shape || 'square', size || 5);
-        particle.solid = true;
-        this.add(particle);
+        this.children.add(factory());
       }
-      return;
+      this.children.deactivateAll();
     }
 
     /*
@@ -330,9 +431,10 @@
     */
 
 
-    Emitter.prototype.start = function(x, y) {
+    Emitter.prototype.startAt = function(x, y) {
       var direction;
       this.children.activateAll();
+      this.reset();
       this.i = this.children.length;
       while (this.i--) {
         this.particle = this.children.at(this.i);
@@ -342,9 +444,7 @@
         this.particle.velocity.x = Math.cos(direction);
         this.particle.velocity.y = Math.sin(direction);
         this.particle.speed = Math.random() * this.speed;
-        this.particle.color = this.color;
       }
-      this.active = true;
       this.timer = 0;
       this.position.x = x;
       return this.position.y = y;
@@ -356,17 +456,28 @@
       this.i = this.children.length;
       while (this.i--) {
         this.particle = this.children.at(this.i);
-        if (this.fade) {
-          this.particle.colors.alpha -= delta / this.duration;
-        }
         if (this.timer >= this.duration) {
           this.children.deactivate(this.i);
+        }
+        if (this.scale !== 1.0) {
+          this.particle.scale += this.scale * delta / this.duration;
         }
       }
     };
 
     Emitter.prototype.reset = function() {
-      return this.i;
+      var _results;
+      this.i = this.children.length;
+      _results = [];
+      while (this.i--) {
+        this.particle = this.children.at(this.i);
+        if (typeof this.particle.reset === 'function') {
+          _results.push(this.particle.reset());
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     return Emitter;
@@ -380,7 +491,8 @@
 
 },{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
 (function() {
-  var Game;
+  var Game,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Game = (function() {
     /*
@@ -392,9 +504,12 @@
     */
 
     function Game(width, height, SceneClass, scaleToFit) {
+      if (scaleToFit == null) {
+        scaleToFit = true;
+      }
+      this.update = __bind(this.update, this);
       width = parseInt(width, 10) || 640;
       height = parseInt(height, 10) || 480;
-      scaleToFit = scaleToFit || true;
       Arcadia.WIDTH = width;
       Arcadia.HEIGHT = height;
       Arcadia.SCALE = 1;
@@ -404,12 +519,7 @@
       };
       Arcadia.instance = this;
       this.element = document.createElement('div');
-      this.element.setAttribute('id', 'arcadia');
-      this.canvas = document.createElement('canvas');
-      this.canvas.setAttribute('width', width);
-      this.canvas.setAttribute('height', height);
-      this.context = this.canvas.getContext('2d');
-      this.element.appendChild(this.canvas);
+      this.element['id'] = 'arcadia';
       document.body.appendChild(this.element);
       this.onResize = this.onResize.bind(this);
       this.onPointStart = this.onPointStart.bind(this);
@@ -490,6 +600,7 @@
         ]
       };
       this.active = new SceneClass();
+      this.active.transition();
       this.start();
     }
 
@@ -547,6 +658,7 @@
 
     /*
     @description Mouse/touch event callback
+    TODO: Generates garbage
     */
 
 
@@ -562,6 +674,7 @@
 
     /*
     @description Keyboard event callback
+    TODO: Generates garbage
     */
 
 
@@ -579,6 +692,7 @@
 
     /*
     @description Keyboard event callback
+    TODO: Generates garbage
     */
 
 
@@ -635,21 +749,11 @@
 
 
     Game.prototype.start = function() {
-      var previousDelta, update,
-        _this = this;
-      if (window.performance !== void 0) {
-        previousDelta = window.performance.now();
-      } else {
-        previousDelta = Date.now();
+      this.previousDelta = window.performance.now();
+      if (window.performance.memory != null) {
+        Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
       }
-      update = function(currentDelta) {
-        var delta;
-        delta = currentDelta - previousDelta;
-        previousDelta = currentDelta;
-        _this.update(delta / 1000);
-        return _this.updateId = window.requestAnimationFrame(update);
-      };
-      return this.updateId = window.requestAnimationFrame(update);
+      return this.updateId = window.requestAnimationFrame(this.update);
     };
 
     /*
@@ -666,9 +770,21 @@
     */
 
 
-    Game.prototype.update = function(delta) {
-      this.active.draw(this.context);
-      return this.active.update(delta);
+    Game.prototype.update = function(currentDelta) {
+      var delta;
+      delta = currentDelta - this.previousDelta;
+      this.previousDelta = currentDelta;
+      Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1;
+      if ((window.performance.memory != null) && window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap) {
+        Arcadia.garbageCollected = true;
+      }
+      if (window.performance.memory != null) {
+        Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
+      }
+      this.active.draw();
+      this.active.update(delta / 1000);
+      Arcadia.garbageCollected = false;
+      return this.updateId = window.requestAnimationFrame(this.update);
     };
 
     /*
@@ -708,7 +824,7 @@
       Arcadia.OFFSET.x = (window.innerWidth - width) / 2;
       Arcadia.OFFSET.y = (window.innerHeight - height) / 2;
       this.element.setAttribute("style", "position: relative; width: " + width + "px; height: " + height + "px; margin: " + margin + ";");
-      return this.canvas.setAttribute("style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Arcadia.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Arcadia.SCALE + "); transform-origin: 0 0;");
+      return this.active.resize();
     };
 
     return Game;
@@ -727,30 +843,122 @@
   Pool = require('./pool.coffee');
 
   GameObject = (function() {
-    function GameObject(x, y) {
-      if (x == null) {
-        x = 0;
+    function GameObject(args) {
+      if (args == null) {
+        args = {};
       }
-      if (y == null) {
-        y = 0;
-      }
-      this.position = {
-        x: x,
-        y: y
+      this.position = args.position || {
+        x: 0,
+        y: 0
       };
-      this.children = new Pool();
-      this.fixed = false;
-      this.scale = 1;
-      this.rotation = 0;
-      this.color = 'rgba(255, 255, 255, 1)';
-      this.shadow = {
-        x: null,
-        y: null,
-        blur: null,
+      this.fixed = args.fixed || false;
+      this.scale = args.scale || 1;
+      this.rotation = args.rotation || 0;
+      this.alpha = args.alpha || 1;
+      this._color = args.color || '#fff';
+      this._border = {
+        width: 0,
+        color: '#f00'
+      };
+      if (typeof args.border === 'object') {
+        this._border.width = args.border.width;
+        this._border.color = args.border.color;
+      } else if (typeof args.border === 'string') {
+        this.border = args.border;
+      }
+      this._shadow = {
+        x: 0,
+        y: 0,
+        blur: 0,
         color: null
       };
+      if (typeof args.shadow === 'object') {
+        this._shadow.x = args.shadow.x;
+        this._shadow.y = args.shadow.y;
+        this._shadow.blur = args.shadow.blur;
+        this._shadow.color = args.shadow.color;
+      } else if (typeof args.shadow === 'string') {
+        this.shadow = args.shadow;
+      }
+      this.children = new Pool();
       this.tmp = 0;
     }
+
+    /*
+    @description Getter/setter for color
+    */
+
+
+    GameObject.property('color', {
+      get: function() {
+        return this._color;
+      },
+      set: function(color) {
+        this._color = color;
+        if (this.canvas) {
+          return this.drawCanvasCache();
+        }
+      }
+    });
+
+    /*
+    @description Getter/setter for border
+    */
+
+
+    GameObject.property('border', {
+      get: function() {
+        return "" + this._border.width + "px " + this._border.color;
+      },
+      set: function(border) {
+        var values;
+        values = border.match(/^(\d+px) (.+)$/);
+        if ((values != null ? values.length : void 0) === 3) {
+          this._border.width = parseInt(values[1], 10);
+          this._border.color = values[2];
+          if (this.canvas) {
+            return this.drawCanvasCache();
+          }
+        } else {
+          throw new Error('Use format "(width)px (color)" when setting borders');
+        }
+      }
+    });
+
+    /*
+    @description Getter/setter for shadow
+    */
+
+
+    GameObject.property('shadow', {
+      get: function() {
+        return "" + this._shadow.x + "px " + this._shadow.y + "px " + this._shadow.blur + "px " + this._shadow.color;
+      },
+      set: function(shadow) {
+        var values;
+        values = shadow.match(/^(.+) (.+) (.+) (.+)$/);
+        if ((values != null ? values.length : void 0) === 5) {
+          this._shadow.x = parseInt(values[1], 10);
+          this._shadow.y = parseInt(values[2], 10);
+          this._shadow.blur = parseInt(values[3], 10);
+          this._shadow.color = values[4];
+          if (this.canvas) {
+            return this.drawCanvasCache();
+          }
+        } else {
+          throw new Error('Use format "(x)px (y)px (blur)px (color)" when setting shadows');
+        }
+      }
+    });
+
+    /*
+    @description Overridden in child objects
+    */
+
+
+    GameObject.prototype.drawCanvasCache = function() {
+      return null;
+    };
 
     /*
     @description Draw child objects
@@ -778,6 +986,46 @@
       return this.children.update(delta);
     };
 
+    /*
+    @description Add child object
+    @param {Object} object Object to be added
+    */
+
+
+    GameObject.prototype.add = function(object) {
+      return this.children.add(object);
+    };
+
+    /*
+    @description Remove child object
+    @param {Object} objectOrIndex Object or index of object to be removed
+    */
+
+
+    GameObject.prototype.remove = function(objectOrIndex) {
+      return this.children.remove(objectOrIndex);
+    };
+
+    /*
+    @description Activate child object
+    @param {Object} objectOrIndex Object or index of object to be activated
+    */
+
+
+    GameObject.prototype.activate = function(objectOrIndex) {
+      return this.children.activate(objectOrIndex);
+    };
+
+    /*
+    @description Deactivate child object
+    @param {Object} objectOrIndex Object or index of object to be deactivated
+    */
+
+
+    GameObject.prototype.deactivate = function(objectOrIndex) {
+      return this.children.deactivate(objectOrIndex);
+    };
+
     return GameObject;
 
   })();
@@ -798,17 +1046,105 @@
   Label = (function(_super) {
     __extends(Label, _super);
 
-    function Label(x, y, text) {
-      if (text == null) {
-        text = 'text goes here';
+    function Label(args) {
+      if (args == null) {
+        args = {};
       }
-      Label.__super__.constructor.apply(this, arguments);
-      this.text = text;
-      this.fixed = true;
-      this.font = '10px monospace';
-      this.alignment = 'center';
-      this.solid = true;
+      Label.__super__.constructor.call(this, args);
+      this._font = {
+        size: 10,
+        family: 'monospace'
+      };
+      if (typeof args.font === 'object') {
+        this._font.size = args.font.size;
+        this._font.family = args.font.family;
+      } else if (typeof args.font === 'string') {
+        this.font = args.font;
+      }
+      this.text = args.text || 'text goes here';
+      this.fixed = args.fixed || true;
+      this.alignment = args.alignment || 'center';
+      this.debug = args.debug || false;
+      this.canvas = document.createElement('canvas');
+      this.drawCanvasCache();
     }
+
+    /*
+    @description Draw object onto internal <canvas> cache
+    */
+
+
+    Label.prototype.drawCanvasCache = function() {
+      var context, element, x, y;
+      if (this.canvas === void 0) {
+        return;
+      }
+      context = this.canvas.getContext('2d');
+      element = document.getElementById('text-dimensions');
+      if (!element) {
+        element = document.createElement('div');
+        element['id'] = 'text-dimensions';
+        element.style['position'] = 'absolute';
+        element.style['top'] = '-9999px';
+        document.body.appendChild(element);
+      }
+      element.style['font'] = this.font;
+      element.style['line-height'] = 1;
+      element.innerHTML = this.text;
+      this.width = element.offsetWidth;
+      this.height = element.offsetHeight;
+      this.anchor = {
+        x: this.width / 2,
+        y: this.height / 2
+      };
+      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
+      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
+      context.font = this.font;
+      context.textAlign = this.alignment;
+      context.textBaseline = 'middle';
+      x = this.width / 2 + this._border.width / 2;
+      y = this.height / 2 + this._border.width / 2;
+      if (this._shadow.blur > 0) {
+        x += this._shadow.blur / 2;
+        y += this._shadow.blur / 2;
+      }
+      if (this._shadow.x < 0) {
+        x -= this._shadow.x;
+      }
+      if (this._shadow.y < 0) {
+        y -= this._shadow.y;
+      }
+      this.anchor.x = x;
+      this.anchor.y = y;
+      if (this.debug) {
+        context.lineWidth = 1;
+        context.strokeStyle = '#f00';
+        context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+        context.arc(x, y, 3, 0, 2 * Math.PI, false);
+        context.stroke();
+      }
+      context.translate(x, y);
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = this._shadow.x;
+        context.shadowOffsetY = this._shadow.y;
+        context.shadowBlur = this._shadow.blur;
+        context.shadowColor = this._shadow.color;
+      }
+      if (this._color) {
+        context.fillStyle = this._color;
+        context.fillText(this.text, 0, 0, Arcadia.WIDTH);
+      }
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = 0;
+      }
+      if (this._border.width && this._border.color) {
+        context.lineWidth = this._border.width;
+        context.strokeStyle = this._border.color;
+        return context.strokeText(this.text, 0, 0, Arcadia.WIDTH);
+      }
+    };
 
     /*
     @description Draw object
@@ -824,50 +1160,52 @@
         offsetY = 0;
       }
       Label.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-      context.save();
-      context.font = this.font;
-      context.textAlign = this.alignment;
       if (this.fixed) {
         offsetX = offsetY = 0;
       }
-      context.translate(this.position.x + offsetX, this.position.y + parseInt(this.font, 10) / 3 + offsetY);
+      context.translate(this.position.x + offsetX, this.position.y + offsetY);
       if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
       }
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
-        context.shadowOffsetX = this.shadow.x;
-        context.shadowOffsetY = this.shadow.y;
-        context.shadowBlur = this.shadow.blur;
-        context.shadowColor = this.shadow.color;
+      if (this.alpha < 1) {
+        context.globalAlpha = this.alpha;
       }
-      if (this.solid) {
-        context.fillStyle = this.color;
-        context.fillText(this.text, 0, 0, Arcadia.WIDTH);
-      } else {
-        context.strokeStyle = this.color;
-        context.strokeText(this.text, 0, 0, Arcadia.WIDTH);
+      context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(-this.rotation);
       }
-      return context.restore();
+      context.translate(-this.position.x - offsetX, -this.position.y - offsetY);
+      if (this.scale !== 1) {
+        context.scale(1, 1);
+      }
+      if (this.alpha < 1) {
+        return context.globalAlpha = 1;
+      }
     };
 
     /*
-    @description Utility function to determine the width of the label
-    @param {CanvasRenderingContext2D} context
+    @description Getter/setter for font
+    TODO: Handle bold text
     */
 
 
-    Label.prototype.width = function(context) {
-      var metrics;
-      context.save();
-      context.font = this.font;
-      context.textAlign = this.alignment;
-      metrics = context.measureText(this.text);
-      context.restore();
-      return metrics.width;
-    };
+    Label.property('font', {
+      get: function() {
+        return "" + this._font.size + " " + this._font.family;
+      },
+      set: function(font) {
+        var values;
+        values = font.match(/^(.+) (.+)$/);
+        if (values.length === 3) {
+          this._font.size = values[1];
+          this._font.family = values[2];
+          return this.drawCanvasCache();
+        }
+      }
+    });
 
     return Label;
 
@@ -935,11 +1273,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (index === -1) {
         return;
       }
-      object = this.children[index];
+      object = this.children.splice(index, 1)[0];
       if (typeof object.destroy === 'function') {
         object.destroy();
       }
-      this.children.splice(index, 1);
       if (index < this.length) {
         this.length -= 1;
       }
@@ -955,34 +1292,34 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       var index;
       if (objectOrIndex !== void 0) {
         index = objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
-        if (!((this.length > index && index > 0))) {
-          return;
+        if (!((this.children.length > index && index >= this.length))) {
+          return null;
         }
         this.tmp = this.children[this.length];
         this.children[this.length] = this.children[index];
         this.children[index] = this.tmp;
+        this.tmp = null;
         this.length += 1;
-        return this.children[this.length];
+        return this.children[this.length - 1];
       }
       if (objectOrIndex === void 0 && this.length < this.children.length) {
-        this.tmp = this.children[this.length];
-        if (typeof this.tmp.reset === 'function') {
-          this.tmp.reset();
-        }
         this.length += 1;
-        return this.tmp;
+        if (typeof this.children[this.length - 1].reset === 'function') {
+          this.children[this.length - 1].reset();
+        }
+        return this.children[this.length - 1];
       }
       if (typeof this.factory !== 'function') {
-        throw 'A Recycle Pool needs a factory defined!';
+        throw 'Pools need a factory function';
       }
-      this.tmp = this.factory();
-      this.children.push(this.tmp);
+      this.children.push(this.factory());
       this.length += 1;
-      return this.tmp;
+      return this.children[this.length - 1];
     };
 
     /*
     @description Deactivate an active object at a particular object/index
+    TODO: Change this to "objectOrIndex"
     */
 
 
@@ -994,10 +1331,11 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return null;
       }
       this.tmp = this.children[index];
-      this.children[index] = this.children[this.children.length - 1];
+      this.children[index] = this.children[this.length - 1];
       this.children[this.length - 1] = this.tmp;
+      this.tmp = null;
       this.length -= 1;
-      return this.tmp;
+      return this.children[this.length];
     };
 
     /*
@@ -1031,13 +1369,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.update = function(delta) {
-      var _results;
       this.tmp = this.length;
-      _results = [];
       while (this.tmp--) {
-        _results.push(this.children[this.tmp].update(delta));
+        this.children[this.tmp].update(delta);
       }
-      return _results;
     };
 
     /*
@@ -1046,7 +1381,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.draw = function(context, offsetX, offsetY) {
-      var _results;
       if (offsetX == null) {
         offsetX = 0;
       }
@@ -1054,11 +1388,9 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         offsetY = 0;
       }
       this.tmp = this.length;
-      _results = [];
       while (this.tmp--) {
-        _results.push(this.children[this.tmp].draw(context, offsetX, offsetY));
+        this.children[this.tmp].draw(context, offsetX, offsetY);
       }
-      return _results;
     };
 
     return Pool;
@@ -1083,6 +1415,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     function Scene() {
       Scene.__super__.constructor.apply(this, arguments);
+      this.canvas = document.createElement('canvas');
+      this.context = this.canvas.getContext('2d');
       this.camera = {
         target: null,
         viewport: {
@@ -1132,20 +1466,44 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Scene.prototype.draw = function(context) {
-      if (typeof this.clearColor === "string") {
-        context.save();
-        context.fillStyle = this.clearColor;
-        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-        context.restore();
+    Scene.prototype.draw = function() {
+      if (this.color) {
+        this.context.fillStyle = this.color;
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
       } else {
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
       }
-      return Scene.__super__.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
+      return Scene.__super__.draw.call(this, this.context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
     };
 
+    /*
+    @description Move scene's <canvas> into place
+    */
+
+
+    Scene.prototype.transition = function() {
+      this.canvas.setAttribute('width', Arcadia.WIDTH);
+      this.canvas.setAttribute('height', Arcadia.HEIGHT);
+      this.resize();
+      return Arcadia.instance.element.appendChild(this.canvas);
+    };
+
+    /*
+    TODO: Handle removing event listeners, etc.?
+    */
+
+
     Scene.prototype.destroy = function() {
-      return console.log('pass');
+      return Arcadia.instance.element.removeChild(this.canvas);
+    };
+
+    /*
+    @description Resize scene's <canvas>
+    */
+
+
+    Scene.prototype.resize = function() {
+      return this.canvas.setAttribute("style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Arcadia.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Arcadia.SCALE + "); transform-origin: 0 0;");
     };
 
     /*
@@ -1196,29 +1554,137 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    function Shape(x, y, shape, size) {
-      if (shape == null) {
-        shape = 'square';
+    function Shape(args) {
+      if (args == null) {
+        args = {};
       }
-      if (size == null) {
-        size = 10;
-      }
-      Shape.__super__.constructor.call(this, x, y);
-      this.shape = shape;
-      this.size = size;
-      this.lineWidth = 1;
-      this.lineJoin = 'round';
-      this.speed = 1;
-      this.velocity = {
+      Shape.__super__.constructor.call(this, args);
+      this.vertices = args.vertices || 4;
+      this.size = args.size || 10;
+      this.width = this.height = this.size;
+      this.anchor = {
+        x: this.width / 2,
+        y: this.height / 2
+      };
+      this.speed = args.speed || 1;
+      this.velocity = args.velocity || {
         x: 0,
         y: 0
       };
-      this.solid = false;
+      this.angularVelocity = args.angularVelocity || 0;
+      this._path = args.path || null;
+      this.debug = args.debug || false;
+      this.canvas = document.createElement('canvas');
+      this.drawCanvasCache();
     }
 
     /*
-     * @description Draw object
-     * @param {CanvasRenderingContext2D} context
+    @description Getter/setter for path
+    */
+
+
+    Shape.property('path', {
+      get: function() {
+        return this._path;
+      },
+      set: function(path) {
+        this._path = path;
+        return this.drawCanvasCache();
+      }
+    });
+
+    /*
+    @description Draw object onto internal <canvas> cache
+    */
+
+
+    Shape.prototype.drawCanvasCache = function() {
+      var context, i, offset, slice, x, y;
+      if (this.canvas === void 0) {
+        return;
+      }
+      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
+      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
+      context = this.canvas.getContext('2d');
+      context.lineJoin = 'round';
+      context.beginPath();
+      x = this.width / 2 + this._border.width / 2;
+      y = this.height / 2 + this._border.width / 2;
+      if (this._shadow.blur > 0) {
+        x += this._shadow.blur / 2;
+        y += this._shadow.blur / 2;
+      }
+      if (this._shadow.x < 0) {
+        x -= this._shadow.x;
+      }
+      if (this._shadow.y < 0) {
+        y -= this._shadow.y;
+      }
+      this.anchor.x = x;
+      this.anchor.y = y;
+      if (this.debug) {
+        context.lineWidth = 1;
+        context.strokeStyle = '#f00';
+        context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+        context.arc(x, y, 3, 0, 2 * Math.PI, false);
+        context.stroke();
+      }
+      context.translate(x, y);
+      if (this.path) {
+        this._path(context);
+      } else {
+        i = this.vertices;
+        slice = 2 * Math.PI / this.vertices;
+        switch (this.vertices) {
+          case 3:
+            offset = -Math.PI / 2;
+            break;
+          case 4:
+            offset = -Math.PI / 4;
+            break;
+          case 5:
+            offset = -Math.PI / 10;
+            break;
+          case 7:
+            offset = Math.PI / 14;
+            break;
+          case 9:
+            offset = -Math.PI / 18;
+            break;
+          default:
+            offset = 0;
+        }
+        context.moveTo(this.size / 2 * Math.cos(0 + offset), this.size / 2 * Math.sin(0 + offset));
+        while (i--) {
+          context.lineTo(this.size / 2 * Math.cos(i * slice + offset), this.size / 2 * Math.sin(i * slice + offset));
+        }
+      }
+      context.closePath();
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = this._shadow.x;
+        context.shadowOffsetY = this._shadow.y;
+        context.shadowBlur = this._shadow.blur;
+        context.shadowColor = this._shadow.color;
+      }
+      if (this._color) {
+        context.fillStyle = this._color;
+        context.fill();
+      }
+      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.shadowBlur = 0;
+      }
+      if (this._border.width && this._border.color) {
+        context.lineWidth = this._border.width;
+        context.strokeStyle = this._border.color;
+        return context.stroke();
+      }
+    };
+
+    /*
+    @description Draw object
+    @param {CanvasRenderingContext2D} context
     */
 
 
@@ -1233,7 +1699,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         offsetX = offsetY = 0;
       }
       Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-      context.save();
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
       if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
@@ -1241,45 +1706,20 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(this.rotation);
       }
-      if (typeof this.shadow.x === 'number' && typeof this.shadow.y === 'number' && typeof this.shadow.blur === 'number' && typeof this.shadow.color === 'string') {
-        context.shadowOffsetX = this.shadow.x;
-        context.shadowOffsetY = this.shadow.y;
-        context.shadowBlur = this.shadow.blur;
-        context.shadowColor = this.shadow.color;
+      if (this.alpha < 1) {
+        context.globalAlpha = this.alpha;
       }
-      context.lineWidth = this.lineWidth;
-      context.lineJoin = this.lineJoin;
-      if (typeof this.path === "function") {
-        this.path(context);
-      } else {
-        context.beginPath();
-        switch (this.shape) {
-          case 'triangle':
-            context.moveTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-            context.lineTo(this.size / 2 * Math.cos(120 * Math.PI / 180), this.size / 2 * Math.sin(120 * Math.PI / 180));
-            context.lineTo(this.size / 2 * Math.cos(240 * Math.PI / 180), this.size / 2 * Math.sin(240 * Math.PI / 180));
-            context.lineTo(this.size / 2 * Math.cos(0), this.size / 2 * Math.sin(0));
-            break;
-          case 'circle':
-            context.arc(0, 0, this.size / 2, Math.PI * 2, false);
-            break;
-          case 'square':
-            context.moveTo(this.size / 2, this.size / 2);
-            context.lineTo(this.size / 2, -this.size / 2);
-            context.lineTo(-this.size / 2, -this.size / 2);
-            context.lineTo(-this.size / 2, this.size / 2);
-            context.lineTo(this.size / 2, this.size / 2);
-        }
-        context.closePath();
-        if (this.solid) {
-          context.fillStyle = this.color;
-          context.fill();
-        } else {
-          context.strokeStyle = this.color;
-          context.stroke();
-        }
+      context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(-this.rotation);
       }
-      return context.restore();
+      context.translate(-this.position.x - offsetX, -this.position.y - offsetY);
+      if (this.scale !== 1) {
+        context.scale(1, 1);
+      }
+      if (this.alpha < 1) {
+        return context.globalAlpha = 1;
+      }
     };
 
     /*
@@ -1291,7 +1731,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     Shape.prototype.update = function(delta) {
       Shape.__super__.update.call(this, delta);
       this.position.x += this.velocity.x * this.speed * delta;
-      return this.position.y += this.velocity.y * this.speed * delta;
+      this.position.y += this.velocity.y * this.speed * delta;
+      return this.rotation += this.angularVelocity * delta;
     };
 
     /*
@@ -1301,7 +1742,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.collidesWith = function(other) {
-      if (this.shape === 'square') {
+      if (this.vertices === 4) {
         return Math.abs(this.position.x - other.position.x) < this.size / 2 + other.size / 2 && Math.abs(this.position.y - other.position.y) < this.size / 2 + other.size / 2;
       } else {
         return Math.sqrt(Math.pow(other.position.x - this.position.x, 2) + Math.pow(other.position.y - this.position.y, 2)) < this.size / 2 + other.size / 2;
@@ -1313,6 +1754,102 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
   })(GameObject);
 
   module.exports = Shape;
+
+}).call(this);
+
+
+},{"./gameobject.coffee":5}],10:[function(require,module,exports){
+(function() {
+  var GameObject, Sprite,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  GameObject = require('./gameobject.coffee');
+
+  Sprite = (function(_super) {
+    __extends(Sprite, _super);
+
+    /*
+    @description Sprite constructor
+    @param {Object} options Possible keys: x, y, size, imgsrc
+    */
+
+
+    function Sprite(options) {
+      if (options == null) {
+        options = {};
+      }
+      Sprite.__super__.constructor.call(this, options.x, options.y);
+      this.size = options.size;
+      this.speed = 1;
+      this.velocity = {
+        x: 0,
+        y: 0
+      };
+      this.img = new Image();
+      this.img.src = options.imgsrc;
+    }
+
+    /*
+    @description Draw object
+    @param {CanvasRenderingContext2D} context
+    */
+
+
+    Sprite.prototype.draw = function(context, offsetX, offsetY) {
+      if (offsetX == null) {
+        offsetX = 0;
+      }
+      if (offsetY == null) {
+        offsetY = 0;
+      }
+      if (this.fixed) {
+        offsetX = offsetY = 0;
+      }
+      Sprite.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+      context.save();
+      context.translate(this.position.x + offsetX, this.position.y + offsetY);
+      if (this.scale !== 1) {
+        context.scale(this.scale, this.scale);
+      }
+      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
+        context.rotate(this.rotation);
+      }
+      context.drawImage(this.img, 0, 0);
+      return context.restore();
+    };
+
+    /*
+    @description Update object
+    @param {Number} delta Time since last update (in seconds)
+    */
+
+
+    Sprite.prototype.update = function(delta) {
+      Sprite.__super__.update.call(this, delta);
+      this.position.x += this.velocity.x * this.speed * delta;
+      return this.position.y += this.velocity.y * this.speed * delta;
+    };
+
+    /*
+    @description Basic collision detection
+    @param {Sprite} other Sprite object to test collision with
+    */
+
+
+    Sprite.prototype.collidesWith = function(other) {
+      if (this.vertices === 4) {
+        return Math.abs(this.position.x - other.position.x) < this.size / 2 + other.size / 2 && Math.abs(this.position.y - other.position.y) < this.size / 2 + other.size / 2;
+      } else {
+        return Math.sqrt(Math.pow(other.position.x - this.position.x, 2) + Math.pow(other.position.y - this.position.y, 2)) < this.size / 2 + other.size / 2;
+      }
+    };
+
+    return Sprite;
+
+  })(GameObject);
+
+  module.exports = Sprite;
 
 }).call(this);
 

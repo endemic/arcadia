@@ -17,23 +17,23 @@ describe 'Arcadia.Pool', ->
       expect(@pool.at(0)).toBe shape
 
     it 'keeps inactive objects at the end of the internal array', ->
-      @pool.add new Arcadia.Shape(0, 0, 'triangle', 25)
-      @pool.add new Arcadia.Shape(0, 0, 'triangle', 25)
+      @pool.add new Arcadia.Shape({ vertices: 3 })
+      @pool.add new Arcadia.Shape({ vertices: 3 })
       @pool.deactivate 0
       @pool.deactivate 0
       expect(@pool.length).toBe 0
 
-      @pool.add new Arcadia.Shape(0, 0, 'square', 25)
+      @pool.add new Arcadia.Shape({ vertices: 4 })
       expect(@pool.length).toBe 1
-      expect(@pool.at(0).shape).toBe 'square'
+      expect(@pool.at(0).vertices).toBe 4
 
-      @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
+      @pool.add new Arcadia.Shape({ vertices: 5 })
       expect(@pool.length).toBe 2
-      expect(@pool.at(1).shape).toBe 'circle'
+      expect(@pool.at(1).vertices).toBe 5
 
   it 'can remove objects', ->
     while @pool.length < 10
-      @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
+      @pool.add new Arcadia.Shape({ vertices: 3 })
 
     @pool.deactivate 9
     @pool.deactivate 8
@@ -51,7 +51,7 @@ describe 'Arcadia.Pool', ->
     expect(@pool.length).toBe 7
 
   it 'can access active objects', ->
-    shape = new Arcadia.Shape(0, 0, 'circle', 25)
+    shape = new Arcadia.Shape({ vertices: 3 })
     @pool.add shape
     expect(@pool.at(0)).toBe shape
     expect(@pool.at(1)).toBe null
@@ -62,16 +62,16 @@ describe 'Arcadia.Pool', ->
 
     it 'can activate objects with a factory', ->
       @pool.factory = ->
-        new Arcadia.Shape(0, 0, 'circle', 25)
+        new Arcadia.Shape({ vertices: 7 })
 
       expect(=> @pool.activate()).not.toThrow()
       expect(@pool.length).toBe 1
-      expect(@pool.at(0).shape).toBe 'circle'
+      expect(@pool.at(0).vertices).toBe 7
 
   describe 'activating objects when there _are_ inactive objects', ->
     it 'can activate objects', ->
       while @pool.length < 10
-        @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
+        @pool.add new Arcadia.Shape({ vertices: 3 })
 
       @pool.deactivate 0
       expect(@pool.length).toBe 9
@@ -80,39 +80,39 @@ describe 'Arcadia.Pool', ->
       expect(@pool.length).toBe 10
 
   it 'can deactivate objects', ->
-    @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
-    @pool.add new Arcadia.Shape(0, 0, 'square', 25)
-    @pool.add new Arcadia.Shape(0, 0, 'triangle', 25)
+    @pool.add new Arcadia.Shape({ vertices: 8 })
+    @pool.add new Arcadia.Shape({ vertices: 4 })
+    @pool.add new Arcadia.Shape({ vertices: 3 })
     expect(@pool.length).toBe 3
 
     @pool.deactivate 0
 
     expect(@pool.length).toBe 2
-    expect(@pool.at(0).shape).toBe 'triangle'
-    expect(@pool.at(1).shape).toBe 'square'
+    expect(@pool.at(0).vertices).toBe 3
+    expect(@pool.at(1).vertices).toBe 4
     expect(@pool.at(2)).toBe null
 
   it 'can deactivate all its objects at once', ->
     while @pool.length < 10
-      @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
+      @pool.add new Arcadia.Shape({ vertices: 10 })
 
-    expect(@pool.at(9).shape).toBe 'circle'
+    expect(@pool.at(9).vertices).toBe 10
     expect(=> @pool.deactivateAll()).not.toThrow()
     expect(@pool.at(0)).toBe null
 
   it 'can activate all its objects at once', ->
     while @pool.length < 10
-      @pool.add new Arcadia.Shape(0, 0, 'circle', 25)
+      @pool.add new Arcadia.Shape({ vertices: 6 })
 
     @pool.deactivateAll()
     expect(@pool.at(0)).toBe null
 
     expect(=> @pool.activateAll()).not.toThrow()
-    expect(@pool.at(9).shape).toBe 'circle'
+    expect(@pool.at(9).vertices).toBe 6
 
   it 'can update its active objects', ->
-    shape1 = new Arcadia.Shape(0, 0, 'circle', 25)
-    shape2 = new Arcadia.Shape(0, 0, 'circle', 25)
+    shape1 = new Arcadia.Shape()
+    shape2 = new Arcadia.Shape()
     @pool.add shape1
     @pool.add shape2
     @pool.deactivate shape2
@@ -124,8 +124,8 @@ describe 'Arcadia.Pool', ->
     expect(shape2.update).not.toHaveBeenCalled()
 
   it 'can draw its active objects', ->
-    shape1 = new Arcadia.Shape(0, 0, 'circle', 25)
-    shape2 = new Arcadia.Shape(0, 0, 'circle', 25)
+    shape1 = new Arcadia.Shape()
+    shape2 = new Arcadia.Shape()
     @pool.add shape1
     @pool.add shape2
     @pool.deactivate shape1

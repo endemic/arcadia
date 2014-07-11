@@ -40,11 +40,10 @@ class Pool
 
     index = if objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
     return if index is -1
-
-    object = @children[index]
+    
+    object = @children.splice(index, 1)[0]
     object.destroy() if typeof object.destroy is 'function'
-
-    @children.splice index, 1
+    
     @length -= 1 if index < @length
     object
 
@@ -54,41 +53,46 @@ class Pool
   activate: (objectOrIndex) ->
     if objectOrIndex != undefined
       index = if objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
-      return unless @length > index > 0
+      # TODO: spec this condition
+      return null unless @children.length > index >= @length
 
       @tmp = @children[@length]
       @children[@length] = @children[index]
       @children[index] = @tmp
+      @tmp = null
       @length += 1
-      return @children[@length]
+      return @children[@length - 1]
 
     if objectOrIndex == undefined && @length < @children.length
-      @tmp = @children[@length]
-      @tmp.reset() if typeof @tmp.reset == 'function'
       @length += 1
-      return @tmp
+      @children[@length - 1].reset() if typeof @children[@length - 1].reset == 'function'
+      return @children[@length - 1]
 
-    throw 'A Recycle Pool needs a factory defined!' if typeof @factory != 'function'
-    @tmp = @factory()
-    @children.push @tmp
+    throw 'Pools need a factory function' if typeof @factory != 'function'
+    
+    @children.push @factory()
     @length += 1
-    return @tmp
+    return @children[@length - 1]
 
   ###
   @description Deactivate an active object at a particular object/index
+  TODO: Change this to "objectOrIndex"
   ###
   deactivate: (index) ->
     index = @children.indexOf(index) if typeof index == 'object'
 
+    # Spec this behavior
     return null if index >= @length || index < 0
 
     # Move inactive object to end
+    # TODO: Spec this behavior
     @tmp = @children[index]
-    @children[index] = @children[@children.length - 1]
+    @children[index] = @children[@length - 1]
     @children[@length - 1] = @tmp
+    @tmp = null
 
     @length -= 1
-    @tmp
+    @children[@length]
 
   ###
   @description Deactivate all child objects
@@ -113,6 +117,7 @@ class Pool
     @tmp = @length
     while @tmp--
       @children[@tmp].update delta
+    return
 
   ###
   @description Passthrough method to draw active child objects
@@ -121,5 +126,6 @@ class Pool
     @tmp = @length
     while @tmp--
       @children[@tmp].draw context, offsetX, offsetY
+    return
 
 module.exports = Pool

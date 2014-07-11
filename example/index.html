@@ -6,7 +6,7 @@
 
 	<style type="text/css">
 	body {
-		background: #000;
+		background: #ccc;
 		padding: 0; 
 		margin: 0; 
 		-webkit-touch-callout: none;
@@ -30,13 +30,9 @@
 	<script type="text/javascript" src="enemy-bullet.js"></script>
 
 	<script type="text/javascript">
-		document.addEventListener('touchmove', function (e) {
-			e.preventDefault();
-		});
-
 		/* Instantiate game object */
 		window.onload = function () {
-			var game = new Arcadia.Game(320, 480, Title);
+			var game = new Arcadia.Game(320, 480, Title, false);
 		};
 	</script>
 </head>

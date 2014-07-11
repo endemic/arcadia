@@ -10,28 +10,30 @@ class Emitter extends GameObject
    * @param {number} [size=10] Size of the particles
    * @param {number} [count=25] The number of particles created for the system
   ###
-  constructor: (shape, size, count) ->
+  constructor: (factory, count = 25) ->
+    throw 'Emitter requires a factory function' if typeof factory != 'function'
+
     super
 
     @duration = 1
     @fade = false
+    @scale = 1.0
     @speed = 200
-    count = count || 25
+    @i = @particle = null
 
     while count--
-      particle = new Shape(0, 0, shape || 'square', size || 5)
-      particle.solid = true
-      @add particle
+      @children.add factory()
 
-    return # CoffeeScript idiosyncrasy; don't return the results of the while loop
+    @children.deactivateAll()
 
   ###
    * @description Activate a particle emitter
    * @param {number} x Position of emitter on x-axis
    * @param {number} y Position of emitter on y-axis
   ###
-  start: (x, y) ->
+  startAt: (x, y) ->
     @children.activateAll()
+    @reset()
 
     @i = @children.length
     while @i--
@@ -45,9 +47,7 @@ class Emitter extends GameObject
       @particle.velocity.x = Math.cos direction
       @particle.velocity.y = Math.sin direction
       @particle.speed = Math.random() * @speed
-      @particle.color = @color
 
-    @active = true
     @timer = 0
     @position.x = x
     @position.y = y
@@ -60,12 +60,16 @@ class Emitter extends GameObject
     @i = @children.length
     while @i--
       @particle = @children.at @i
-      @particle.colors.alpha -= delta / @duration if @fade
       @children.deactivate @i if @timer >= @duration
+      #@particle.colors.alpha -= delta / @duration if @fade
+      @particle.scale += @scale * delta / @duration if @scale != 1.0
 
     return # CoffeeScript idiosyncrasy; don't return the results of the while loop
 
   reset: ->
-    @i
+    @i = @children.length
+    while @i--
+      @particle = @children.at @i
+      @particle.reset() if typeof @particle.reset == 'function'
 
 module.exports = Emitter

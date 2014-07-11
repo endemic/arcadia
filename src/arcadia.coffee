@@ -6,6 +6,13 @@ if window.requestAnimationFrame == undefined
 if window.cancelAnimationFrame == undefined
   window.cancelAnimationFrame = window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame
 
+# Normalize window.performance
+if window.performance == undefined
+  nowOffset = Date.now();
+  window.performance =
+    now: ->
+      Date.now() - nowOffset;
+
 Function::property = (prop, desc) ->
   Object.defineProperty @prototype, prop, desc
 
@@ -18,8 +25,14 @@ Arcadia =
   Pool: require('./pool.coffee')
   Scene: require('./scene.coffee')
   Shape: require('./shape.coffee')
+  Sprite: require('./sprite.coffee')
 
 module.exports = Arcadia
+
+# Static variables tracking performance
+Arcadia.fps = 0
+Arcadia.garbageCollected = false
+Arcadia.lastUsedHeap = 0
 
 ###
 @description Get information about the current environment
@@ -51,8 +64,8 @@ Arcadia.changeScene = (SceneClass) ->
 
   # Clean up previous scene
   Arcadia.instance.active.destroy()
-
   Arcadia.instance.active = new SceneClass()
+  Arcadia.instance.active.transition()
 
 ###
 @description Static method to translate mouse/touch input to coordinates the game will understand
