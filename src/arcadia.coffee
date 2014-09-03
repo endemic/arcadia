@@ -37,24 +37,23 @@ Arcadia.lastUsedHeap = 0
 ###
 @description Get information about the current environment
 ###
-Arcadia.env = do ->
+Arcadia.ENV = do ->
   agent = navigator.userAgent.toLowerCase()
 
-  android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false
-  ios = (agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length) > 0 || false
-  firefox = (agent.match(/firefox/i) && agent.match(/firefox/i).length > 0) || false
+  android = !!(agent.match(/android/i) && agent.match(/android/i).length > 0)
+  ios = !!(agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length > 0)
+  firefox = !!(agent.match(/firefox/i) && agent.match(/firefox/i).length > 0)
 
   # "mobile" here refers to a touchscreen - this is pretty janky
-  mobile = ((agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || false) || android
+  mobile = !!(agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || android
 
-  return {
+  return Object.freeze
     android: android
     ios: ios
     firefox: firefox
     mobile: mobile
     desktop: !mobile
     cordova: window.cordova != undefined
-  }
 
 ###
 @description Change the active scene being displayed
