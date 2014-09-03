@@ -6,132 +6,155 @@ describe 'Arcadia.Pool', ->
   afterEach ->
     @pool = null
 
-  it 'has a length property', ->
-    expect(@pool.length).toBe 0
-
-  describe 'adding objects', ->
-    it 'can add objects to itself', ->
-      shape = new Arcadia.Shape(0, 0, 'circle', 25)
+  describe '#add', ->
+    it 'adds objects', ->
+      shape = new Arcadia.Shape({ vertices: 3 })
       @pool.add shape
-      expect(@pool.length).toBe 1
       expect(@pool.at(0)).toBe shape
 
-    it 'keeps inactive objects at the end of the internal array', ->
-      @pool.add new Arcadia.Shape({ vertices: 3 })
-      @pool.add new Arcadia.Shape({ vertices: 3 })
-      @pool.deactivate 0
-      @pool.deactivate 0
+    it 'increases the length property', ->
+      @pool.add new Arcadia.Shape()
+      expect(@pool.length).toBe 1
+
+  describe '#remove', ->
+    beforeEach ->
+      @pool = new Arcadia.Pool()
+      while @pool.length < 10
+        @pool.add new Arcadia.Shape({ vertices: @pool.length })
+
+    afterEach ->
+      @pool = null
+
+    it 'removes objects by index', ->
+      @pool.remove 0
+      expect(@pool.length).toBe 9
+
+    it 'removes objects by reference', ->
+      shape = @pool.at(0)
+      @pool.remove shape
+      expect(@pool.length).toBe 9
+
+    it 'throws an error without something to remove', ->
+      expect(=> @pool.remove()).toThrow()
+
+    it 'calls #destroy on removed object', ->
+      shape = @pool.at(0)
+      shape.destroy = ->
+        console.log 'pass'
+      spyOn shape, 'destroy'
+
+      @pool.remove shape
+      expect(shape.destroy).toHaveBeenCalled()
+
+    it 'returns removed object', ->
+      shape = @pool.at(0)
+      returnedOjbect = @pool.remove(0)
+      expect(returnedOjbect).toBe shape
+
+  describe '#at', ->
+    it 'accesses active objects', ->
+      shape = new Arcadia.Shape({ vertices: 3 })
+      @pool.add shape
+      expect(@pool.at(0)).toBe shape
+    
+    it "can't access what doesn't exist", ->
+      expect(@pool.at(0)).toBe null
+
+  describe '#deactivateAll', ->
+    it 'deactivates all objects', ->
+      while @pool.length < 10
+        @pool.add new Arcadia.Shape({ vertices: @pool.length })
+      
+      expect(@pool.length).toBe 10
+      @pool.deactivateAll()
       expect(@pool.length).toBe 0
 
-      @pool.add new Arcadia.Shape({ vertices: 4 })
-      expect(@pool.length).toBe 1
-      expect(@pool.at(0).vertices).toBe 4
+  describe '#activateAll', ->
+    it 'activates all objects', ->
+      while @pool.length < 10
+        @pool.add new Arcadia.Shape({ vertices: @pool.length })
 
-      @pool.add new Arcadia.Shape({ vertices: 5 })
-      expect(@pool.length).toBe 2
-      expect(@pool.at(1).vertices).toBe 5
+      @pool.deactivateAll()
+      expect(@pool.length).toBe 0
 
-  it 'can remove objects', ->
-    while @pool.length < 10
-      @pool.add new Arcadia.Shape({ vertices: 3 })
+      @pool.activateAll()
+      expect(@pool.length).toBe 10
 
-    @pool.deactivate 9
-    @pool.deactivate 8
-    expect(@pool.length).toBe 8
+    it 'resets child objects', ->
+      @pool.add new Arcadia.Shape()
+      shape = @pool.at(0)
+      shape.reset = ->
+        console.log 'pass'
+      spyOn shape, 'reset'
 
-    shape = @pool.at 0
-    # ensure "destroy" method is called when object is removed
-    shape.destroy = ->
-      console.log 'pass'
-    spyOn shape, 'destroy'
+      @pool.activateAll()
+      expect(shape.reset).toHaveBeenCalled()
 
-    expect(=> @pool.remove()).toThrow()
-    expect(@pool.remove(shape)).toBe shape
-    expect(shape.destroy).toHaveBeenCalled()
-    expect(@pool.length).toBe 7
-
-  it 'can access active objects', ->
-    shape = new Arcadia.Shape({ vertices: 3 })
-    @pool.add shape
-    expect(@pool.at(0)).toBe shape
-    expect(@pool.at(1)).toBe null
-
-  describe 'activating objects when there are no inactive objects', ->
-    it 'needs a factory', ->
+  describe '#activate', ->
+    it 'throws without inactive objects or a factory', ->
       expect(=> @pool.activate()).toThrow()
 
-    it 'can activate objects with a factory', ->
+    it 'can use a factory', ->
       @pool.factory = ->
-        new Arcadia.Shape({ vertices: 7 })
+        new Arcadia.Shape()
 
-      expect(=> @pool.activate()).not.toThrow()
+      @pool.activate()
       expect(@pool.length).toBe 1
-      expect(@pool.at(0).vertices).toBe 7
 
-  describe 'activating objects when there _are_ inactive objects', ->
-    it 'can activate objects', ->
+    it 'can use inactive objects', ->
+      @pool.add new Arcadia.Shape()
+      shape = @pool.deactivate 0
+      @pool.activate()
+      expect(@pool.at(0)).toBe shape
+
+  describe '#deactivate', ->
+    beforeEach ->
       while @pool.length < 10
-        @pool.add new Arcadia.Shape({ vertices: 3 })
+        @pool.add new Arcadia.Shape({ vertices: @pool.length })
 
+    it 'removes access to object', ->
+      shape = @pool.deactivate 0
+      expect(@pool.at(0)).not.toBe shape
+
+    it 'can remove by reference', ->
+      shape = @pool.at 5
+      removedShape = @pool.deactivate shape
+      expect(@pool.at(5)).not.toBe removedShape
+
+    it 'decrements `length` property', ->
       @pool.deactivate 0
       expect(@pool.length).toBe 9
 
-      expect(=> @pool.activate()).not.toThrow()
-      expect(@pool.length).toBe 10
+  describe '#update', ->
+    it 'updates active objects', ->
+      pool = new Arcadia.Pool()
+      shape1 = new Arcadia.Shape()
+      shape2 = new Arcadia.Shape()
 
-  it 'can deactivate objects', ->
-    @pool.add new Arcadia.Shape({ vertices: 8 })
-    @pool.add new Arcadia.Shape({ vertices: 4 })
-    @pool.add new Arcadia.Shape({ vertices: 3 })
-    expect(@pool.length).toBe 3
+      pool.add shape1
+      pool.add shape2
+      pool.deactivate shape2
+      
+      spyOn shape1, 'update'
+      spyOn shape2, 'update'
+      pool.update(1)
 
-    @pool.deactivate 0
+      expect(shape1.update).toHaveBeenCalled()
+      expect(shape2.update).not.toHaveBeenCalled()
 
-    expect(@pool.length).toBe 2
-    expect(@pool.at(0).vertices).toBe 3
-    expect(@pool.at(1).vertices).toBe 4
-    expect(@pool.at(2)).toBe null
+  describe '#draw', ->
+    it 'draws active objects', ->
+      pool = new Arcadia.Pool()
+      shape1 = new Arcadia.Shape()
+      shape2 = new Arcadia.Shape()
 
-  it 'can deactivate all its objects at once', ->
-    while @pool.length < 10
-      @pool.add new Arcadia.Shape({ vertices: 10 })
+      pool.add shape1
+      pool.add shape2
+      pool.deactivate shape1
 
-    expect(@pool.at(9).vertices).toBe 10
-    expect(=> @pool.deactivateAll()).not.toThrow()
-    expect(@pool.at(0)).toBe null
+      spyOn shape1, 'draw'
+      spyOn shape2, 'draw'
+      pool.draw(1)
 
-  it 'can activate all its objects at once', ->
-    while @pool.length < 10
-      @pool.add new Arcadia.Shape({ vertices: 6 })
-
-    @pool.deactivateAll()
-    expect(@pool.at(0)).toBe null
-
-    expect(=> @pool.activateAll()).not.toThrow()
-    expect(@pool.at(9).vertices).toBe 6
-
-  it 'can update its active objects', ->
-    shape1 = new Arcadia.Shape()
-    shape2 = new Arcadia.Shape()
-    @pool.add shape1
-    @pool.add shape2
-    @pool.deactivate shape2
-    spyOn shape1, 'update'
-    spyOn shape2, 'update'
-
-    expect(=> @pool.update(1)).not.toThrow()
-    expect(shape1.update).toHaveBeenCalled()
-    expect(shape2.update).not.toHaveBeenCalled()
-
-  it 'can draw its active objects', ->
-    shape1 = new Arcadia.Shape()
-    shape2 = new Arcadia.Shape()
-    @pool.add shape1
-    @pool.add shape2
-    @pool.deactivate shape1
-    spyOn shape1, 'draw'
-    spyOn shape2, 'draw'
-
-    expect(=> @pool.draw(1)).not.toThrow()
-    expect(shape2.draw).toHaveBeenCalled()
-    expect(shape1.draw).not.toHaveBeenCalled()
+      expect(shape2.draw).toHaveBeenCalled()
+      expect(shape1.draw).not.toHaveBeenCalled()

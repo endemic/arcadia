@@ -38,12 +38,12 @@ class Pool
   remove: (objectOrIndex) ->
     throw 'Must specify an object/index to remove' if objectOrIndex is undefined
 
-    index = if objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
+    index = if typeof objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
     return if index is -1
-    
+
     object = @children.splice(index, 1)[0]
     object.destroy() if typeof object.destroy is 'function'
-    
+
     @length -= 1 if index < @length
     object
 
@@ -52,8 +52,9 @@ class Pool
   ###
   activate: (objectOrIndex) ->
     if objectOrIndex != undefined
-      index = if objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
-      # TODO: spec this condition
+      index = if typeof objectOrIndex != 'number' then @children.indexOf(objectOrIndex) else objectOrIndex
+
+      # TODO: Spec this behavior
       return null unless @children.length > index >= @length
 
       @tmp = @children[@length]
@@ -69,23 +70,21 @@ class Pool
       return @children[@length - 1]
 
     throw 'Pools need a factory function' if typeof @factory != 'function'
-    
+
     @children.push @factory()
     @length += 1
     return @children[@length - 1]
 
   ###
   @description Deactivate an active object at a particular object/index
-  TODO: Change this to "objectOrIndex"
   ###
-  deactivate: (index) ->
-    index = @children.indexOf(index) if typeof index == 'object'
+  deactivate: (objectOrIndex) ->
+    index = if typeof objectOrIndex != 'number' then @children.indexOf(objectOrIndex) else objectOrIndex
 
-    # Spec this behavior
+    # TODO: Spec this behavior
     return null if index >= @length || index < 0
 
     # Move inactive object to end
-    # TODO: Spec this behavior
     @tmp = @children[index]
     @children[index] = @children[@length - 1]
     @children[@length - 1] = @tmp
