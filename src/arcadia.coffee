@@ -27,8 +27,6 @@ Arcadia =
   Shape: require('./shape.coffee')
   Sprite: require('./sprite.coffee')
 
-module.exports = Arcadia
-
 # Static variables tracking performance
 Arcadia.fps = 0
 Arcadia.garbageCollected = false
@@ -131,3 +129,5 @@ Arcadia.stopMusic = ->
 
   Arcadia.music[Arcadia.currentMusic]?.stop()
   Arcadia.currentMusic = null
+
+module.exports = Arcadia

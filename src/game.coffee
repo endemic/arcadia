@@ -1,3 +1,5 @@
+Arcadia = require './arcadia.coffee'
+
 class Game
   ###
    * @constructor
@@ -6,12 +8,9 @@ class Game
    * @param {Number} [height=480] Height of game view
    * @param {Boolean} [scaleToFit=true] Full screen or not
   ###
-  constructor: (width, height, SceneClass, scaleToFit = true) ->
-    width = parseInt(width, 10) || 640
-    height = parseInt(height, 10) || 480
-
-    Arcadia.WIDTH = width
-    Arcadia.HEIGHT = height
+  constructor: (args = {}) ->
+    Arcadia.WIDTH = parseInt(args.width, 10) || 640
+    Arcadia.HEIGHT = parseInt(args.height, 10) || 480
 
     # If game is scaled up/down, clicks/touches need to be scaled
     Arcadia.SCALE = 1
@@ -27,37 +26,6 @@ class Game
     @element = document.createElement 'div'
     @element['id'] = 'arcadia'
     document.body.appendChild @element
-
-    # Bind event handler callbacks
-    @onResize = @onResize.bind @
-    @onPointStart = @onPointStart.bind @
-    @onPointMove = @onPointMove.bind @
-    @onPointEnd = @onPointEnd.bind @
-    @onKeyDown = @onKeyDown.bind @
-    @onKeyUp = @onKeyUp.bind @
-    @pause = @pause.bind @
-    @resume = @resume.bind @
-
-    # Set up event listeners Mouse and touch use the same ones
-    document.addEventListener 'keydown', @onKeyDown, false
-    document.addEventListener 'keyup', @onKeyUp, false
-    @element.addEventListener 'mousedown', @onPointStart, false
-    @element.addEventListener 'mouseup', @onPointEnd, false
-    @element.addEventListener 'touchstart', @onPointStart, false
-    @element.addEventListener 'touchmove', @onPointMove, false
-    @element.addEventListener 'touchend', @onPointEnd, false
-
-    # Prevent the page from scrolling when touching game element
-    @element.addEventListener 'touchmove', (e) -> e.preventDefault()
-
-    # Fit <canvas> to window
-    if scaleToFit == true
-      @onResize()
-      window.addEventListener 'resize', @onResize, false
-
-    if window.cordova != undefined
-      document.addEventListener 'pause', @pause, false
-      document.addEventListener 'resume', @resume, false
 
     # Map of current input, used to prevent duplicate events being sent to handlers
     # ("keydown" events fire continuously while a key is held)
@@ -94,8 +62,39 @@ class Game
       ]
 
     # Instantiate initial scene
-    @active = new SceneClass()
+    @active = new args.scene()
     @active.transition()
+
+    # Bind event handler callbacks
+    @onResize = @onResize.bind @
+    @onPointStart = @onPointStart.bind @
+    @onPointMove = @onPointMove.bind @
+    @onPointEnd = @onPointEnd.bind @
+    @onKeyDown = @onKeyDown.bind @
+    @onKeyUp = @onKeyUp.bind @
+    @pause = @pause.bind @
+    @resume = @resume.bind @
+
+    # Set up event listeners Mouse and touch use the same ones
+    document.addEventListener 'keydown', @onKeyDown, false
+    document.addEventListener 'keyup', @onKeyUp, false
+    @element.addEventListener 'mousedown', @onPointStart, false
+    @element.addEventListener 'mouseup', @onPointEnd, false
+    @element.addEventListener 'touchstart', @onPointStart, false
+    @element.addEventListener 'touchmove', @onPointMove, false
+    @element.addEventListener 'touchend', @onPointEnd, false
+
+    # Prevent the page from scrolling when touching game element
+    @element.addEventListener 'touchmove', (e) -> e.preventDefault()
+
+    # Fit <canvas> to window
+    if args.fitWindow == true
+      @onResize()
+      window.addEventListener 'resize', @onResize, false
+
+    if window.cordova != undefined
+      document.addEventListener 'pause', @pause, false
+      document.addEventListener 'resume', @resume, false
 
     # Start animation request
     @start()

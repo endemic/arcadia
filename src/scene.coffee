@@ -1,4 +1,5 @@
 GameObject = require './gameobject.coffee'
+Arcadia = require './arcadia.coffee'
 
 class Scene extends GameObject
   constructor: ->

@@ -1,4 +1,5 @@
 GameObject = require './gameobject.coffee'
+Arcadia = require './arcadia.coffee'
 
 class Label extends GameObject
   constructor: (args = {}) ->
@@ -11,9 +12,9 @@ class Label extends GameObject
     else if typeof args.font is 'string'
       @font = args.font
 
-    @text = args.text || 'text goes here'
+    @_text = args.text || 'text goes here'
+    @_alignment = args.alignment || 'center' # allowed values: "left", "right", "center", "start", "end"
     @fixed = args.fixed || true # By default, does not move with camera
-    @alignment = args.alignment || 'center' # allowed values: "left", "right", "center", "start", "end"
     @debug = args.debug || false
 
     @canvas = document.createElement 'canvas' # Internal shape cache
@@ -133,5 +134,17 @@ class Label extends GameObject
         @_font.size = values[1]
         @_font.family = values[2]
         @drawCanvasCache()
+
+  @property 'text',
+    get: -> return @_text
+    set: (value) ->
+      @_text = value
+      @drawCanvasCache()
+
+  @property 'alignment',
+    get: -> return @_alignment
+    set: (value) ->
+      @_alignment = value
+      @drawCanvasCache()
 
 module.exports = Label
