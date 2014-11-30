@@ -4,12 +4,12 @@
 var Enemy = function () {
     Arcadia.Shape.apply(this, arguments);
 
-    this.size = 20;
     this.vertices = 3;
-    this.color = 'rgba(255, 0, 0, 1)';
-    this.shadow = '0 0 20px ' + this.color;
+    this.width = this.height = this.size = 20;
+    this.color = '#f00';
+    this.shadow = '0 0 10px ' + this.color;
+
     this.speed = 40;
-    
     this.bulletTimer = 0;
 };
 

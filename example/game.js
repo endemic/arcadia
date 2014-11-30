@@ -111,16 +111,25 @@ var Game = function () {
         },
         text: 'GAME OVER',
         font: '40px monospace',
-        color: 'rgba(255, 255, 255, 0.8)'
+        color: 'rgba(255, 255, 255, 0.8)',
+        shadow: '0 0 10px #fff'
     });
 
     this.add(this.gameOverLabel);
     this.deactivate(this.gameOverLabel);
 
-    this.tryAgainButton = new Arcadia.Button(Arcadia.WIDTH / 2, Arcadia.HEIGHT / 2, "TRY AGAIN");
-    this.tryAgainButton.font = '20px monospace';
-    this.tryAgainButton.solid = false;
-    this.tryAgainButton.padding = 20;
+    this.tryAgainButton = new Arcadia.Button({
+        position: {
+            x: Arcadia.WIDTH / 2, 
+            y: Arcadia.HEIGHT / 2
+        },
+        border: '1px rgba(255, 255, 255, 0.8)',
+        color: 'rgba(0, 0, 0, 0)',
+        font: '20px monospace',
+        shadow: '0 0 10px #fff',
+        text: "TRY AGAIN",
+        padding: 15
+    });
     this.tryAgainButton.onUp = function () {
         Arcadia.changeScene(Game);
     };
@@ -130,14 +139,12 @@ var Game = function () {
 
     // Score label
     this.label = new Arcadia.Label({
-        position: {
-            x: 10,
-            y: 20
-        },
+        position: { x: 0, y: 10 },
         text: 'Score: 0',
         font: '16px monospace',
         shadow: '0 0 10px rgba(255, 255, 255, 0.8)'
     });
+    this.label.position.x = this.label.width / 2;
     this.add(this.label);
     this.score = 0;
 };
@@ -203,7 +210,7 @@ Game.prototype.update = function (delta) {
     while (i--) {
         enemy = this.enemies.at(i);
         angle = Math.atan2(this.player.position.y - enemy.position.y, this.player.position.x - enemy.position.x);
-        enemy.rotation = angle;
+        enemy.rotation = angle + Math.PI / 180 * 90;
         enemy.velocity.x = Math.cos(angle);
         enemy.velocity.y = Math.sin(angle);
         enemy.bulletTimer += delta;
