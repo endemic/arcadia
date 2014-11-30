@@ -9,10 +9,9 @@
 * [ ] Rename Emitter to "Particles" or something
 * [ ] Update particle emitter to emit particles infinitely; can turn on/off
 * [ ] Add additional effects to particles: rotate, fade, scale, etc.
-* [ ] Allow 'rectangle' shapes
+* [ ] Give objects a width and height
 * [ ] Cull drawing of objects outwide viewport
-* [ ] Give views their own <canvas> DOM element
-* [ ] 3D CSS transitions when changing views
+* [ ] Re-use same <canvas> for each scene
 * [ ] Handle Hi-DPI screens - 2x backing store
 * [ ] Add SAT collision detection
 * [ ] Add "Tween" class to GameObjects
