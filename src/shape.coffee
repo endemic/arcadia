@@ -177,9 +177,6 @@ class Shape extends GameObject
   draw: (context, offsetX = 0, offsetY = 0) ->
     offsetX = offsetY = 0 if @fixed
 
-    # Draw child objects first, so they will be on the "bottom"
-    super context, @position.x + offsetX, @position.y + offsetY
-
     # Set scale/rotation/alpha
     context.translate @position.x + offsetX, @position.y + offsetY
     context.scale @scale, @scale if @scale != 1
@@ -197,6 +194,9 @@ class Shape extends GameObject
     context.translate -@position.x - offsetX, -@position.y - offsetY
     context.scale 1, 1 if @scale != 1
     context.globalAlpha = 1 if @alpha < 1
+
+    # Draw child objects last, so they will be on the "top"
+    super context, @position.x + offsetX, @position.y + offsetY
 
   ###
   @description Update object

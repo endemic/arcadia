@@ -31,7 +31,7 @@ class Game
 
     @context = @canvas.getContext('2d')
 
-    @setPixelRatio()
+    # @setPixelRatio()
 
     # Map of current input, used to prevent duplicate events being sent to handlers
     # ("keydown" events fire continuously while a key is held)
@@ -285,7 +285,7 @@ class Game
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
 
     @element.setAttribute 'style', "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; width: #{width}px; height: #{height}px;"
-    # @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
+    # @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; width: #{width}px; height: #{height}px;"
+    @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
 
 module.exports = Game

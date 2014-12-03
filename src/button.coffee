@@ -2,15 +2,12 @@ Shape = require './shape.coffee'
 
 class Button extends Shape
   constructor: (args = {}) ->
-    Label = require './label.coffee'
     Arcadia = require './arcadia.coffee'
-
-    # Create label that goes inside button border
-    @label = new Label(args)
-    @label.position = { x: 0, y: 0 }
-    @label.fixed = false
+    Label = require './label.coffee'
 
     @padding = args.padding || 10
+    @label = args.label || new Label()
+    @label.drawCanvasCache() # Draw cache to determine size of text
 
     args.size =
       width: @label.size.width + @padding
@@ -18,10 +15,11 @@ class Button extends Shape
 
     super args
 
+    @label.position = { x: 0, y: 0 }
+    @label.fixed = false
     @add(@label)
 
     @fixed = true
-    @iterator = 0
 
     # Attach event listeners
     @onPointEnd = @onPointEnd.bind(@)
@@ -36,10 +34,9 @@ class Button extends Shape
 
     Arcadia.getPoints(event)
 
-    @iterator = Arcadia.instance.points.length
-    while @iterator--
-      if @containsPoint(Arcadia.instance.points.coordinates[@iterator].x,
-                        Arcadia.instance.points.coordinates[@iterator].y)
+    i = Arcadia.instance.points.length
+    while i--
+      if @containsPoint(Arcadia.instance.points[i].x, Arcadia.instance.points[i].y)
         @onUp()
         return
 
@@ -47,10 +44,10 @@ class Button extends Shape
   @description Helper method to determine if mouse/touch is inside button graphic
   ###
   containsPoint: (x, y) ->
-    return x < @position.x + @width / 2 + @padding / 2 &&
-      x > @position.x - @width / 2 - @padding / 2 &&
-      y < @position.y + @height / 2 + @padding / 2 &&
-      y > @position.y - @height / 2 - @padding / 2
+    return x < @position.x + @size.width / 2 + @padding / 2 &&
+      x > @position.x - @size.width / 2 - @padding / 2 &&
+      y < @position.y + @size.height / 2 + @padding / 2 &&
+      y > @position.y - @size.height / 2 - @padding / 2
 
   ###
   @description Clean up event listeners
