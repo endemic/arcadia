@@ -28,7 +28,7 @@ Arcadia =
   Sprite: require('./sprite.coffee')
 
 # Static variables tracking performance
-Arcadia.fps = 0
+Arcadia.FPS = 60
 Arcadia.garbageCollected = false
 Arcadia.lastUsedHeap = 0
 
@@ -68,18 +68,20 @@ Arcadia.changeScene = (SceneClass) ->
              Takes the <canvas> offset and scale into account
 ###
 Arcadia.getPoints = (event) ->
+  # http://jsperf.com/empty-javascript-array
+  while Arcadia.instance.points.length > 0
+    Arcadia.instance.points.pop()
+
   if event.type.indexOf('mouse') != -1
-    Arcadia.instance.points.length = 1
-    Arcadia.instance.points.coordinates[0] =
+    Arcadia.instance.points.unshift
       x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
       y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-  else 
-    Arcadia.instance.points.length = event.touches.length
-    i = 0
-    while i < length
-      Arcadia.instance.points.coordinates[i].x = (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
-      Arcadia.instance.points.coordinates[i].y = (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-      i += 1
+  else
+    i = event.touches.length
+    while i--
+      Arcadia.instance.points.unshift
+        x: (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
+        y: (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
 
 ###
 @description Static variables used to store music/sound effects

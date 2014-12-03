@@ -2,9 +2,7 @@ class Game
   ###
    * @constructor
    * @description Main "game" object; sets up screens, input, etc.
-   * @param {String} [width=320] Width of game view
-   * @param {Number} [height=480] Height of game view
-   * @param {Boolean} [scaleToFit=true] Full screen or not
+   * @param {Object} args Config object. Allowed keys: width, height, scene, fitWindow
   ###
   constructor: (args = {}) ->
     Arcadia = require './arcadia.coffee'
@@ -15,9 +13,8 @@ class Game
     Arcadia.SCALE = 1
 
     # If game element is not at (0, 0), clicks/touches need to be offset
-    Arcadia.OFFSET =
-      x: 0
-      y: 0
+    # by the following amount
+    Arcadia.OFFSET = { x: 0, y: 0 }
 
     # Static reference to current game instance
     Arcadia.instance = @
@@ -55,20 +52,7 @@ class Game
       'x': false
 
     # Stores objects representing mouse/touch input
-    @points =
-      length: 0
-      coordinates: [
-        { x: null, y: null }
-        { x: null, y: null }
-        { x: null, y: null }
-        { x: null, y: null }
-        { x: null, y: null }
-        { x: null, y: null }
-        { x: null, y: null }
-        { x: null, y: null }
-        { x: null, y: null }
-        { x: null, y: null }
-      ]
+    @points = []
 
     # Bind event handler callbacks
     @onResize = @onResize.bind @
@@ -92,8 +76,7 @@ class Game
     # Prevent the page from scrolling when touching game element
     @element.addEventListener 'touchmove', (e) -> e.preventDefault()
 
-    # Add additional, non-standard event listeners for "native"
-    # Cordova apps
+    # Add non-standard event listeners for "native" Cordova apps
     if window.cordova != undefined
       document.addEventListener 'pause', @pause, false
       document.addEventListener 'resume', @resume, false
@@ -131,6 +114,7 @@ class Game
   ###
   onPointStart: (event) ->
     Arcadia.getPoints event
+    event.preventDefault()
 
     # TODO: Get rid of this event listener, use an instance variable
     if event.type.indexOf('mouse') != -1
@@ -143,6 +127,7 @@ class Game
   ###
   onPointMove: (event) ->
     Arcadia.getPoints event
+    event.preventDefault()
 
     @active.onPointMove(@points) if typeof @active.onPointMove == "function"
 
@@ -152,6 +137,7 @@ class Game
   ###
   onPointEnd: (event) ->
     Arcadia.getPoints event
+    event.preventDefault()
 
     # TODO: Get rid of this event listener, use an instance variable
     if event.type.indexOf('mouse') != -1
@@ -233,7 +219,7 @@ class Game
     delta = currentDelta - @previousDelta
     @previousDelta = currentDelta
     
-    Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
+    Arcadia.FPS = Arcadia.FPS * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
 
     if window.performance.memory?
       Arcadia.garbageCollected = true if window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
@@ -262,6 +248,7 @@ class Game
 
     @canvas.style.width = "#{Arcadia.WIDTH}px"
     @canvas.style.height = "#{Arcadia.HEIGHT}px"
+    # @context.scale(Arcadia.PIXEL_RATIO, Arcadia.PIXEL_RATIO)
     # @context.setTransform(Arcadia.PIXEL_RATIO, 0, 0, Arcadia.PIXEL_RATIO, 0, 0)
 
   ###
@@ -270,8 +257,6 @@ class Game
   onResize: ->
     width = window.innerWidth
     height = window.innerHeight
-    alert width
-    alert height
 
     if width > height
       orientation = "landscape"
@@ -300,7 +285,7 @@ class Game
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
 
     @element.setAttribute 'style', "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    # @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; width: #{width}px; height: #{height}px;"
-    @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
+    @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; width: #{width}px; height: #{height}px;"
+    # @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
 
 module.exports = Game
