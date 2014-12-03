@@ -11,19 +11,65 @@ class Shape extends GameObject
   constructor: (args = {}) ->
     super args
 
+    @_border = { width: 0, color: '#000' }
+    @_shadow = { x: 0, y: 0, blur: 0, color: '#000' }
+
     @vertices = args.vertices || 4
-    @size = args.size || 10
-    @width = @height = @size
-    @anchor = { x: @width / 2, y: @height / 2 }
-    @speed = args.speed || 1
+    @color = args.color       || '#fff'
+    @border = args.border     || '0px #000'
+    @shadow = args.shadow     || '0px 0px 0px #000'
+    @size = args.size         || { width: 10, height: 10 }
     @velocity = args.velocity || { x: 0, y: 0 }
     @angularVelocity = args.angularVelocity || 0
+    @speed = args.speed       || 1
+    @debug = args.debug       || false
+    @fixed = args.fixed       || false # By default, moves with camera
 
-    @_path = args.path || null # custom draw function
-    @debug = args.debug || false
+    @path = args.path if args.path  # Custom drawing function
+    @anchor = { x: @size.width / 2, y: @size.height / 2 }
+    @canvas = document.createElement 'canvas' # Internal drawing cache
+    @dirty = true   # Trigger initial cache draw
 
-    @canvas = document.createElement 'canvas' # Internal shape cache
-    @drawCanvasCache()
+  ###
+  @description Getter/setter for color
+  ###
+  @property 'color',
+    get: -> return @_color
+    set: (color) ->
+      @_color = color
+      @dirty = true
+
+  ###
+  @description Getter/setter for border
+  ###
+  @property 'border',
+    get: -> return "#{@_border.width}px #{@_border.color}"
+    set: (border) ->
+      values = border.match(/^(\d+px) (.+)$/)
+
+      if values?.length == 3
+        @_border.width = parseInt values[1], 10
+        @_border.color = values[2]
+        @dirty = true
+      else
+        throw new Error 'Use format "(width)px (color)" when setting borders'
+
+  ###
+  @description Getter/setter for shadow
+  ###
+  @property 'shadow',
+    get: -> return "#{@_shadow.x}px #{@_shadow.y}px #{@_shadow.blur}px #{@_shadow.color}"
+    set: (shadow) ->
+      values = shadow.match(/^(.+) (.+) (.+) (.+)$/)
+
+      if values?.length == 5
+        @_shadow.x = parseInt values[1], 10
+        @_shadow.y = parseInt values[2], 10
+        @_shadow.blur = parseInt values[3], 10
+        @_shadow.color = values[4] # TODO: rgba(x, x, x, x) doesn't work
+        @dirty = true
+      else
+        throw new Error 'Use format "(x)px (y)px (blur)px (color)" when setting shadows'
 
   ###
   @description Getter/setter for path
@@ -32,7 +78,7 @@ class Shape extends GameObject
     get: -> return @_path
     set: (path) ->
       @_path = path
-      @drawCanvasCache()
+      @dirty = true
 
   ###
   @description Draw object onto internal <canvas> cache
@@ -40,29 +86,32 @@ class Shape extends GameObject
   drawCanvasCache: ->
     return if @canvas is undefined
 
-    # TODO: resize to handle shadow
-    @canvas.width = @width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
-    @canvas.height = @height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
+    # Canvas cache needs to be large enough to handle 
+    # shape size, border, and shadow
+    @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
+    @canvas.height = @size.height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
     context = @canvas.getContext '2d'
     context.lineJoin = 'round'
 
     context.beginPath()
     # TODO: ensure correctness of this
-    x = @width / 2 + @_border.width / 2
-    y = @height / 2 + @_border.width / 2
+    x = @size.width / 2 + @_border.width / 2
+    y = @size.height / 2 + @_border.width / 2
 
     if @_shadow.blur > 0
       x += @_shadow.blur / 2
       y += @_shadow.blur / 2
 
+    # Move anchor negatively if shadow is also negative
     x -= @_shadow.x if @_shadow.x < 0
     y -= @_shadow.y if @_shadow.y < 0
 
+    # Set anchor point (midpoint of shape)
     @anchor.x = x
     @anchor.y = y
 
-    # Debug
+    # Draw anchor point and border in red
     if @debug
       context.lineWidth = 1
       context.strokeStyle = '#f00'
@@ -75,30 +124,34 @@ class Shape extends GameObject
     if @path
       @_path context
     else
-      i = @vertices
-      slice = 2 * Math.PI / @vertices
-
-      # Make shapes point @ 90 degrees
       switch @vertices
-        when 3 then offset = -Math.PI / 2
-        when 4 then offset = -Math.PI / 4
-        when 5 then offset = -Math.PI / 10
-        when 7 then offset = Math.PI / 14
-        when 9 then offset = -Math.PI / 18
-        else offset = 0
-
-      context.moveTo(@size / 2 * Math.cos(0 + offset), @size / 2 * Math.sin(0 + offset))
-      while i--
-        context.lineTo(@size / 2 * Math.cos(i * slice + offset), @size / 2 * Math.sin(i * slice + offset))
+        when 1
+          context.arc(0, 0, @size.width / 2, 0, 2 * Math.PI) # x, y, radius, startAngle, endAngle
+        when 2
+          context.moveTo(-@size.width / 2, -@size.height / 2)
+          context.lineTo(@size.width / 2, @size.height / 2)
+        when 3
+          context.moveTo(0, -@size.height / 2)
+          context.lineTo(@size.width / 2, @size.height / 2)
+          context.lineTo(-@size.width / 2, @size.height / 2)
+          context.lineTo(0, -@size.height / 2)
+        when 4
+          context.moveTo(-@size.width / 2, -@size.height / 2)
+          context.lineTo(@size.width / 2, -@size.height / 2)
+          context.lineTo(@size.width / 2, @size.height / 2)
+          context.lineTo(-@size.width / 2, @size.height / 2)
+          context.lineTo(-@size.width / 2, -@size.height / 2)
 
     context.closePath()
 
+    # Draw shadow
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
       context.shadowOffsetX = @_shadow.x
       context.shadowOffsetY = @_shadow.y
       context.shadowBlur = @_shadow.blur
       context.shadowColor = @_shadow.color
 
+    # Fill with color
     if @_color
       context.fillStyle = @_color
       context.fill()
@@ -109,10 +162,13 @@ class Shape extends GameObject
       context.shadowOffsetY = 0
       context.shadowBlur = 0
 
+    # Draw border
     if @_border.width && @_border.color
       context.lineWidth = @_border.width
       context.strokeStyle = @_border.color
       context.stroke()
+
+    @dirty = false
 
   ###
   @description Draw object
@@ -130,7 +186,10 @@ class Shape extends GameObject
     context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
     context.globalAlpha = @alpha if @alpha < 1
 
-    # Draw vector shape cache
+    # Update internal <canvas> cache if necessary
+    @drawCanvasCache() if @dirty
+
+    # Draw cache
     context.drawImage @canvas, -@anchor.x, -@anchor.y
 
     # Reset scale/rotation/alpha

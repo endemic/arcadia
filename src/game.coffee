@@ -1,15 +1,14 @@
-Arcadia = require './arcadia.coffee'
-
 class Game
   ###
    * @constructor
    * @description Main "game" object; sets up screens, input, etc.
-   * @param {String} [width=640] Width of game view
+   * @param {String} [width=320] Width of game view
    * @param {Number} [height=480] Height of game view
    * @param {Boolean} [scaleToFit=true] Full screen or not
   ###
   constructor: (args = {}) ->
-    Arcadia.WIDTH = parseInt(args.width, 10) || 640
+    Arcadia = require './arcadia.coffee'
+    Arcadia.WIDTH = parseInt(args.width, 10) || 320
     Arcadia.HEIGHT = parseInt(args.height, 10) || 480
 
     # If game is scaled up/down, clicks/touches need to be scaled
@@ -23,9 +22,19 @@ class Game
     # Static reference to current game instance
     Arcadia.instance = @
 
-    @element = document.createElement 'div'
-    @element['id'] = 'arcadia'
-    document.body.appendChild @element
+    @element = document.createElement('div')
+    @element.id = 'arcadia'
+
+    @canvas = document.createElement('canvas')
+    @canvas.width = Arcadia.WIDTH
+    @canvas.height = Arcadia.HEIGHT
+
+    @element.appendChild(@canvas)
+    document.body.appendChild(@element)
+
+    @context = @canvas.getContext('2d')
+
+    @setPixelRatio()
 
     # Map of current input, used to prevent duplicate events being sent to handlers
     # ("keydown" events fire continuously while a key is held)
@@ -61,10 +70,6 @@ class Game
         { x: null, y: null }
       ]
 
-    # Instantiate initial scene
-    @active = new args.scene()
-    @active.transition()
-
     # Bind event handler callbacks
     @onResize = @onResize.bind @
     @onPointStart = @onPointStart.bind @
@@ -75,7 +80,7 @@ class Game
     @pause = @pause.bind @
     @resume = @resume.bind @
 
-    # Set up event listeners Mouse and touch use the same ones
+    # Set up event listeners - mouse and touch use the same ones
     document.addEventListener 'keydown', @onKeyDown, false
     document.addEventListener 'keyup', @onKeyUp, false
     @element.addEventListener 'mousedown', @onPointStart, false
@@ -87,14 +92,19 @@ class Game
     # Prevent the page from scrolling when touching game element
     @element.addEventListener 'touchmove', (e) -> e.preventDefault()
 
-    # Fit <canvas> to window
-    if args.fitWindow == true
-      @onResize()
-      window.addEventListener 'resize', @onResize, false
-
+    # Add additional, non-standard event listeners for "native"
+    # Cordova apps
     if window.cordova != undefined
       document.addEventListener 'pause', @pause, false
       document.addEventListener 'resume', @resume, false
+
+    # Instantiate initial scene
+    @active = new args.scene()
+
+    # Fit <canvas> to window
+    if args.fitWindow
+      @onResize()
+      window.addEventListener 'resize', @onResize, false
 
     # Start animation request
     @start()
@@ -224,14 +234,35 @@ class Game
     @previousDelta = currentDelta
     
     Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
-    Arcadia.garbageCollected = true if window.performance.memory? && window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
-    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize if window.performance.memory?
 
-    @active.draw()
+    if window.performance.memory?
+      Arcadia.garbageCollected = true if window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
+      Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize
+
+    @active.draw(@context)
     @active.update(delta / 1000) # call update() using seconds
 
     Arcadia.garbageCollected = false
     @updateId = window.requestAnimationFrame @update
+
+  ###
+  @description Change size of canvas based on pixel density
+  ###
+  setPixelRatio: ->
+    if window.devicePixelRatio == undefined
+      window.devicePixelRatio = 1
+
+    if @context.backingStorePixelRatio == undefined
+      @context.backingStorePixelRatio = @context.webkitBackingStorePixelRatio || 1
+
+    Arcadia.PIXEL_RATIO = window.devicePixelRatio / @context.backingStorePixelRatio
+
+    @canvas.width = Arcadia.WIDTH * Arcadia.PIXEL_RATIO
+    @canvas.height = Arcadia.HEIGHT * Arcadia.PIXEL_RATIO
+
+    @canvas.style.width = "#{Arcadia.WIDTH}px"
+    @canvas.style.height = "#{Arcadia.HEIGHT}px"
+    # @context.setTransform(Arcadia.PIXEL_RATIO, 0, 0, Arcadia.PIXEL_RATIO, 0, 0)
 
   ###
   @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
@@ -239,6 +270,8 @@ class Game
   onResize: ->
     width = window.innerWidth
     height = window.innerHeight
+    alert width
+    alert height
 
     if width > height
       orientation = "landscape"
@@ -265,7 +298,9 @@ class Game
     Arcadia.SCALE = height / Arcadia.HEIGHT
     Arcadia.OFFSET.x = (window.innerWidth - width) / 2
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
-    @element.setAttribute "style", "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    @active.resize()
+
+    @element.setAttribute 'style', "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
+    # @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; width: #{width}px; height: #{height}px;"
+    @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
 
 module.exports = Game

@@ -62,7 +62,6 @@ Arcadia.changeScene = (SceneClass) ->
   # Clean up previous scene
   Arcadia.instance.active.destroy()
   Arcadia.instance.active = new SceneClass()
-  Arcadia.instance.active.transition()
 
 ###
 @description Static method to translate mouse/touch input to coordinates the game will understand
@@ -130,4 +129,4 @@ Arcadia.stopMusic = ->
   Arcadia.music[Arcadia.currentMusic]?.stop()
   Arcadia.currentMusic = null
 
-module.exports = Arcadia
+module.exports = global.Arcadia = Arcadia

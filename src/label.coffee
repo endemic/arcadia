@@ -1,30 +1,26 @@
-GameObject = require './gameobject.coffee'
-Arcadia = require './arcadia.coffee'
+Shape = require './shape.coffee'
 
-class Label extends GameObject
+class Label extends Shape
   constructor: (args = {}) ->
     super args
 
     @_font = { size: 10, family: 'monospace' }
-    if typeof args.font is 'object'
-      @_font.size = args.font.size
-      @_font.family = args.font.family
-    else if typeof args.font is 'string'
-      @font = args.font
+    @_text = 'text goes here'
+    @_alignment = 'center'
 
-    @_text = args.text || 'text goes here'
-    @_alignment = args.alignment || 'center' # allowed values: "left", "right", "center", "start", "end"
-    @fixed = args.fixed || true # By default, does not move with camera
-    @debug = args.debug || false
-
-    @canvas = document.createElement 'canvas' # Internal shape cache
-    @drawCanvasCache()
+    @font = args.font if args.font
+    @text = args.text if args.text
+    @alignment = args.alignment if args.alignment # allowed values: "left", "right", "center", "start", "end"
+    @fixed = true # By default, does not move with camera
 
   ###
   @description Draw object onto internal <canvas> cache
   ###  
   drawCanvasCache: ->
     return if @canvas is undefined
+    # TODO: refactor shape method to use re-usable methods
+    # which can then be reused here
+    Arcadia = require './arcadia.coffee'
     
     context = @canvas.getContext '2d'
 
@@ -41,19 +37,19 @@ class Label extends GameObject
     element.style['font'] = @font
     element.style['line-height'] = 1
     element.innerHTML = @text
-    @width = element.offsetWidth
-    @height = element.offsetHeight
-    @anchor = { x: @width / 2, y: @height / 2 }
+    @size.width = element.offsetWidth
+    @size.height = element.offsetHeight
+    @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
-    @canvas.width = @width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
-    @canvas.height = @height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
+    @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
+    @canvas.height = @size.height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
     context.font = @font
-    context.textAlign = @alignment
+    context.textAlign = @alignment  # TODO: alignment is broken for anything not "center"
     context.textBaseline = 'middle' # top, hanging, middle, alphabetic, ideographic, bottom
 
-    x = @width / 2 + @_border.width / 2
-    y = @height / 2 + @_border.width / 2
+    x = @size.width / 2 + @_border.width / 2
+    y = @size.height / 2 + @_border.width / 2
 
     if @_shadow.blur > 0
       x += @_shadow.blur / 2
@@ -97,31 +93,6 @@ class Label extends GameObject
       context.strokeText @text, 0, 0, Arcadia.WIDTH
 
   ###
-  @description Draw object
-  @param {CanvasRenderingContext2D} context
-  ###
-  draw: (context, offsetX = 0, offsetY = 0) ->
-    # Draw child objects first, so they will be on the "bottom"
-    super context, @position.x + offsetX, @position.y + offsetY
-
-    offsetX = offsetY = 0 if @fixed
-
-    # Set scale/rotation/alpha
-    context.translate @position.x + offsetX, @position.y + offsetY
-    context.scale @scale, @scale if @scale != 1
-    context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
-    context.globalAlpha = @alpha if @alpha < 1
-
-    # Draw vector shape cache
-    context.drawImage @canvas, -@anchor.x, -@anchor.y
-
-    # Reset scale/rotation/alpha
-    context.rotate -@rotation if @rotation != 0 && @rotation != Math.PI * 2
-    context.translate -@position.x - offsetX, -@position.y - offsetY
-    context.scale 1, 1 if @scale != 1
-    context.globalAlpha = 1 if @alpha < 1
-
-  ###
   @description Getter/setter for font
   TODO: Handle bold text
   ###
@@ -133,18 +104,20 @@ class Label extends GameObject
       if values.length == 3
         @_font.size = values[1]
         @_font.family = values[2]
-        @drawCanvasCache()
+        @dirty = true
+      else
+        throw new Error 'Use format "(size)px (font-family)" when setting Label font'
 
   @property 'text',
     get: -> return @_text
     set: (value) ->
       @_text = value
-      @drawCanvasCache()
+      @dirty = true
 
   @property 'alignment',
     get: -> return @_alignment
     set: (value) ->
       @_alignment = value
-      @drawCanvasCache()
+      @dirty = true
 
 module.exports = Label
