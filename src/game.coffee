@@ -12,8 +12,7 @@ class Game
     # If game is scaled up/down, clicks/touches need to be scaled
     Arcadia.SCALE = 1
 
-    # If game element is not at (0, 0), clicks/touches need to be offset
-    # by the following amount
+    # If game element is not at (0, 0) (upper left), clicks/touches need to be offset
     Arcadia.OFFSET = { x: 0, y: 0 }
 
     # Static reference to current game instance
@@ -114,11 +113,9 @@ class Game
   ###
   onPointStart: (event) ->
     Arcadia.getPoints event
-    event.preventDefault()
 
-    # TODO: Get rid of this event listener, use an instance variable
     if event.type.indexOf('mouse') != -1
-      @element.addEventListener 'mousemove', @onPointMove, false
+      @element.addEventListener('mousemove', @onPointMove, false)
 
     @active.onPointStart(@points) if typeof @active.onPointStart == "function"
 
@@ -127,7 +124,6 @@ class Game
   ###
   onPointMove: (event) ->
     Arcadia.getPoints event
-    event.preventDefault()
 
     @active.onPointMove(@points) if typeof @active.onPointMove == "function"
 
@@ -137,9 +133,7 @@ class Game
   ###
   onPointEnd: (event) ->
     Arcadia.getPoints event
-    event.preventDefault()
 
-    # TODO: Get rid of this event listener, use an instance variable
     if event.type.indexOf('mouse') != -1
       @element.removeEventListener('mousemove', @onPointMove, false)
 

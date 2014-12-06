@@ -15,19 +15,19 @@ class Shape extends GameObject
     @_shadow = { x: 0, y: 0, blur: 0, color: '#000' }
 
     @vertices = args.vertices || 4
-    @color = args.color       || '#fff'
-    @border = args.border     || '0px #000'
-    @shadow = args.shadow     || '0px 0px 0px #000'
     @size = args.size         || { width: 10, height: 10 }
     @velocity = args.velocity || { x: 0, y: 0 }
-    @angularVelocity = args.angularVelocity || 0
     @speed = args.speed       || 1
     @debug = args.debug       || false
     @fixed = args.fixed       || false # By default, moves with camera
+    @angularVelocity = args.angularVelocity || 0
 
-    @path = args.path if args.path  # Custom drawing function
+    @color  = args.color  if args.color
+    @border = args.border if args.border
+    @shadow = args.shadow if args.shadow
+    @path   = args.path   if args.path  # Custom drawing function
     @anchor = { x: @size.width / 2, y: @size.height / 2 }
-    @canvas = document.createElement 'canvas' # Internal drawing cache
+    @canvas = document.createElement('canvas') # Internal drawing cache
     @dirty = true   # Trigger initial cache draw
 
   ###
@@ -86,47 +86,31 @@ class Shape extends GameObject
   drawCanvasCache: ->
     return if @canvas is undefined
 
-    # Canvas cache needs to be large enough to handle 
-    # shape size, border, and shadow
+    # Canvas cache needs to be large enough to handle shape size, border, and shadow
     @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
     @canvas.height = @size.height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
-    context = @canvas.getContext '2d'
+    @setAnchorPoint()
+
+    context = @canvas.getContext('2d')
     context.lineJoin = 'round'
 
     context.beginPath()
-    # TODO: ensure correctness of this
-    x = @size.width / 2 + @_border.width / 2
-    y = @size.height / 2 + @_border.width / 2
-
-    if @_shadow.blur > 0
-      x += @_shadow.blur / 2
-      y += @_shadow.blur / 2
-
-    # Move anchor negatively if shadow is also negative
-    x -= @_shadow.x if @_shadow.x < 0
-    y -= @_shadow.y if @_shadow.y < 0
-
-    # Set anchor point (midpoint of shape)
-    @anchor.x = x
-    @anchor.y = y
 
     # Draw anchor point and border in red
     if @debug
       context.lineWidth = 1
       context.strokeStyle = '#f00'
       context.strokeRect 0, 0, @canvas.width, @canvas.height
-      context.arc x, y, 3, 0, 2 * Math.PI, false
+      context.arc @anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false
       context.stroke()
 
-    context.translate x, y
+    context.translate @anchor.x, @anchor.y
 
     if @path
       @_path context
     else
       switch @vertices
-        when 1
-          context.arc(0, 0, @size.width / 2, 0, 2 * Math.PI) # x, y, radius, startAngle, endAngle
         when 2
           context.moveTo(-@size.width / 2, -@size.height / 2)
           context.lineTo(@size.width / 2, @size.height / 2)
@@ -141,6 +125,8 @@ class Shape extends GameObject
           context.lineTo(@size.width / 2, @size.height / 2)
           context.lineTo(-@size.width / 2, @size.height / 2)
           context.lineTo(-@size.width / 2, -@size.height / 2)
+        else
+          context.arc(0, 0, @size.width / 2, 0, 2 * Math.PI) # x, y, radius, startAngle, endAngle
 
     context.closePath()
 
@@ -169,6 +155,26 @@ class Shape extends GameObject
       context.stroke()
 
     @dirty = false
+
+  ###
+  @description Find the midpoint of the shape
+  ###
+  setAnchorPoint: ->
+    # TODO: ensure correctness of this
+    x = @size.width / 2 + @_border.width / 2
+    y = @size.height / 2 + @_border.width / 2
+
+    if @_shadow.blur > 0
+      x += @_shadow.blur / 2
+      y += @_shadow.blur / 2
+
+    # Move negatively if shadow is also negative
+    x -= @_shadow.x if @_shadow.x < 0
+    y -= @_shadow.y if @_shadow.y < 0
+
+    # Set anchor point (midpoint of shape)
+    @anchor.x = x
+    @anchor.y = y
 
   ###
   @description Draw object

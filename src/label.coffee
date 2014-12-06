@@ -8,10 +8,11 @@ class Label extends Shape
     @_text = 'text goes here'
     @_alignment = 'center'
 
+    @fixed = true # By default, does not move with camera
     @font = args.font if args.font
     @text = args.text if args.text
     @alignment = args.alignment if args.alignment # allowed values: "left", "right", "center", "start", "end"
-    @fixed = true # By default, does not move with camera
+    @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
   ###
   @description Draw object onto internal <canvas> cache
@@ -48,28 +49,17 @@ class Label extends Shape
     context.textAlign = @alignment  # TODO: alignment is broken for anything not "center"
     context.textBaseline = 'middle' # top, hanging, middle, alphabetic, ideographic, bottom
 
-    x = @size.width / 2 + @_border.width / 2
-    y = @size.height / 2 + @_border.width / 2
-
-    if @_shadow.blur > 0
-      x += @_shadow.blur / 2
-      y += @_shadow.blur / 2
-
-    x -= @_shadow.x if @_shadow.x < 0
-    y -= @_shadow.y if @_shadow.y < 0
-
-    @anchor.x = x
-    @anchor.y = y
+    @setAnchorPoint()
 
     # Debug
     if @debug
       context.lineWidth = 1
       context.strokeStyle = '#f00'
       context.strokeRect 0, 0, @canvas.width, @canvas.height
-      context.arc x, y, 3, 0, 2 * Math.PI, false
+      context.arc @anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false
       context.stroke()
 
-    context.translate x, y
+    context.translate @anchor.x, @anchor.y
 
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
       context.shadowOffsetX = @_shadow.x
