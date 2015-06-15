@@ -2,11 +2,18 @@ Pool = require './pool.coffee'
 
 class GameObject
   constructor: (args = {}) ->
-    @position = args.position || { x: 0, y: 0 }
     @fixed = args.fixed       || false     # static positioning for UI elements
     @scale = args.scale       || 1
     @rotation = args.rotation || 0
     @alpha = args.alpha       || 1
+
+    coords = args.position.match(/^(\d+px) (\d+px)$/)
+    if coords && coords.length > 0
+      @position = { x: coords[1], y: coords[2] }
+    else if typeof args.position == 'object' && args.position.x && args.position.y
+      @position = { x: args.position.x, y: args.position.y }
+    else
+      @position = { x: 0, y: 0 }
 
     @children = new Pool()
 

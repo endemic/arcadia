@@ -9,17 +9,19 @@ class Button extends Shape
     @label = args.label || new Label()
     @label.drawCanvasCache() # Draw cache to determine size of text
 
-    args.size =
-      width: @label.size.width + @padding
-      height: @label.size.height + @padding
+    unless args.size
+      args.size =
+        width: @label.size.width + @padding
+        height: @label.size.height + @padding
 
     super args
 
-    @label.position = { x: 0, y: 0 }
+    #@label.position = { x: 0, y: 0 }
     @label.fixed = false
     @add(@label)
 
     @fixed = true
+    @action = args.action
 
     # Attach event listeners
     @onPointEnd = @onPointEnd.bind(@)
@@ -30,14 +32,14 @@ class Button extends Shape
   @description If touch/mouse end is inside button, execute the user-supplied callback
   ###
   onPointEnd: (event) ->
-    return if typeof @onUp != 'function'
+    return if typeof @action != 'function'
 
     Arcadia.getPoints(event)
 
     i = Arcadia.instance.points.length
     while i--
       if @containsPoint(Arcadia.instance.points[i].x, Arcadia.instance.points[i].y)
-        @onUp()
+        @action()
         return
 
   ###

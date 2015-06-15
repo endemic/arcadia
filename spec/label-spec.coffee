@@ -16,5 +16,5 @@ describe 'Arcadia.Label', ->
     expect(=> @label.draw(@context)).not.toThrow()
 
   it 'can get its height/width', ->
-    expect(@label.width).toBe 94
-    expect(@label.height).toBe 16
+    expect(@label.size.width).toBe 94
+    expect(@label.size.height).toBe 16

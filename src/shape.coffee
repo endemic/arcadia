@@ -93,7 +93,7 @@ class Shape extends GameObject
     @setAnchorPoint()
 
     context = @canvas.getContext('2d')
-    context.lineJoin = 'round'
+    context.lineJoin = 'miter'
 
     context.beginPath()
 

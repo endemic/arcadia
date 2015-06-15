@@ -6,6 +6,11 @@
 * [ ] Handle making canvas cache large enough for shadow/blur
 * [ ] Allow strings to be passed for border, font, shadow, etc. instead of objects - use setter methods
 * [ ] Ensure correct anchor point for shapes when using large shadows
+* [ ] Inset borders so they don't make shapes actually larger
+* [ ] RGBA colors don't work for shadows
+* [ ] Button "onPointEnd" event listener not getting touch coords on mobile
+* [ ] Canvas scaling when pinned to screen in Android is strange
+* [ ] Make getters/setters for size & vertices
 * [ ] Rename Emitter to "Particles" or something
 * [ ] Update particle emitter to emit particles infinitely; can turn on/off
 * [ ] Add additional effects to particles: rotate, fade, scale, etc.
@@ -17,3 +22,4 @@
 * [ ] Add "Tween" class to GameObjects
 * [ ] Global effects - flash, shake, etc.
 * [ ] Refactor offset/child drawing? (perhaps a recursive strategy)
+* [ ] Children don't inherit scale/rotation of their parents
