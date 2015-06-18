@@ -25,25 +25,24 @@
 	}
 	</style>
 
-	<script type="text/javascript" src="../dist/arcadia.js"></script>
+	<!-- Engine -->
+	<script src="../../dist/arcadia.js"></script>
 
-	<!-- scenes -->
-	<script type="text/javascript" src="game.js"></script>
-	<script type="text/javascript" src="title.js"></script>
+	<!-- Scenes -->
+	<script src="title-scene.js"></script>
+	<script src="game-scene.js"></script>
 
-	<!-- objects -->
-	<script type="text/javascript" src="player.js"></script>
-	<script type="text/javascript" src="enemy.js"></script>
-	<script type="text/javascript" src="player-bullet.js"></script>
-	<script type="text/javascript" src="enemy-bullet.js"></script>
+	<!-- Objects -->
+	<script src="asteroid.js"></script>
+	<script src="ship.js"></script>
 
 	<script type="text/javascript">
 		/* Instantiate game object */
 		window.onload = function () {
 			var game = new Arcadia.Game({
-				width: 320,
-				height: 568,
-				scene: Title,
+				width: 640,
+				height: 480,
+				scene: AsteroidsTitleScene,
 				fitWindow: true
 			});
 		};

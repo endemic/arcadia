@@ -15,9 +15,6 @@ class Game
     # If game element is not at (0, 0) (upper left), clicks/touches need to be offset
     Arcadia.OFFSET = { x: 0, y: 0 }
 
-    # Static reference to current game instance
-    Arcadia.instance = @
-
     @element = document.createElement('div')
     @element.id = 'arcadia'
 
@@ -52,6 +49,13 @@ class Game
 
     # Stores objects representing mouse/touch input
     @points = []
+
+    # Static reference to current game instance
+    Arcadia.instance = @
+    # Static reference to array of point objects
+    Arcadia.points = @points
+    # Static reference to DOM element the game is attached to
+    Arcadia.element = @element
 
     # Bind event handler callbacks
     @onResize = @onResize.bind @
@@ -132,7 +136,7 @@ class Game
   TODO: Generates garbage
   ###
   onPointEnd: (event) ->
-    Arcadia.getPoints event
+    Arcadia.getPoints(event)
 
     if event.type.indexOf('mouse') != -1
       @element.removeEventListener('mousemove', @onPointMove, false)

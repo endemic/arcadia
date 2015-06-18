@@ -1,0 +1,55 @@
+<html>
+<head>
+	<title>Arcadia</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta name="mobile-web-app-capable" content="yes">                            
+	<meta name="apple-mobile-web-app-capable" content="yes">                      
+	<meta name="apple-mobile-web-app-status-bar-style" content="black"> 
+
+	<style type="text/css">
+	body {
+		background: #ccc;
+		padding: 0; 
+		margin: 0; 
+	}
+
+	#arcadia, #arcadia canvas {
+		/*-webkit-touch-callout: none;*/
+		/*-webkit-user-select: none;*/
+		/*-moz-user-select: none;*/
+		/*-ms-user-select: none;*/
+		/*user-select: none;*/
+		/*outline: none;*/
+		-webkit-tap-highlight-color: rgba(255, 255, 255, 0); 
+	}
+	</style>
+
+	<script type="text/javascript" src="../../dist/arcadia.js"></script>
+
+	<!-- scenes -->
+	<script type="text/javascript" src="game.js"></script>
+	<script type="text/javascript" src="title.js"></script>
+
+	<!-- objects -->
+	<script type="text/javascript" src="player.js"></script>
+	<script type="text/javascript" src="enemy.js"></script>
+	<script type="text/javascript" src="player-bullet.js"></script>
+	<script type="text/javascript" src="enemy-bullet.js"></script>
+
+	<script type="text/javascript">
+		/* Instantiate game object */
+		window.onload = function () {
+			var game = new Arcadia.Game({
+				width: 320,
+				height: 568,
+				scene: Title,
+				fitWindow: true
+			});
+		};
+	</script>
+</head>
+<body>
+
+</body>
+</html>

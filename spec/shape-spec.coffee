@@ -6,16 +6,19 @@ describe 'Arcadia.Shape', ->
     @shape = null
 
   describe 'updating object properties', ->
-    describe 'width', ->
-      it 're-draws internal cache', ->
+    beforeEach ->
+      @canvas = document.createElement('canvas')
+      @context = @canvas.getContext('2d')
+
+    describe 'size', ->
+      it 'sets the `dirty` flag triggering a redraw', ->
         spyOn @shape, 'drawCanvasCache'
-        @shape.width = 100
+        @shape.size = { width: 10, height: 10 }
+        @shape.draw(@context)
         expect(@shape.drawCanvasCache).toHaveBeenCalled()
 
-  it 'accepts a string for position', ->
-    @shape = new Arcadia.Shape({
-      position: '-5px 10px'
-    })
+  xit 'accepts a string for position', ->
+    @shape.position = '-5px 10px'
     expect(@shape.position.x).toBe(-5)
     expect(@shape.position.y).toBe(10)
 

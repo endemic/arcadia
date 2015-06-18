@@ -1,5 +1,5 @@
 !function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Arcadia=e():"undefined"!=typeof global?global.Arcadia=e():"undefined"!=typeof self&&(self.Arcadia=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function() {
+var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};(function() {
   var Arcadia, nowOffset;
 
   if (window.requestAnimationFrame === void 0) {
@@ -35,9 +35,7 @@
     Sprite: require('./sprite.coffee')
   };
 
-  module.exports = Arcadia;
-
-  Arcadia.fps = 0;
+  Arcadia.FPS = 60;
 
   Arcadia.garbageCollected = false;
 
@@ -48,21 +46,21 @@
   */
 
 
-  Arcadia.env = (function() {
+  Arcadia.ENV = (function() {
     var agent, android, firefox, ios, mobile;
     agent = navigator.userAgent.toLowerCase();
-    android = (agent.match(/android/i) && agent.match(/android/i).length > 0) || false;
-    ios = (agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length) > 0 || false;
-    firefox = (agent.match(/firefox/i) && agent.match(/firefox/i).length > 0) || false;
-    mobile = ((agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || false) || android;
-    return {
+    android = !!(agent.match(/android/i) && agent.match(/android/i).length > 0);
+    ios = !!(agent.match(/ip(hone|od|ad)/i) && agent.match(/ip(hone|od|ad)/i).length > 0);
+    firefox = !!(agent.match(/firefox/i) && agent.match(/firefox/i).length > 0);
+    mobile = !!(agent.match(/mobile/i) && agent.match(/mobile/i).length > 0) || android;
+    return Object.freeze({
       android: android,
       ios: ios,
       firefox: firefox,
       mobile: mobile,
       desktop: !mobile,
       cordova: window.cordova !== void 0
-    };
+    });
   })();
 
   /*
@@ -75,8 +73,7 @@
       throw "Invalid scene!";
     }
     Arcadia.instance.active.destroy();
-    Arcadia.instance.active = new SceneClass();
-    return Arcadia.instance.active.transition();
+    return Arcadia.instance.active = new SceneClass();
   };
 
   /*
@@ -87,20 +84,22 @@
 
   Arcadia.getPoints = function(event) {
     var i, _results;
+    while (Arcadia.points.length > 0) {
+      Arcadia.points.pop();
+    }
     if (event.type.indexOf('mouse') !== -1) {
-      Arcadia.instance.points.length = 1;
-      return Arcadia.instance.points.coordinates[0] = {
+      return Arcadia.points.unshift({
         x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
         y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-      };
+      });
     } else {
-      Arcadia.instance.points.length = event.touches.length;
-      i = 0;
+      i = event.touches.length;
       _results = [];
-      while (i < length) {
-        Arcadia.instance.points.coordinates[i].x = (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE;
-        Arcadia.instance.points.coordinates[i].y = (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE;
-        _results.push(i += 1);
+      while (i--) {
+        _results.push(Arcadia.points.unshift({
+          x: (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
+          y: (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
+        }));
       }
       return _results;
     }
@@ -180,144 +179,47 @@
     return Arcadia.currentMusic = null;
   };
 
+  module.exports = global.Arcadia = Arcadia;
+
 }).call(this);
 
 
 },{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(require,module,exports){
 (function() {
-  var Button, GameObject,
+  var Button, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  Shape = require('./shape.coffee');
 
   Button = (function(_super) {
     __extends(Button, _super);
 
     function Button(args) {
+      var Arcadia, Label;
       if (args == null) {
         args = {};
       }
-      Button.__super__.constructor.apply(this, arguments);
-      this.label = new Arcadia.Label(args);
-      this.label.position = {
-        x: 0,
-        y: 0
-      };
+      Arcadia = require('./arcadia.coffee');
+      Label = require('./label.coffee');
+      this.padding = args.padding || 10;
+      this.label = args.label || new Label();
+      this.label.drawCanvasCache();
+      if (!args.size) {
+        args.size = {
+          width: this.label.size.width + this.padding,
+          height: this.label.size.height + this.padding
+        };
+      }
+      Button.__super__.constructor.call(this, args);
       this.label.fixed = false;
       this.add(this.label);
-      this.height = this.label.height;
-      this.width = this.label.width;
-      this.padding = args.padding || 10;
-      this.anchor = {
-        x: this.width / 2,
-        y: this.height / 2
-      };
       this.fixed = true;
+      this.action = args.action;
       this.onPointEnd = this.onPointEnd.bind(this);
-      Arcadia.instance.element.addEventListener('mouseup', this.onPointEnd, false);
-      Arcadia.instance.element.addEventListener('touchend', this.onPointEnd, false);
-      this.canvas = document.createElement('canvas');
-      this.drawCanvasCache();
+      Arcadia.element.addEventListener('mouseup', this.onPointEnd, false);
+      Arcadia.element.addEventListener('touchend', this.onPointEnd, false);
     }
-
-    /*
-    @description Draw object
-    @param {CanvasRenderingContext2D} context
-    */
-
-
-    Button.prototype.draw = function(context, offsetX, offsetY) {
-      if (offsetX == null) {
-        offsetX = 0;
-      }
-      if (offsetY == null) {
-        offsetY = 0;
-      }
-      Button.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-      if (this.fixed) {
-        offsetX = offsetY = 0;
-      }
-      context.translate(this.position.x + offsetX, this.position.y + offsetY);
-      if (this.scale !== 1) {
-        context.scale(this.scale, this.scale);
-      }
-      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
-        context.rotate(this.rotation);
-      }
-      if (this.alpha < 1) {
-        context.globalAlpha = this.alpha;
-      }
-      context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
-      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
-        context.rotate(-this.rotation);
-      }
-      context.translate(-this.position.x - offsetX, -this.position.y - offsetY);
-      if (this.scale !== 1) {
-        context.scale(1, 1);
-      }
-      if (this.alpha < 1) {
-        return context.globalAlpha = 1;
-      }
-    };
-
-    /*
-    @description Draw object onto internal <canvas> cache
-    */
-
-
-    Button.prototype.drawCanvasCache = function() {
-      var context, x, y;
-      if (this.canvas === void 0) {
-        return;
-      }
-      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur + this.padding;
-      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur + this.padding;
-      x = this.width / 2 + this._border.width / 2 + this.padding / 2;
-      y = this.height / 2 + this._border.width / 2 + this.padding / 2;
-      if (this._shadow.blur > 0) {
-        x += this._shadow.blur / 2;
-        y += this._shadow.blur / 2;
-      }
-      if (this._shadow.x < 0) {
-        x -= this._shadow.x;
-      }
-      if (this._shadow.y < 0) {
-        y -= this._shadow.y;
-      }
-      this.anchor.x = x;
-      this.anchor.y = y;
-      context = this.canvas.getContext('2d');
-      context.lineJoin = 'round';
-      context.beginPath();
-      context.translate(x, y);
-      context.moveTo(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2);
-      context.lineTo(this.width / 2 + this.padding / 2, -this.height / 2 - this.padding / 2);
-      context.lineTo(this.width / 2 + this.padding / 2, this.height / 2 + this.padding / 2);
-      context.lineTo(-this.width / 2 - this.padding / 2, this.height / 2 + this.padding / 2);
-      context.lineTo(-this.width / 2 - this.padding / 2, -this.height / 2 - this.padding / 2);
-      context.closePath();
-      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
-        context.shadowOffsetX = this._shadow.x;
-        context.shadowOffsetY = this._shadow.y;
-        context.shadowBlur = this._shadow.blur;
-        context.shadowColor = this._shadow.color;
-      }
-      if (this._color) {
-        context.fillStyle = this._color;
-        context.fill();
-      }
-      if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0;
-        context.shadowBlur = 0;
-      }
-      if (this._border.width && this._border.color) {
-        context.lineWidth = this._border.width;
-        context.strokeStyle = this._border.color;
-        return context.stroke();
-      }
-    };
 
     /*
     @description If touch/mouse end is inside button, execute the user-supplied callback
@@ -326,15 +228,13 @@
 
     Button.prototype.onPointEnd = function(event) {
       var i;
-      if (typeof this.onUp !== 'function') {
+      if (typeof this.action !== 'function') {
         return;
       }
-      Arcadia.getPoints(event);
-      i = Arcadia.instance.points.length;
+      i = Arcadia.points.length;
       while (i--) {
-        if (this.containsPoint(Arcadia.instance.points.coordinates[i].x, Arcadia.instance.points.coordinates[i].y)) {
-          this.onUp();
-          return;
+        if (this.containsPoint(Arcadia.points[i])) {
+          return this.action();
         }
       }
     };
@@ -344,8 +244,8 @@
     */
 
 
-    Button.prototype.containsPoint = function(x, y) {
-      return x < this.position.x + this.width / 2 + this.padding / 2 && x > this.position.x - this.width / 2 - this.padding / 2 && y < this.position.y + this.height / 2 + this.padding / 2 && y > this.position.y - this.height / 2 - this.padding / 2;
+    Button.prototype.containsPoint = function(point) {
+      return point.x < this.position.x + this.size.width / 2 + this.padding / 2 && point.x > this.position.x - this.size.width / 2 - this.padding / 2 && point.y < this.position.y + this.size.height / 2 + this.padding / 2 && point.y > this.position.y - this.size.height / 2 - this.padding / 2;
     };
 
     /*
@@ -354,8 +254,8 @@
 
 
     Button.prototype.destroy = function() {
-      Arcadia.instance.element.removeEventListener('mouseup', this.onPointEnd, false);
-      return Arcadia.instance.element.removeEventListener('touchend', this.onPointEnd, false);
+      Arcadia.element.removeEventListener('mouseup', this.onPointEnd, false);
+      return Arcadia.element.removeEventListener('touchend', this.onPointEnd, false);
     };
 
     /*
@@ -368,20 +268,21 @@
         return this.label.font;
       },
       set: function(font) {
-        return this.label.font = font;
+        this.label.font = font;
+        return this.label.dirty = true;
       }
     });
 
     return Button;
 
-  })(GameObject);
+  })(Shape);
 
   module.exports = Button;
 
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],3:[function(require,module,exports){
+},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(require,module,exports){
 (function() {
   var Emitter, GameObject, Pool, Shape,
     __hasProp = {}.hasOwnProperty,
@@ -498,29 +399,51 @@
     /*
      * @constructor
      * @description Main "game" object; sets up screens, input, etc.
-     * @param {String} [width=640] Width of game view
-     * @param {Number} [height=480] Height of game view
-     * @param {Boolean} [scaleToFit=true] Full screen or not
+     * @param {Object} args Config object. Allowed keys: width, height, scene, fitWindow
     */
 
-    function Game(width, height, SceneClass, scaleToFit) {
-      if (scaleToFit == null) {
-        scaleToFit = true;
+    function Game(args) {
+      var Arcadia;
+      if (args == null) {
+        args = {};
       }
       this.update = __bind(this.update, this);
-      width = parseInt(width, 10) || 640;
-      height = parseInt(height, 10) || 480;
-      Arcadia.WIDTH = width;
-      Arcadia.HEIGHT = height;
+      Arcadia = require('./arcadia.coffee');
+      Arcadia.WIDTH = parseInt(args.width, 10) || 320;
+      Arcadia.HEIGHT = parseInt(args.height, 10) || 480;
       Arcadia.SCALE = 1;
       Arcadia.OFFSET = {
         x: 0,
         y: 0
       };
-      Arcadia.instance = this;
       this.element = document.createElement('div');
-      this.element['id'] = 'arcadia';
+      this.element.id = 'arcadia';
+      this.canvas = document.createElement('canvas');
+      this.canvas.width = Arcadia.WIDTH;
+      this.canvas.height = Arcadia.HEIGHT;
+      this.element.appendChild(this.canvas);
       document.body.appendChild(this.element);
+      this.context = this.canvas.getContext('2d');
+      this.input = {
+        'left': false,
+        'up': false,
+        'right': false,
+        'down': false,
+        'w': false,
+        'a': false,
+        's': false,
+        'd': false,
+        'enter': false,
+        'escape': false,
+        'space': false,
+        'control': false,
+        'z': false,
+        'x': false
+      };
+      this.points = [];
+      Arcadia.instance = this;
+      Arcadia.points = this.points;
+      Arcadia.element = this.element;
       this.onResize = this.onResize.bind(this);
       this.onPointStart = this.onPointStart.bind(this);
       this.onPointMove = this.onPointMove.bind(this);
@@ -539,68 +462,15 @@
       this.element.addEventListener('touchmove', function(e) {
         return e.preventDefault();
       });
-      if (scaleToFit === true) {
-        this.onResize();
-        window.addEventListener('resize', this.onResize, false);
-      }
       if (window.cordova !== void 0) {
         document.addEventListener('pause', this.pause, false);
         document.addEventListener('resume', this.resume, false);
       }
-      this.input = {
-        'left': false,
-        'up': false,
-        'right': false,
-        'down': false,
-        'w': false,
-        'a': false,
-        's': false,
-        'd': false,
-        'enter': false,
-        'escape': false,
-        'space': false,
-        'control': false,
-        'z': false,
-        'x': false
-      };
-      this.points = {
-        length: 0,
-        coordinates: [
-          {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }, {
-            x: null,
-            y: null
-          }
-        ]
-      };
-      this.active = new SceneClass();
-      this.active.transition();
+      this.active = new args.scene();
+      if (args.fitWindow) {
+        this.onResize();
+        window.addEventListener('resize', this.onResize, false);
+      }
       this.start();
     }
 
@@ -774,17 +644,36 @@
       var delta;
       delta = currentDelta - this.previousDelta;
       this.previousDelta = currentDelta;
-      Arcadia.fps = Arcadia.fps * 0.9 + 1000 / delta * 0.1;
-      if ((window.performance.memory != null) && window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap) {
-        Arcadia.garbageCollected = true;
-      }
+      Arcadia.FPS = Arcadia.FPS * 0.9 + 1000 / delta * 0.1;
       if (window.performance.memory != null) {
+        if (window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap) {
+          Arcadia.garbageCollected = true;
+        }
         Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
       }
-      this.active.draw();
+      this.active.draw(this.context);
       this.active.update(delta / 1000);
       Arcadia.garbageCollected = false;
       return this.updateId = window.requestAnimationFrame(this.update);
+    };
+
+    /*
+    @description Change size of canvas based on pixel density
+    */
+
+
+    Game.prototype.setPixelRatio = function() {
+      if (window.devicePixelRatio === void 0) {
+        window.devicePixelRatio = 1;
+      }
+      if (this.context.backingStorePixelRatio === void 0) {
+        this.context.backingStorePixelRatio = this.context.webkitBackingStorePixelRatio || 1;
+      }
+      Arcadia.PIXEL_RATIO = window.devicePixelRatio / this.context.backingStorePixelRatio;
+      this.canvas.width = Arcadia.WIDTH * Arcadia.PIXEL_RATIO;
+      this.canvas.height = Arcadia.HEIGHT * Arcadia.PIXEL_RATIO;
+      this.canvas.style.width = "" + Arcadia.WIDTH + "px";
+      return this.canvas.style.height = "" + Arcadia.HEIGHT + "px";
     };
 
     /*
@@ -823,8 +712,8 @@
       Arcadia.SCALE = height / Arcadia.HEIGHT;
       Arcadia.OFFSET.x = (window.innerWidth - width) / 2;
       Arcadia.OFFSET.y = (window.innerHeight - height) / 2;
-      this.element.setAttribute("style", "position: relative; width: " + width + "px; height: " + height + "px; margin: " + margin + ";");
-      return this.active.resize();
+      this.element.setAttribute('style', "position: relative; width: " + width + "px; height: " + height + "px; margin: " + margin + ";");
+      return this.canvas.setAttribute('style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Arcadia.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Arcadia.SCALE + "); transform-origin: 0 0;");
     };
 
     return Game;
@@ -836,7 +725,7 @@
 }).call(this);
 
 
-},{}],5:[function(require,module,exports){
+},{"./arcadia.coffee":1}],5:[function(require,module,exports){
 (function() {
   var GameObject, Pool;
 
@@ -847,109 +736,23 @@
       if (args == null) {
         args = {};
       }
-      this.position = args.position || {
-        x: 0,
-        y: 0
-      };
       this.fixed = args.fixed || false;
       this.scale = args.scale || 1;
       this.rotation = args.rotation || 0;
       this.alpha = args.alpha || 1;
-      this._color = args.color || '#fff';
-      this._border = {
-        width: 0,
-        color: '#f00'
-      };
-      if (typeof args.border === 'object') {
-        this._border.width = args.border.width;
-        this._border.color = args.border.color;
-      } else if (typeof args.border === 'string') {
-        this.border = args.border;
-      }
-      this._shadow = {
-        x: 0,
-        y: 0,
-        blur: 0,
-        color: null
-      };
-      if (typeof args.shadow === 'object') {
-        this._shadow.x = args.shadow.x;
-        this._shadow.y = args.shadow.y;
-        this._shadow.blur = args.shadow.blur;
-        this._shadow.color = args.shadow.color;
-      } else if (typeof args.shadow === 'string') {
-        this.shadow = args.shadow;
+      if (typeof args.position === 'object' && args.position.x && args.position.y) {
+        this.position = {
+          x: args.position.x,
+          y: args.position.y
+        };
+      } else {
+        this.position = {
+          x: 0,
+          y: 0
+        };
       }
       this.children = new Pool();
-      this.tmp = 0;
     }
-
-    /*
-    @description Getter/setter for color
-    */
-
-
-    GameObject.property('color', {
-      get: function() {
-        return this._color;
-      },
-      set: function(color) {
-        this._color = color;
-        if (this.canvas) {
-          return this.drawCanvasCache();
-        }
-      }
-    });
-
-    /*
-    @description Getter/setter for border
-    */
-
-
-    GameObject.property('border', {
-      get: function() {
-        return "" + this._border.width + "px " + this._border.color;
-      },
-      set: function(border) {
-        var values;
-        values = border.match(/^(\d+px) (.+)$/);
-        if ((values != null ? values.length : void 0) === 3) {
-          this._border.width = parseInt(values[1], 10);
-          this._border.color = values[2];
-          if (this.canvas) {
-            return this.drawCanvasCache();
-          }
-        } else {
-          throw new Error('Use format "(width)px (color)" when setting borders');
-        }
-      }
-    });
-
-    /*
-    @description Getter/setter for shadow
-    */
-
-
-    GameObject.property('shadow', {
-      get: function() {
-        return "" + this._shadow.x + "px " + this._shadow.y + "px " + this._shadow.blur + "px " + this._shadow.color;
-      },
-      set: function(shadow) {
-        var values;
-        values = shadow.match(/^(.+) (.+) (.+) (.+)$/);
-        if ((values != null ? values.length : void 0) === 5) {
-          this._shadow.x = parseInt(values[1], 10);
-          this._shadow.y = parseInt(values[2], 10);
-          this._shadow.blur = parseInt(values[3], 10);
-          this._shadow.color = values[4];
-          if (this.canvas) {
-            return this.drawCanvasCache();
-          }
-        } else {
-          throw new Error('Use format "(x)px (y)px (blur)px (color)" when setting shadows');
-        }
-      }
-    });
 
     /*
     @description Overridden in child objects
@@ -1037,11 +840,11 @@
 
 },{"./pool.coffee":7}],6:[function(require,module,exports){
 (function() {
-  var GameObject, Label,
+  var Label, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  Shape = require('./shape.coffee');
 
   Label = (function(_super) {
     __extends(Label, _super);
@@ -1055,18 +858,22 @@
         size: 10,
         family: 'monospace'
       };
-      if (typeof args.font === 'object') {
-        this._font.size = args.font.size;
-        this._font.family = args.font.family;
-      } else if (typeof args.font === 'string') {
+      this._text = 'text goes here';
+      this._alignment = 'center';
+      this.fixed = true;
+      if (args.font) {
         this.font = args.font;
       }
-      this.text = args.text || 'text goes here';
-      this.fixed = args.fixed || true;
-      this.alignment = args.alignment || 'center';
-      this.debug = args.debug || false;
-      this.canvas = document.createElement('canvas');
-      this.drawCanvasCache();
+      if (args.text) {
+        this.text = args.text;
+      }
+      if (args.alignment) {
+        this.alignment = args.alignment;
+      }
+      this.anchor = {
+        x: this.size.width / 2,
+        y: this.size.height / 2
+      };
     }
 
     /*
@@ -1075,10 +882,11 @@
 
 
     Label.prototype.drawCanvasCache = function() {
-      var context, element, x, y;
+      var Arcadia, context, element;
       if (this.canvas === void 0) {
         return;
       }
+      Arcadia = require('./arcadia.coffee');
       context = this.canvas.getContext('2d');
       element = document.getElementById('text-dimensions');
       if (!element) {
@@ -1091,39 +899,26 @@
       element.style['font'] = this.font;
       element.style['line-height'] = 1;
       element.innerHTML = this.text;
-      this.width = element.offsetWidth;
-      this.height = element.offsetHeight;
+      this.size.width = element.offsetWidth;
+      this.size.height = element.offsetHeight;
       this.anchor = {
-        x: this.width / 2,
-        y: this.height / 2
+        x: this.size.width / 2,
+        y: this.size.height / 2
       };
-      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
-      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
+      this.canvas.width = this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
+      this.canvas.height = this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
       context.font = this.font;
       context.textAlign = this.alignment;
       context.textBaseline = 'middle';
-      x = this.width / 2 + this._border.width / 2;
-      y = this.height / 2 + this._border.width / 2;
-      if (this._shadow.blur > 0) {
-        x += this._shadow.blur / 2;
-        y += this._shadow.blur / 2;
-      }
-      if (this._shadow.x < 0) {
-        x -= this._shadow.x;
-      }
-      if (this._shadow.y < 0) {
-        y -= this._shadow.y;
-      }
-      this.anchor.x = x;
-      this.anchor.y = y;
+      this.setAnchorPoint();
       if (this.debug) {
         context.lineWidth = 1;
         context.strokeStyle = '#f00';
         context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
-        context.arc(x, y, 3, 0, 2 * Math.PI, false);
+        context.arc(this.anchor.x, this.anchor.y, 3, 0, 2 * Math.PI, false);
         context.stroke();
       }
-      context.translate(x, y);
+      context.translate(this.anchor.x, this.anchor.y);
       if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
         context.shadowOffsetX = this._shadow.x;
         context.shadowOffsetY = this._shadow.y;
@@ -1147,46 +942,6 @@
     };
 
     /*
-    @description Draw object
-    @param {CanvasRenderingContext2D} context
-    */
-
-
-    Label.prototype.draw = function(context, offsetX, offsetY) {
-      if (offsetX == null) {
-        offsetX = 0;
-      }
-      if (offsetY == null) {
-        offsetY = 0;
-      }
-      Label.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
-      if (this.fixed) {
-        offsetX = offsetY = 0;
-      }
-      context.translate(this.position.x + offsetX, this.position.y + offsetY);
-      if (this.scale !== 1) {
-        context.scale(this.scale, this.scale);
-      }
-      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
-        context.rotate(this.rotation);
-      }
-      if (this.alpha < 1) {
-        context.globalAlpha = this.alpha;
-      }
-      context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
-      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
-        context.rotate(-this.rotation);
-      }
-      context.translate(-this.position.x - offsetX, -this.position.y - offsetY);
-      if (this.scale !== 1) {
-        context.scale(1, 1);
-      }
-      if (this.alpha < 1) {
-        return context.globalAlpha = 1;
-      }
-    };
-
-    /*
     @description Getter/setter for font
     TODO: Handle bold text
     */
@@ -1202,21 +957,43 @@
         if (values.length === 3) {
           this._font.size = values[1];
           this._font.family = values[2];
-          return this.drawCanvasCache();
+          return this.dirty = true;
+        } else {
+          throw new Error('Use format "(size)px (font-family)" when setting Label font');
         }
+      }
+    });
+
+    Label.property('text', {
+      get: function() {
+        return this._text;
+      },
+      set: function(value) {
+        this._text = value;
+        return this.dirty = true;
+      }
+    });
+
+    Label.property('alignment', {
+      get: function() {
+        return this._alignment;
+      },
+      set: function(value) {
+        this._alignment = value;
+        return this.dirty = true;
       }
     });
 
     return Label;
 
-  })(GameObject);
+  })(Shape);
 
   module.exports = Label;
 
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],7:[function(require,module,exports){
+},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(require,module,exports){
 /*
 @description One possible way to store common recyclable objects.
 Assumes the objects you add will have an `active` property, and optionally an
@@ -1269,7 +1046,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (objectOrIndex === void 0) {
         throw 'Must specify an object/index to remove';
       }
-      index = objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
+      index = typeof objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
       if (index === -1) {
         return;
       }
@@ -1291,7 +1068,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     Pool.prototype.activate = function(objectOrIndex) {
       var index;
       if (objectOrIndex !== void 0) {
-        index = objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
+        index = typeof objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
         if (!((this.children.length > index && index >= this.length))) {
           return null;
         }
@@ -1319,14 +1096,12 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     /*
     @description Deactivate an active object at a particular object/index
-    TODO: Change this to "objectOrIndex"
     */
 
 
-    Pool.prototype.deactivate = function(index) {
-      if (typeof index === 'object') {
-        index = this.children.indexOf(index);
-      }
+    Pool.prototype.deactivate = function(objectOrIndex) {
+      var index;
+      index = typeof objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
       if (index >= this.length || index < 0) {
         return null;
       }
@@ -1414,9 +1189,11 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     __extends(Scene, _super);
 
     function Scene() {
+      var Arcadia;
       Scene.__super__.constructor.apply(this, arguments);
       this.canvas = document.createElement('canvas');
       this.context = this.canvas.getContext('2d');
+      Arcadia = require('./arcadia.coffee');
       this.camera = {
         target: null,
         viewport: {
@@ -1466,14 +1243,14 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Scene.prototype.draw = function() {
+    Scene.prototype.draw = function(context) {
       if (this.color) {
-        this.context.fillStyle = this.color;
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        context.fillStyle = this.color;
+        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
       } else {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
       }
-      return Scene.__super__.draw.call(this, this.context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
+      return Scene.__super__.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
     };
 
     /*
@@ -1482,10 +1259,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Scene.prototype.transition = function() {
-      this.canvas.setAttribute('width', Arcadia.WIDTH);
-      this.canvas.setAttribute('height', Arcadia.HEIGHT);
-      this.resize();
-      return Arcadia.instance.element.appendChild(this.canvas);
+      return console.log('Scene#transition');
     };
 
     /*
@@ -1494,20 +1268,11 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Scene.prototype.destroy = function() {
-      return Arcadia.instance.element.removeChild(this.canvas);
+      return console.log('Scene#destroy');
     };
 
     /*
-    @description Resize scene's <canvas>
-    */
-
-
-    Scene.prototype.resize = function() {
-      return this.canvas.setAttribute("style", "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Arcadia.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Arcadia.SCALE + "); transform-origin: 0 0;");
-    };
-
-    /*
-     * Getter/setter for camera target
+    @description Getter/setter for camera target
     */
 
 
@@ -1534,7 +1299,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],9:[function(require,module,exports){
+},{"./arcadia.coffee":1,"./gameobject.coffee":5}],9:[function(require,module,exports){
 (function() {
   var GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
@@ -1546,11 +1311,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     __extends(Shape, _super);
 
     /*
-     * @description Shape constructor
-     * @param {Number} x Position of shape on x-axis
-     * @param {Number} y Position of shape on y-axis
-     * @param {String} shape String representing what to draw
-     * @param {Number} size Size of shape in pixels
+    @description Shape constructor
+    @param {Object} args Object representing shape options
     */
 
 
@@ -1559,24 +1321,143 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         args = {};
       }
       Shape.__super__.constructor.call(this, args);
-      this.vertices = args.vertices || 4;
-      this.size = args.size || 10;
-      this.width = this.height = this.size;
-      this.anchor = {
-        x: this.width / 2,
-        y: this.height / 2
+      this.canvas = document.createElement('canvas');
+      this._color = '#fff';
+      this._border = {
+        width: 0,
+        color: '#fff'
       };
-      this.speed = args.speed || 1;
+      this._shadow = {
+        x: 0,
+        y: 0,
+        blur: 0,
+        color: '#fff'
+      };
+      this._vertices = 4;
+      this._size = {
+        width: 10,
+        height: 10
+      };
+      this.dirty = true;
       this.velocity = args.velocity || {
         x: 0,
         y: 0
       };
-      this.angularVelocity = args.angularVelocity || 0;
-      this._path = args.path || null;
+      this.acceleration = args.acceleration || {
+        x: 0,
+        y: 0
+      };
+      this.speed = args.speed || 1;
       this.debug = args.debug || false;
-      this.canvas = document.createElement('canvas');
-      this.drawCanvasCache();
+      this.fixed = args.fixed || false;
+      this.angularVelocity = args.angularVelocity || 0;
+      if (args.color) {
+        this.color = args.color;
+      }
+      if (args.border) {
+        this.border = args.border;
+      }
+      if (args.shadow) {
+        this.shadow = args.shadow;
+      }
+      if (args.vertices) {
+        this.vertices = args.vertices;
+      }
+      if (args.size) {
+        this.size = args.size;
+      }
+      if (args.path) {
+        this.path = args.path;
+      }
+      this.anchor = {
+        x: this.size.width / 2,
+        y: this.size.height / 2
+      };
     }
+
+    /*
+    @description Getter/setter for color
+    */
+
+
+    Shape.property('color', {
+      get: function() {
+        return this._color;
+      },
+      set: function(color) {
+        this._color = color;
+        return this.dirty = true;
+      }
+    });
+
+    /*
+    @description Getter/setter for border
+    */
+
+
+    Shape.property('border', {
+      get: function() {
+        return "" + this._border.width + "px " + this._border.color;
+      },
+      set: function(border) {
+        var values;
+        values = border.match(/^(\d+px) (.+)$/);
+        if ((values != null ? values.length : void 0) === 3) {
+          this._border.width = parseInt(values[1], 10);
+          this._border.color = values[2];
+          return this.dirty = true;
+        } else {
+          return console.warn('Use format "(width)px (color)" when setting borders');
+        }
+      }
+    });
+
+    /*
+    @description Getter/setter for shadow
+    */
+
+
+    Shape.property('shadow', {
+      get: function() {
+        return "" + this._shadow.x + "px " + this._shadow.y + "px " + this._shadow.blur + "px " + this._shadow.color;
+      },
+      set: function(shadow) {
+        var values;
+        values = shadow.match(/^(.+) (.+) (.+) (.+)$/);
+        if ((values != null ? values.length : void 0) === 5) {
+          this._shadow.x = parseInt(values[1], 10);
+          this._shadow.y = parseInt(values[2], 10);
+          this._shadow.blur = parseInt(values[3], 10);
+          this._shadow.color = values[4];
+          return this.dirty = true;
+        } else {
+          return console.warn('Use format "(x)px (y)px (blur)px (color)" when setting shadows');
+        }
+      }
+    });
+
+    Shape.property('vertices', {
+      get: function() {
+        return this._vertices;
+      },
+      set: function(verticies) {
+        this._vertices = verticies;
+        return this.dirty = true;
+      }
+    });
+
+    Shape.property('size', {
+      get: function() {
+        return this._size;
+      },
+      set: function(size) {
+        this._size = {
+          width: size.width,
+          height: size.height
+        };
+        return this.dirty = true;
+      }
+    });
 
     /*
     @description Getter/setter for path
@@ -1589,7 +1470,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       },
       set: function(path) {
         this._path = path;
-        return this.drawCanvasCache();
+        return this.dirty = true;
       }
     });
 
@@ -1599,64 +1480,47 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.drawCanvasCache = function() {
-      var context, i, offset, slice, x, y;
+      var context;
       if (this.canvas === void 0) {
         return;
       }
-      this.canvas.width = this.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
-      this.canvas.height = this.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
+      this.canvas.width = this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
+      this.canvas.height = this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
+      this.setAnchorPoint();
       context = this.canvas.getContext('2d');
-      context.lineJoin = 'round';
+      context.lineJoin = 'miter';
       context.beginPath();
-      x = this.width / 2 + this._border.width / 2;
-      y = this.height / 2 + this._border.width / 2;
-      if (this._shadow.blur > 0) {
-        x += this._shadow.blur / 2;
-        y += this._shadow.blur / 2;
-      }
-      if (this._shadow.x < 0) {
-        x -= this._shadow.x;
-      }
-      if (this._shadow.y < 0) {
-        y -= this._shadow.y;
-      }
-      this.anchor.x = x;
-      this.anchor.y = y;
       if (this.debug) {
         context.lineWidth = 1;
         context.strokeStyle = '#f00';
         context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
-        context.arc(x, y, 3, 0, 2 * Math.PI, false);
+        context.arc(this.anchor.x, this.anchor.y, 3, 0, 2 * Math.PI, false);
         context.stroke();
       }
-      context.translate(x, y);
+      context.translate(this.anchor.x, this.anchor.y);
       if (this.path) {
         this._path(context);
       } else {
-        i = this.vertices;
-        slice = 2 * Math.PI / this.vertices;
         switch (this.vertices) {
+          case 2:
+            context.moveTo(-this.size.width / 2, -this.size.height / 2);
+            context.lineTo(this.size.width / 2, this.size.height / 2);
+            break;
           case 3:
-            offset = -Math.PI / 2;
+            context.moveTo(0, -this.size.height / 2);
+            context.lineTo(this.size.width / 2, this.size.height / 2);
+            context.lineTo(-this.size.width / 2, this.size.height / 2);
+            context.lineTo(0, -this.size.height / 2);
             break;
           case 4:
-            offset = -Math.PI / 4;
-            break;
-          case 5:
-            offset = -Math.PI / 10;
-            break;
-          case 7:
-            offset = Math.PI / 14;
-            break;
-          case 9:
-            offset = -Math.PI / 18;
+            context.moveTo(-this.size.width / 2, -this.size.height / 2);
+            context.lineTo(this.size.width / 2, -this.size.height / 2);
+            context.lineTo(this.size.width / 2, this.size.height / 2);
+            context.lineTo(-this.size.width / 2, this.size.height / 2);
+            context.lineTo(-this.size.width / 2, -this.size.height / 2);
             break;
           default:
-            offset = 0;
-        }
-        context.moveTo(this.size / 2 * Math.cos(0 + offset), this.size / 2 * Math.sin(0 + offset));
-        while (i--) {
-          context.lineTo(this.size / 2 * Math.cos(i * slice + offset), this.size / 2 * Math.sin(i * slice + offset));
+            context.arc(0, 0, this.size.width / 2, 0, 2 * Math.PI);
         }
       }
       context.closePath();
@@ -1678,8 +1542,32 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this._border.width && this._border.color) {
         context.lineWidth = this._border.width;
         context.strokeStyle = this._border.color;
-        return context.stroke();
+        context.stroke();
       }
+      return this.dirty = false;
+    };
+
+    /*
+    @description Find the midpoint of the shape
+    */
+
+
+    Shape.prototype.setAnchorPoint = function() {
+      var x, y;
+      x = this.size.width / 2 + this._border.width / 2;
+      y = this.size.height / 2 + this._border.width / 2;
+      if (this._shadow.blur > 0) {
+        x += this._shadow.blur / 2;
+        y += this._shadow.blur / 2;
+      }
+      if (this._shadow.x < 0) {
+        x -= this._shadow.x;
+      }
+      if (this._shadow.y < 0) {
+        y -= this._shadow.y;
+      }
+      this.anchor.x = x;
+      return this.anchor.y = y;
     };
 
     /*
@@ -1698,7 +1586,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.fixed) {
         offsetX = offsetY = 0;
       }
-      Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       context.translate(this.position.x + offsetX, this.position.y + offsetY);
       if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
@@ -1709,6 +1596,9 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.alpha < 1) {
         context.globalAlpha = this.alpha;
       }
+      if (this.dirty) {
+        this.drawCanvasCache();
+      }
       context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
       if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
         context.rotate(-this.rotation);
@@ -1718,8 +1608,9 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         context.scale(1, 1);
       }
       if (this.alpha < 1) {
-        return context.globalAlpha = 1;
+        context.globalAlpha = 1;
       }
+      return Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
     };
 
     /*
@@ -1730,6 +1621,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Shape.prototype.update = function(delta) {
       Shape.__super__.update.call(this, delta);
+      this.velocity.x += this.acceleration.x;
+      this.velocity.y += this.acceleration.y;
       this.position.x += this.velocity.x * this.speed * delta;
       this.position.y += this.velocity.y * this.speed * delta;
       return this.rotation += this.angularVelocity * delta;

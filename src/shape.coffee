@@ -2,33 +2,41 @@ GameObject = require './gameobject.coffee'
 
 class Shape extends GameObject
   ###
-   * @description Shape constructor
-   * @param {Number} x Position of shape on x-axis
-   * @param {Number} y Position of shape on y-axis
-   * @param {String} shape String representing what to draw
-   * @param {Number} size Size of shape in pixels
+  @description Shape constructor
+  @param {Object} args Object representing shape options
   ###
   constructor: (args = {}) ->
-    super args
+    super(args)
 
-    @_border = { width: 0, color: '#000' }
-    @_shadow = { x: 0, y: 0, blur: 0, color: '#000' }
+    # Internal drawing cache
+    @canvas = document.createElement('canvas')
 
-    @vertices = args.vertices || 4
-    @size = args.size         || { width: 10, height: 10 }
+    # Default graphical options; changing these requires using setters/getters,
+    # since the cache would need to be redrawn
+    @_color    = '#fff';
+    @_border   = { width: 0, color: '#fff' }
+    @_shadow   = { x: 0, y: 0, blur: 0, color: '#fff' }
+    @_vertices = 4
+    @_size     = { width: 10, height: 10 }
+
+    # Trigger initial cache draw
+    @dirty = true
+
     @velocity = args.velocity || { x: 0, y: 0 }
+    @acceleration = args.acceleration || { x: 0, y: 0 }
     @speed = args.speed       || 1
     @debug = args.debug       || false
     @fixed = args.fixed       || false # By default, moves with camera
     @angularVelocity = args.angularVelocity || 0
 
-    @color  = args.color  if args.color
-    @border = args.border if args.border
-    @shadow = args.shadow if args.shadow
-    @path   = args.path   if args.path  # Custom drawing function
+    @color    = args.color  if args.color
+    @border   = args.border if args.border
+    @shadow   = args.shadow if args.shadow
+    @vertices = args.vertices if args.vertices
+    @size     = args.size if args.size
+
+    @path     = args.path   if args.path  # Custom drawing function
     @anchor = { x: @size.width / 2, y: @size.height / 2 }
-    @canvas = document.createElement('canvas') # Internal drawing cache
-    @dirty = true   # Trigger initial cache draw
 
   ###
   @description Getter/setter for color
@@ -43,7 +51,7 @@ class Shape extends GameObject
   @description Getter/setter for border
   ###
   @property 'border',
-    get: -> return "#{@_border.width}px #{@_border.color}"
+    get: -> "#{@_border.width}px #{@_border.color}"
     set: (border) ->
       values = border.match(/^(\d+px) (.+)$/)
 
@@ -52,13 +60,13 @@ class Shape extends GameObject
         @_border.color = values[2]
         @dirty = true
       else
-        throw new Error 'Use format "(width)px (color)" when setting borders'
+        console.warn('Use format "(width)px (color)" when setting borders')
 
   ###
   @description Getter/setter for shadow
   ###
   @property 'shadow',
-    get: -> return "#{@_shadow.x}px #{@_shadow.y}px #{@_shadow.blur}px #{@_shadow.color}"
+    get: -> "#{@_shadow.x}px #{@_shadow.y}px #{@_shadow.blur}px #{@_shadow.color}"
     set: (shadow) ->
       values = shadow.match(/^(.+) (.+) (.+) (.+)$/)
 
@@ -69,7 +77,19 @@ class Shape extends GameObject
         @_shadow.color = values[4] # TODO: rgba(x, x, x, x) doesn't work
         @dirty = true
       else
-        throw new Error 'Use format "(x)px (y)px (blur)px (color)" when setting shadows'
+        console.warn('Use format "(x)px (y)px (blur)px (color)" when setting shadows')
+
+  @property 'vertices',
+    get: -> @_vertices
+    set: (verticies) ->
+      @_vertices = verticies
+      @dirty = true
+
+  @property 'size',
+    get: -> @_size
+    set: (size) ->
+      @_size = { width: size.width, height: size.height }
+      @dirty = true
 
   ###
   @description Getter/setter for path
@@ -101,14 +121,14 @@ class Shape extends GameObject
     if @debug
       context.lineWidth = 1
       context.strokeStyle = '#f00'
-      context.strokeRect 0, 0, @canvas.width, @canvas.height
-      context.arc @anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false
+      context.strokeRect(0, 0, @canvas.width, @canvas.height)
+      context.arc(@anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false)
       context.stroke()
 
-    context.translate @anchor.x, @anchor.y
+    context.translate(@anchor.x, @anchor.y)
 
     if @path
-      @_path context
+      @_path(context)
     else
       switch @vertices
         when 2
@@ -184,32 +204,35 @@ class Shape extends GameObject
     offsetX = offsetY = 0 if @fixed
 
     # Set scale/rotation/alpha
-    context.translate @position.x + offsetX, @position.y + offsetY
-    context.scale @scale, @scale if @scale != 1
-    context.rotate @rotation if @rotation != 0 && @rotation != Math.PI * 2
+    context.translate(@position.x + offsetX, @position.y + offsetY)
+    context.scale(@scale, @scale) if @scale != 1
+    context.rotate(@rotation) if @rotation != 0 && @rotation != Math.PI * 2
     context.globalAlpha = @alpha if @alpha < 1
 
     # Update internal <canvas> cache if necessary
     @drawCanvasCache() if @dirty
 
-    # Draw cache
-    context.drawImage @canvas, -@anchor.x, -@anchor.y
+    # Draw from cache
+    context.drawImage(@canvas, -@anchor.x, -@anchor.y)
 
     # Reset scale/rotation/alpha
-    context.rotate -@rotation if @rotation != 0 && @rotation != Math.PI * 2
-    context.translate -@position.x - offsetX, -@position.y - offsetY
-    context.scale 1, 1 if @scale != 1
+    context.rotate(-@rotation) if @rotation != 0 && @rotation != Math.PI * 2
+    context.translate(-@position.x - offsetX, -@position.y - offsetY)
+    context.scale(1, 1) if @scale != 1
     context.globalAlpha = 1 if @alpha < 1
 
     # Draw child objects last, so they will be on the "top"
-    super context, @position.x + offsetX, @position.y + offsetY
+    super(context, @position.x + offsetX, @position.y + offsetY)
 
   ###
   @description Update object
   @param {Number} delta Time since last update (in seconds)
   ###
   update: (delta) ->
-    super delta
+    super(delta)
+
+    @velocity.x += @acceleration.x
+    @velocity.y += @acceleration.y
 
     @position.x += @velocity.x * @speed * delta
     @position.y += @velocity.y * @speed * delta

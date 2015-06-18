@@ -14,7 +14,7 @@ class Button extends Shape
         width: @label.size.width + @padding
         height: @label.size.height + @padding
 
-    super args
+    super(args)
 
     #@label.position = { x: 0, y: 0 }
     @label.fixed = false
@@ -25,8 +25,8 @@ class Button extends Shape
 
     # Attach event listeners
     @onPointEnd = @onPointEnd.bind(@)
-    Arcadia.instance.element.addEventListener('mouseup', @onPointEnd, false)
-    Arcadia.instance.element.addEventListener('touchend', @onPointEnd, false)
+    Arcadia.element.addEventListener('mouseup', @onPointEnd, false)
+    Arcadia.element.addEventListener('touchend', @onPointEnd, false)
 
   ###
   @description If touch/mouse end is inside button, execute the user-supplied callback
@@ -34,29 +34,25 @@ class Button extends Shape
   onPointEnd: (event) ->
     return if typeof @action != 'function'
 
-    Arcadia.getPoints(event)
-
-    i = Arcadia.instance.points.length
+    i = Arcadia.points.length
     while i--
-      if @containsPoint(Arcadia.instance.points[i].x, Arcadia.instance.points[i].y)
-        @action()
-        return
+      return @action() if @containsPoint(Arcadia.points[i])
 
   ###
   @description Helper method to determine if mouse/touch is inside button graphic
   ###
-  containsPoint: (x, y) ->
-    return x < @position.x + @size.width / 2 + @padding / 2 &&
-      x > @position.x - @size.width / 2 - @padding / 2 &&
-      y < @position.y + @size.height / 2 + @padding / 2 &&
-      y > @position.y - @size.height / 2 - @padding / 2
+  containsPoint: (point) ->
+    return point.x < @position.x + @size.width / 2 + @padding / 2 &&
+      point.x > @position.x - @size.width / 2 - @padding / 2 &&
+      point.y < @position.y + @size.height / 2 + @padding / 2 &&
+      point.y > @position.y - @size.height / 2 - @padding / 2
 
   ###
   @description Clean up event listeners
   ###
   destroy: () ->
-    Arcadia.instance.element.removeEventListener 'mouseup', @onPointEnd, false
-    Arcadia.instance.element.removeEventListener 'touchend', @onPointEnd, false
+    Arcadia.element.removeEventListener 'mouseup', @onPointEnd, false
+    Arcadia.element.removeEventListener 'touchend', @onPointEnd, false
 
   ###
   @description Getter/setter for font value

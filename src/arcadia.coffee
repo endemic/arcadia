@@ -69,17 +69,17 @@ Arcadia.changeScene = (SceneClass) ->
 ###
 Arcadia.getPoints = (event) ->
   # http://jsperf.com/empty-javascript-array
-  while Arcadia.instance.points.length > 0
-    Arcadia.instance.points.pop()
+  while Arcadia.points.length > 0
+    Arcadia.points.pop()
 
   if event.type.indexOf('mouse') != -1
-    Arcadia.instance.points.unshift
+    Arcadia.points.unshift
       x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
       y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
   else
     i = event.touches.length
     while i--
-      Arcadia.instance.points.unshift
+      Arcadia.points.unshift
         x: (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
         y: (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
 
