@@ -11,7 +11,7 @@ class GameObject
     # if coords && coords.length > 0
     #   @position = { x: coords[1], y: coords[2] }
     # else 
-    if typeof args.position == 'object' && args.position.x && args.position.y
+    if typeof args.position == 'object'
       @position = { x: args.position.x, y: args.position.y }
     else
       @position = { x: 0, y: 0 }
@@ -28,8 +28,8 @@ class GameObject
   @description Draw child objects
   @param {CanvasRenderingContext2D} context
   ###
-  draw: (context, offsetX = 0, offsetY = 0) ->
-    @children.draw context, offsetX, offsetY
+  draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0) ->
+    @children.draw context, offsetX, offsetY, offsetRotation
 
   ###
   @description Update child objects

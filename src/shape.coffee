@@ -200,13 +200,18 @@ class Shape extends GameObject
   @description Draw object
   @param {CanvasRenderingContext2D} context
   ###
-  draw: (context, offsetX = 0, offsetY = 0) ->
+  draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0) ->
     offsetX = offsetY = 0 if @fixed
 
-    # Set scale/rotation/alpha
-    context.translate(@position.x + offsetX, @position.y + offsetY)
+    context.save()
+
+    context.translate(offsetX, offsetY)
+    context.rotate(offsetRotation) if offsetRotation != 0
+
+    context.translate(@position.x, @position.y)
+    context.rotate(@rotation) if @rotation != 0
+
     context.scale(@scale, @scale) if @scale != 1
-    context.rotate(@rotation) if @rotation != 0 && @rotation != Math.PI * 2
     context.globalAlpha = @alpha if @alpha < 1
 
     # Update internal <canvas> cache if necessary
@@ -216,13 +221,14 @@ class Shape extends GameObject
     context.drawImage(@canvas, -@anchor.x, -@anchor.y)
 
     # Reset scale/rotation/alpha
-    context.rotate(-@rotation) if @rotation != 0 && @rotation != Math.PI * 2
-    context.translate(-@position.x - offsetX, -@position.y - offsetY)
-    context.scale(1, 1) if @scale != 1
-    context.globalAlpha = 1 if @alpha < 1
+    context.restore()
+    # context.rotate(-@rotation) if @rotation != 0 && @rotation != Math.PI * 2
+    # context.translate(-@position.x - offsetX, -@position.y - offsetY)
+    # context.scale(1, 1) if @scale != 1
+    # context.globalAlpha = 1 if @alpha < 1
 
     # Draw child objects last, so they will be on the "top"
-    super(context, @position.x + offsetX, @position.y + offsetY)
+    super(context, @position.x + offsetX, @position.y + offsetY, @rotation + offsetRotation)
 
   ###
   @description Update object
@@ -240,13 +246,10 @@ class Shape extends GameObject
     @rotation += @angularVelocity * delta
 
   ###
-   * @description Basic collision detection
+   * @description Basic AABB collision detection
    * @param {Shape} other Shape object to test collision with
   ###
   collidesWith: (other) ->
-    if @vertices == 4
-      return Math.abs(@position.x - other.position.x) < @size / 2 + other.size / 2 && Math.abs(@position.y - other.position.y) < @size / 2 + other.size / 2
-    else
-      return Math.sqrt(Math.pow(other.position.x - @position.x, 2) + Math.pow(other.position.y - @position.y, 2)) < @size / 2 + other.size / 2
+    Math.abs(@position.x - other.position.x) < @size.width / 2 + other.size.width / 2 && Math.abs(@position.y - other.position.y) < @size.height / 2 + other.size.height / 2
 
 module.exports = Shape

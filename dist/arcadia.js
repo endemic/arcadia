@@ -740,7 +740,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       this.scale = args.scale || 1;
       this.rotation = args.rotation || 0;
       this.alpha = args.alpha || 1;
-      if (typeof args.position === 'object' && args.position.x && args.position.y) {
+      if (typeof args.position === 'object') {
         this.position = {
           x: args.position.x,
           y: args.position.y
@@ -769,14 +769,17 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
     */
 
 
-    GameObject.prototype.draw = function(context, offsetX, offsetY) {
+    GameObject.prototype.draw = function(context, offsetX, offsetY, offsetRotation) {
       if (offsetX == null) {
         offsetX = 0;
       }
       if (offsetY == null) {
         offsetY = 0;
       }
-      return this.children.draw(context, offsetX, offsetY);
+      if (offsetRotation == null) {
+        offsetRotation = 0;
+      }
+      return this.children.draw(context, offsetX, offsetY, offsetRotation);
     };
 
     /*
@@ -1155,16 +1158,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Pool.prototype.draw = function(context, offsetX, offsetY) {
-      if (offsetX == null) {
-        offsetX = 0;
-      }
-      if (offsetY == null) {
-        offsetY = 0;
-      }
+    Pool.prototype.draw = function(context, offsetX, offsetY, offsetRotation) {
       this.tmp = this.length;
       while (this.tmp--) {
-        this.children[this.tmp].draw(context, offsetX, offsetY);
+        this.children[this.tmp].draw(context, offsetX, offsetY, offsetRotation);
       }
     };
 
@@ -1576,22 +1573,30 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Shape.prototype.draw = function(context, offsetX, offsetY) {
+    Shape.prototype.draw = function(context, offsetX, offsetY, offsetRotation) {
       if (offsetX == null) {
         offsetX = 0;
       }
       if (offsetY == null) {
         offsetY = 0;
       }
+      if (offsetRotation == null) {
+        offsetRotation = 0;
+      }
       if (this.fixed) {
         offsetX = offsetY = 0;
       }
-      context.translate(this.position.x + offsetX, this.position.y + offsetY);
+      context.save();
+      context.translate(offsetX, offsetY);
+      if (offsetRotation !== 0) {
+        context.rotate(offsetRotation);
+      }
+      context.translate(this.position.x, this.position.y);
+      if (this.rotation !== 0) {
+        context.rotate(this.rotation);
+      }
       if (this.scale !== 1) {
         context.scale(this.scale, this.scale);
-      }
-      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
-        context.rotate(this.rotation);
       }
       if (this.alpha < 1) {
         context.globalAlpha = this.alpha;
@@ -1600,17 +1605,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         this.drawCanvasCache();
       }
       context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
-      if (this.rotation !== 0 && this.rotation !== Math.PI * 2) {
-        context.rotate(-this.rotation);
-      }
-      context.translate(-this.position.x - offsetX, -this.position.y - offsetY);
-      if (this.scale !== 1) {
-        context.scale(1, 1);
-      }
-      if (this.alpha < 1) {
-        context.globalAlpha = 1;
-      }
-      return Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
+      context.restore();
+      return Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY, this.rotation + offsetRotation);
     };
 
     /*
@@ -1629,17 +1625,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
-     * @description Basic collision detection
+     * @description Basic AABB collision detection
      * @param {Shape} other Shape object to test collision with
     */
 
 
     Shape.prototype.collidesWith = function(other) {
-      if (this.vertices === 4) {
-        return Math.abs(this.position.x - other.position.x) < this.size / 2 + other.size / 2 && Math.abs(this.position.y - other.position.y) < this.size / 2 + other.size / 2;
-      } else {
-        return Math.sqrt(Math.pow(other.position.x - this.position.x, 2) + Math.pow(other.position.y - this.position.y, 2)) < this.size / 2 + other.size / 2;
-      }
+      return Math.abs(this.position.x - other.position.x) < this.size.width / 2 + other.size.width / 2 && Math.abs(this.position.y - other.position.y) < this.size.height / 2 + other.size.height / 2;
     };
 
     return Shape;

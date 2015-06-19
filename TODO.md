@@ -4,8 +4,9 @@
   write extra tests which assert the object that is returned/rearranged when activated/deactivated
 * [x] Make setters for size & vertices
 * [ ] Maybe change Scene's `color` prop to `clearColor`
-* [ ] Allow access to `Arcadia.points` instead of `Arcadia.instance.points`
+* [x] Allow access to `Arcadia.points` instead of `Arcadia.instance.points`
 * [ ] Handle making canvas cache large enough for shadow/blur
+* [ ] Shadow isn't drawn if shape is transparent
 * [ ] Allow strings to be passed for border, font, shadow, etc. instead of objects - use setter methods
 * [ ] Ensure correct anchor point for shapes when using large shadows
 * [ ] Inset borders so they don't make shapes actually larger
@@ -18,10 +19,10 @@
 * [ ] Add additional effects to particles: rotate, fade, scale, etc.
 * [x] Give objects a width and height
 * [ ] Cull drawing of objects outwide viewport
-* [ ] Re-use same <canvas> for each scene
+* [x] Re-use same <canvas> for each scene
 * [ ] Handle Hi-DPI screens - 2x backing store
 * [ ] Add SAT collision detection
 * [ ] Add "Tween" class to GameObjects
 * [ ] Global effects - flash, shake, etc.
 * [ ] Refactor offset/child drawing? (perhaps a recursive strategy)
-* [ ] Children don't inherit scale/rotation of their parents
+* [x] Children don't inherit scale/rotation of their parents
