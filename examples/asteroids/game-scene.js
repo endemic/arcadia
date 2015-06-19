@@ -4,19 +4,20 @@
 var AsteroidsGameScene = function () {
     Arcadia.Scene.apply(this, arguments);
 
-    // this.color = 'rgba(0, 0, 0, 0.1)';
-    this.color = '#000';
+    this.color = 'rgba(0, 0, 0, 0.25)';
+
+    this.level = 1;
 
     // Player's ship
     this.ship = new Ship({
         position: {
             x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT / 1.5
+            y: Arcadia.HEIGHT / 2
         }
     });
     this.add(this.ship);
 
-    // Other game objects
+    // Player bullets
     this.bullets = new Arcadia.Pool();
     this.bullets.factory = function () {
         return new Arcadia.Shape({
@@ -31,9 +32,10 @@ var AsteroidsGameScene = function () {
     }
     this.bullets.deactivateAll();
 
+    // Asteroids
     this.asteroids = new Arcadia.Pool();
     this.asteroids.factory = function () {
-        return new Arcadia.Shape();
+        return new Asteroid();
     };
     this.add(this.asteroids);
     while (this.asteroids.length < 50) {
@@ -71,7 +73,7 @@ var AsteroidsGameScene = function () {
         },
         text: 'GAME OVER',
         font: '40px monospace',
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: '#fff',
         shadow: '0 0 10px #fff'
     });
 
@@ -84,7 +86,7 @@ var AsteroidsGameScene = function () {
             y: Arcadia.HEIGHT / 2
         },
         border: '1px rgba(255, 255, 255, 0.8)',
-        color: 'rgba(0, 0, 0, 0)',
+        color: null,
         font: '20px monospace',
         shadow: '0 0 10px #fff',
         text: "TRY AGAIN",
@@ -98,25 +100,50 @@ var AsteroidsGameScene = function () {
     this.deactivate(this.tryAgainButton);
 
     // Score label
-    this.label = new Arcadia.Label({
-        position: { x: 0, y: 10 },
+    this.scoreLabel = new Arcadia.Label({
+        position: { x: 50, y: 15 },
         text: 'Score: 0',
-        font: '16px monospace',
-        shadow: '0 0 10px rgba(255, 255, 255, 0.8)'
+        font: 'bold 16px monospace'
     });
-    this.label.position.x = this.label.width / 2;
-    this.add(this.label);
+    this.add(this.scoreLabel);
     this.score = 0;
+
+    this.fpsLabel = new Arcadia.Label({
+        position: { x: Arcadia.WIDTH - 50, y: 15 },
+        text: 'FPS: 0',
+        font: 'bold 16px monospace'
+    });
+    this.add(this.fpsLabel);
+
+    this.init();
 };
 
 AsteroidsGameScene.prototype = new Arcadia.Scene();
 
+AsteroidsGameScene.prototype.init = function () {
+    var i, asteroid;
+
+    for (i = 0; i < this.level; i += 1) {
+        asteroid = this.asteroids.activate();
+        asteroid.position = {
+            x: Math.random() * Arcadia.WIDTH,
+            y: Math.random() * Arcadia.HEIGHT
+        };
+        asteroid.velocity = {
+          x: Math.random() * asteroid.speed,
+          y: Math.random() * asteroid.speed
+        };
+        asteroid.angularVelocity = Math.random();
+    }
+};
+
 AsteroidsGameScene.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
 
-    var angle,
-        bullet,
-        enemy,
+    this.fpsLabel.text = Math.round(Arcadia.FPS);
+
+    var bullet,
+        asteroid,
         i,
         j;
 
@@ -135,15 +162,22 @@ AsteroidsGameScene.prototype.update = function (delta) {
 
                 // Remove both asteroid and bullet if they collide
                 if (asteroid.collidesWith(bullet)) {
-                    this.particles.activate().startAt(bullet.position.x, bullet.position.y);
+                    // this.particles.activate().startAt(bullet.position.x, bullet.position.y);
 
-                    // Move asteroid back to top
-                    asteroid.position.y = 0;
-                    asteroid.position.x = Math.random() * Arcadia.WIDTH;
+                    // Deactivate asteroid
+                    this.deactivate(j);
 
+                    // Deactivate bullet
                     this.bullets.deactivate(i);
+
+                    // Create new asteroids
+                    // for (j = 0; j < 3; j += 1) {
+                    this.asteroids.activate().init(asteroid.vertices - 1);
+                    // }
+
+                    // Update score
                     this.score += 10;
-                    this.label.text = "Score: " + this.score;
+                    this.scoreLabel.text = 'Score: ' + this.score;
                     continue;
                 }
             }
@@ -163,10 +197,10 @@ AsteroidsGameScene.prototype.onKeyDown = function (key) {
 
     if (key === "z" || key === "space") {
         b = this.bullets.activate();
-        b.position.x = this.ship.position.x;
-        b.position.y = this.ship.position.y;
         b.velocity.x = Math.cos(this.ship.rotation - Math.PI / 2);
         b.velocity.y = Math.sin(this.ship.rotation - Math.PI / 2);
+        b.position.x = this.ship.position.x + this.ship.velocity.x + b.velocity.x;
+        b.position.y = this.ship.position.y + this.ship.velocity.y + b.velocity.y;
     }
 
     if (key === "left") {
@@ -178,7 +212,7 @@ AsteroidsGameScene.prototype.onKeyDown = function (key) {
     }
 
     if (key === "up") {
-        this.ship.thrust = 1;
+        this.ship.move();
     }
 };
 
@@ -199,7 +233,7 @@ AsteroidsGameScene.prototype.onKeyUp = function (key) {
     }
 
     if (key === "up") {
-        this.ship.thrust = 0;
+        this.ship.stop();
     }
 };
 
