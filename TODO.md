@@ -5,6 +5,8 @@
 * [x] Make setters for size & vertices
 * [ ] Maybe change Scene's `color` prop to `clearColor`
 * [x] Allow access to `Arcadia.points` instead of `Arcadia.instance.points`
+* [ ] Maybe make an `Arcadia.random(min,max)` helper method
+* [ ] Figure out a way to pause the update loop when tab/window isn't focused
 * [ ] Handle making canvas cache large enough for shadow/blur
 * [ ] Shadow isn't drawn if shape is transparent
 * [ ] Allow strings to be passed for border, font, shadow, etc. instead of objects - use setter methods
