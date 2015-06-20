@@ -16,7 +16,7 @@ class Label extends Shape
 
   ###
   @description Draw object onto internal <canvas> cache
-  ###  
+  ###
   drawCanvasCache: ->
     return if @canvas is undefined
     # TODO: refactor shape method to use re-usable methods
