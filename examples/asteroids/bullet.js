@@ -20,7 +20,6 @@ Bullet.prototype.update = function (delta) {
     Arcadia.Shape.prototype.update.call(this, delta);
 
     this.lifespan += delta;
-    console.log(this.lifespan);
 
     // Automatically wrap around the screen
     if (this.position.x + this.size.width / 2 > Arcadia.WIDTH) {

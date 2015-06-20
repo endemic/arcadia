@@ -66,8 +66,7 @@ var AsteroidsGameScene = function () {
         },
         text: 'GAME OVER',
         font: '40px monospace',
-        color: '#fff',
-        shadow: '0 0 10px #fff'
+        color: '#fff'
     });
 
     this.add(this.gameOverLabel);
@@ -78,17 +77,15 @@ var AsteroidsGameScene = function () {
             x: Arcadia.WIDTH / 2, 
             y: Arcadia.HEIGHT / 2
         },
-        border: '1px rgba(255, 255, 255, 0.8)',
-        color: null,
+        border: '2px #fff',
+        color: '#000',
         font: '20px monospace',
-        shadow: '0 0 10px #fff',
         text: "TRY AGAIN",
-        padding: 15
+        padding: 15,
+        action: function () {
+            Arcadia.changeScene(AsteroidsGameScene);
+        }
     });
-    this.tryAgainButton.onUp = function () {
-        Arcadia.changeScene(Game);
-    };
-
     this.add(this.tryAgainButton);
     this.deactivate(this.tryAgainButton);
 
@@ -101,6 +98,7 @@ var AsteroidsGameScene = function () {
     this.add(this.scoreLabel);
     this.score = 0;
 
+    // Show FPS
     this.fpsLabel = new Arcadia.Label({
         position: { x: Arcadia.WIDTH - 50, y: 15 },
         text: 'FPS: 0',
@@ -146,35 +144,34 @@ AsteroidsGameScene.prototype.update = function (delta) {
     }
 
     // Check for player bullet collisions
-    i = this.bullets.length;
-    while (i--) {
-        bullet = this.bullets.at(i);
+    j = this.asteroids.length;
+    while (j--) {
+        asteroid = this.asteroids.at(j);
 
-        if (bullet.lifespan > bullet.MAX_LIFESPAN) {
-            // Remove bullets once they get too old
-            this.bullets.deactivate(i);
-        } else {
-            j = this.asteroids.length;
-            while (j--) {
-                asteroid = this.asteroids.at(j);
+        i = this.bullets.length;
+        while (i--) {
+            bullet = this.bullets.at(i);
 
+            if (bullet.lifespan > bullet.MAX_LIFESPAN) {
+                // Remove bullets once they get too old
+                this.bullets.deactivate(i);
+            } else if (asteroid.collidesWith(bullet)) {
                 // Remove both asteroid and bullet if they collide
-                if (asteroid.collidesWith(bullet)) {
-                    // Deactivate asteroid
-                    this.asteroids.deactivate(j);
+                this.asteroids.deactivate(j);
+                this.bullets.deactivate(i);
 
-                    // Deactivate bullet
-                    this.bullets.deactivate(i);
+                // Handle this asteroid being destroyed
+                asteroid.explode(this.asteroids, this.particles);
 
-                    // Handle this asteroid being destroyed
-                    asteroid.explode(this.asteroids, this.particles);
-
-                    // Update score
-                    this.score += 10;
-                    this.scoreLabel.text = 'Score: ' + this.score;
-                    continue;
-                }
+                // Update score
+                this.score += 10;
+                this.scoreLabel.text = 'Score: ' + this.score;
             }
+        }
+
+        // Only check collision w/ player if game is still running
+        if (!this.gameOver && asteroid.collidesWith(this.ship)) {
+            return this.showGameOver();
         }
     }
 };
@@ -243,6 +240,7 @@ AsteroidsGameScene.prototype.showGameOver = function () {
     this.gameOver = true;
 
     this.deactivate(this.ship);
+    this.particles.activate().startAt(this.ship.position.x, this.ship.position.y);
 
     this.activate(this.gameOverLabel);
     this.activate(this.tryAgainButton);

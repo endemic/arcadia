@@ -16,13 +16,23 @@ var Ship = function () {
     this.shadow = '0 0 10px #fff';
     this.MAX_VELOCITY = 0.50;
 
+    this.path = function (context) {
+        context.moveTo(0, -this.size.height / 2);
+        context.lineTo(this.size.width / 2, this.size.height);
+        context.moveTo(0, -this.size.height / 2);
+        context.lineTo(-this.size.width / 2, this.size.height);
+        context.moveTo(-this.size.width / 3, this.size.height / 2);
+        context.lineTo(this.size.width / 3, this.size.height / 2);
+    };
+
     this.jet = new Arcadia.Shape({
         vertices: 3,
-        border: '2px #fff',
+        border: '1px #fff',
         rotation: Math.PI,
-        size: { width: 10, height: 10 },
-        position: { x: 0, y: 20 }
+        size: { width: 8, height: 8 },
+        position: { x: 0, y: 22 }
     });
+    this.jet.color = null;
     this.add(this.jet);
     this.deactivate(this.jet);
 };
