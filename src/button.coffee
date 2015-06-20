@@ -6,7 +6,7 @@ class Button extends Shape
     Label = require './label.coffee'
 
     @padding = args.padding || 10
-    @label = args.label || new Label()
+    @label = args.label || new Label(text: args.text, font: args.font)
     @label.drawCanvasCache() # Draw cache to determine size of text
 
     unless args.size
@@ -53,6 +53,16 @@ class Button extends Shape
   destroy: () ->
     Arcadia.element.removeEventListener 'mouseup', @onPointEnd, false
     Arcadia.element.removeEventListener 'touchend', @onPointEnd, false
+
+  ###
+  @description Getter/setter for text value
+  ###
+  @property 'text',
+    get: ->
+      return @label.text
+    set: (text) ->
+      @label.text = text
+      @label.dirty = true
 
   ###
   @description Getter/setter for font value
