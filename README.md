@@ -1,82 +1,128 @@
 # Arcadia.js
 
-Minimalist &lt;canvas> game framework, inspired by classic 80s arcade titles.
+A minimalist &lt;canvas> game framework.
 
-## Build Requirements
+## Overview
 
-Requires [Node.js](http://nodejs.org/download/). 
+A Arcadia game is mainly made up of _Scenes_ and _Shapes_. A scene is an
+encapsulated part of a game, such as a title, difficulty select, or actual
+gameplay. A shape is a game object, such as the player, enemies, or
+projectiles. To create a game, subclass the _Scene_ object to create your own
+views.
 
-`npm install`
-`npm install -g browserify`
+## Tutorial
 
-`browserify --standalone Arcadia -t coffeeify --extension=".coffee" src/arcadia.coffee > dist/arcadia.js`
+For a basic example game, we'll walk through creating an `Asteroids` clone
+(don't sue me!). The full source is in `examples/asteroids`. If you're
+impatient, [take a look at the finished game](http://ganbarugames.com/asteroids/).
 
-## Documentation
-
-Class Hierarchy
+The first thing we'll do is create a title scene that displays the name of the
+game, with a button to start playing. In Javascript, we do this by creating a
+new object and setting its prototype to be `Arcadia.Scene`. Copy the following
+code, and save it in a file named `title-scene.js`.
 
 ```
-Game
-  |
-  -> View
-  |
-  -> View
-  |
-  -> View
-  	   |
-  	   -> Canvas
-  	        |
-  	        -> Shape (or other GameObjects)
+var AsteroidsTitleScene = function () {
+    Arcadia.Scene.apply(this, arguments);
+
+    // Background color
+    this.color = '#000';
+};
+
+AsteroidsTitleScene.prototype = new Arcadia.Scene();
 ```
 
-A Arcadia game is mainly made up of _Views_ and _Shapes_. A scene is an encapsulated
-part of a game, such as a title, difficulty select, or actual gameplay. A shape is a game object, such as the player, 
-enemies, or projectiles. To create a game, subclass the _View_ object to create your own views. Look in 
-the /example directory for ideas.
+If you were to load up this scene as-is, it would simply display a black box.
+That's pretty boring, so let's add some objects to the scene. The first thing
+we'll add is the game title. In order to do that, we use an `Arcadia.Label`
+object. Add the following right after setting the background color.
 
-### Arcadia.Game
+```
+// Basic text label
+var title = new Arcadia.Label({
+    position: {
+        x: Arcadia.WIDTH / 2,
+        y: Arcadia.HEIGHT / 4
+    },
+    color: '#fff',
+    font: '70px monospace',
+    shadow: '0 0 20px #fff',
+    text: "'Roids"
+});
+this.add(title);
+```
 
-__Arcadia.Game(width, height, SceneClass, fitWindow)__  
-Create a new game object with "native" width/height (game will be scaled to fit the 
-browser viewport if `fitWindow` is true). _SceneClass_ will be the initial scene object.
+Pretty self-explanatory, right? We're using the `new` keyword to create a new
+instance of `Arcadia.Label`, and passing in a single object as an argument.
+The object's keys are all what you'd expect a label to require. One thing you
+might notice is the `Arcadia.WIDTH` and `Arcadia.HEIGHT` variables. Those
+reference the width and height of the scene, which we will set up shortly. After
+instantiating the new label, we `add` it to the scene's list of child objects
+that it displays. Now we'll do basically the same thing to create a button which
+will start the game.
 
-__Arcadia.Game.start()__  
-Start the update loop. Automatically called in constructor.
+```
+// "Start game" button
+var button = new Arcadia.Button({
+    position: {
+        x: Arcadia.WIDTH / 2,
+        y: Arcadia.HEIGHT - 100
+    },
+    color: '#000',
+    border: '2px #fff',
+    padding: 15,
+    text: 'START',
+    font: '20px monospace',
+    action: function () {
+        Arcadia.changeScene(AsteroidsGameScene);
+    }
+});
+this.add(button);
+```
 
-__Arcadia.Game.stop()__  
-Stop the update loop.
+The button takes similar arguments as the label. We set the position, the color,
+and the displayed text. A few differences: buttons can be made bigger by giving
+them a larger `padding` value. Also, we need to define what happens when a
+player clicks or taps on the button. This is done by passing the `action`
+key, which references a function. In this case, all we do when this button is
+activated is change to a new gameplay scene (which we will create shortly).
 
-__Arcadia.changeScene(SceneClass)__  
-Static method which instantiates a new active scene.
+This title scene is complete enough to try out. In order to load it up in a
+browser, we need an HTML page that embeds the code.
 
-### Arcadia.Scene
-__Arcadia.Scene.add(object)__  
-Adds an object to the scene's draw/update loop.
+```
+<html>
+<head>
+	<title>Asteroids</title>
 
-__Arcadia.Scene.clearColor__  
-Color string in `rgba(rr, gg, bb, aa)` format, used to clear the scene before 
-every draw step. For a "blur" effect, use an alpha value < 1. 
+	<!-- Engine -->
+	<script src="arcadia.js"></script>
 
-### Arcadia.Shape 
+	<!-- Scene -->
+	<script src="title-scene.js"></script>
 
-#### Methods
+	<script type="text/javascript">
+		/* Instantiate game object */
+		window.onload = function () {
+			var game = new Arcadia.Game({
+				width: 640,
+				height: 480,
+				scene: AsteroidsTitleScene,
+				fitWindow: true
+			});
+		};
+	</script>
+</head>
+<body></body>
+</html>
+```
 
-__Arcadia.Shape(x, y, shape, size)__  
-Basic game object. Constructor arguments give initial Cartesian coordinates, 
-shape ("triangle", "circle", "square"; used for default drawing/collision), and 
-size (in pixels).
-
-#### Properties
-
-__Arcadia.Shape.lineWidth__  
-Width of line used to draw the object. Higher == fatter.
-
-__Arcadia.Shape.lineJoin__  
-How you want the shape's joins to look. Options: miter, round (default), bevel
-
-__Arcadia.Shape.solid__  
-Whether the shape should be filled or not.
-
-## Performance
-
-Reverse `while()` loops are marginally faster (http://jsperf.com/loops).
+This'll be pretty familiar to anyone who's done Javascript development before.
+Simply reference your code with `<script>` tags, then write a `window.onload`
+handler to start the game. `Arcadia.Game` is the main game object; you can see
+that here is where we set the width/height of the game, as well as specify which
+scene to initially load. The last option, `fitWindow`, tells the game to scale
+to fit the browser window (while keeping its aspect ratio, of course). Load up
+that HTML file in your browser, and you should be greeted with a black screen,
+with the game title and button appearing. Off to a great start! Next we'll work
+on the actual game.
