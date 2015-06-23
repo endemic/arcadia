@@ -3,9 +3,10 @@
 
 var AsteroidsTitleScene = function () {
     Arcadia.Scene.apply(this, arguments);
-    
+    // Background color
     this.color = '#000';
 
+    // Basic text label
     var title = new Arcadia.Label({
         position: {
             x: Arcadia.WIDTH / 2,
@@ -18,7 +19,8 @@ var AsteroidsTitleScene = function () {
     });
     this.add(title);
 
-    this.button = new Arcadia.Button({
+    // "Start game" button
+    var button = new Arcadia.Button({
         position: {
             x: Arcadia.WIDTH / 2,
             y: Arcadia.HEIGHT - 100
@@ -32,7 +34,7 @@ var AsteroidsTitleScene = function () {
             Arcadia.changeScene(AsteroidsGameScene);
         }
     });
-    this.add(this.button);
+    this.add(button);
 };
 
 AsteroidsTitleScene.prototype = new Arcadia.Scene();

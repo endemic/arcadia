@@ -7,13 +7,15 @@
 var Ship = function () {
     Arcadia.Shape.apply(this, arguments);
 
+    // Standard `Shape` properties
     this.speed = 5;
-    this.thrust = 0;
-    this.vertices = 3;
     this.size = { width: 20, height: 25 };
     this.border = '2px #fff';
     this.color = null;
     this.shadow = '0 0 10px #fff';
+
+    // Custom properties
+    this.thrust = 0;
     this.MAX_VELOCITY = 0.50;
 
     this.path = function (context) {
@@ -40,21 +42,26 @@ var Ship = function () {
 Ship.prototype = new Arcadia.Shape();
 
 Ship.prototype.update = function (delta) {
+    // Rotate the ship based on `angularVelocity`
     this.rotation += this.angularVelocity * delta;
 
+    // Set acceleration based on the angle the ship is pointing
     this.acceleration.x = Math.cos(this.rotation - Math.PI / 2) * this.thrust * delta;
     this.acceleration.y = Math.sin(this.rotation - Math.PI / 2) * this.thrust * delta;
 
+    // Transfer acceleration to velocity
     this.velocity.x += this.acceleration.x;
     this.velocity.y += this.acceleration.y;
 
     var velocityVector = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
 
+    // Set a limit on how fast the ship can go
     if (velocityVector > this.MAX_VELOCITY) {
         this.velocity.x += (this.velocity.x / velocityVector) * (this.MAX_VELOCITY - velocityVector);
         this.velocity.y += (this.velocity.y / velocityVector) * (this.MAX_VELOCITY - velocityVector);
     }
 
+    // Finally, update the ship's position
     this.position.x += this.velocity.x * this.speed;
     this.position.y += this.velocity.y * this.speed;
 
