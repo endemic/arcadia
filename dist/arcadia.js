@@ -1,6 +1,5 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Arcadia=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function (global){
-(function() {
+!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Arcadia=e():"undefined"!=typeof global?global.Arcadia=e():"undefined"!=typeof self&&(self.Arcadia=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};(function() {
   var Arcadia, nowOffset;
 
   if (window.requestAnimationFrame === void 0) {
@@ -25,15 +24,15 @@
   };
 
   Arcadia = {
-    Game: _dereq_('./game.coffee'),
-    Button: _dereq_('./button.coffee'),
-    Emitter: _dereq_('./emitter.coffee'),
-    GameObject: _dereq_('./gameobject.coffee'),
-    Label: _dereq_('./label.coffee'),
-    Pool: _dereq_('./pool.coffee'),
-    Scene: _dereq_('./scene.coffee'),
-    Shape: _dereq_('./shape.coffee'),
-    Sprite: _dereq_('./sprite.coffee')
+    Game: require('./game.coffee'),
+    Button: require('./button.coffee'),
+    Emitter: require('./emitter.coffee'),
+    GameObject: require('./gameobject.coffee'),
+    Label: require('./label.coffee'),
+    Pool: require('./pool.coffee'),
+    Scene: require('./scene.coffee'),
+    Shape: require('./shape.coffee'),
+    Sprite: require('./sprite.coffee')
   };
 
   Arcadia.FPS = 60;
@@ -185,14 +184,13 @@
 }).call(this);
 
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(_dereq_,module,exports){
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(require,module,exports){
 (function() {
   var Button, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Shape = _dereq_('./shape.coffee');
+  Shape = require('./shape.coffee');
 
   Button = (function(_super) {
     __extends(Button, _super);
@@ -202,8 +200,8 @@
       if (args == null) {
         args = {};
       }
-      Arcadia = _dereq_('./arcadia.coffee');
-      Label = _dereq_('./label.coffee');
+      Arcadia = require('./arcadia.coffee');
+      Label = require('./label.coffee');
       this.padding = args.padding || 10;
       this.label = args.label || new Label({
         text: args.text,
@@ -302,17 +300,17 @@
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(require,module,exports){
 (function() {
   var Emitter, GameObject, Pool, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
-  Pool = _dereq_('./pool.coffee');
+  Pool = require('./pool.coffee');
 
-  Shape = _dereq_('./shape.coffee');
+  Shape = require('./shape.coffee');
 
   Emitter = (function(_super) {
     __extends(Emitter, _super);
@@ -410,7 +408,7 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
 (function() {
   var Game,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -428,7 +426,7 @@
         args = {};
       }
       this.update = __bind(this.update, this);
-      Arcadia = _dereq_('./arcadia.coffee');
+      Arcadia = require('./arcadia.coffee');
       Arcadia.WIDTH = parseInt(args.width, 10) || 320;
       Arcadia.HEIGHT = parseInt(args.height, 10) || 480;
       Arcadia.SCALE = 1;
@@ -745,11 +743,11 @@
 }).call(this);
 
 
-},{"./arcadia.coffee":1}],5:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1}],5:[function(require,module,exports){
 (function() {
   var GameObject, Pool;
 
-  Pool = _dereq_('./pool.coffee');
+  Pool = require('./pool.coffee');
 
   GameObject = (function() {
     function GameObject(args) {
@@ -861,13 +859,13 @@
 }).call(this);
 
 
-},{"./pool.coffee":7}],6:[function(_dereq_,module,exports){
+},{"./pool.coffee":7}],6:[function(require,module,exports){
 (function() {
   var Label, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Shape = _dereq_('./shape.coffee');
+  Shape = require('./shape.coffee');
 
   Label = (function(_super) {
     __extends(Label, _super);
@@ -909,7 +907,7 @@
       if (this.canvas === void 0) {
         return;
       }
-      Arcadia = _dereq_('./arcadia.coffee');
+      Arcadia = require('./arcadia.coffee');
       context = this.canvas.getContext('2d');
       element = document.getElementById('text-dimensions');
       if (!element) {
@@ -1016,7 +1014,7 @@
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(require,module,exports){
 /*
 @description One possible way to store common recyclable objects.
 Assumes the objects you add will have an `active` property, and optionally an
@@ -1194,13 +1192,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{}],8:[function(_dereq_,module,exports){
+},{}],8:[function(require,module,exports){
 (function() {
   var GameObject, Scene,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
   Scene = (function(_super) {
     __extends(Scene, _super);
@@ -1210,7 +1208,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       Scene.__super__.constructor.apply(this, arguments);
       this.canvas = document.createElement('canvas');
       this.context = this.canvas.getContext('2d');
-      Arcadia = _dereq_('./arcadia.coffee');
+      Arcadia = require('./arcadia.coffee');
       this.camera = {
         target: null,
         viewport: {
@@ -1316,13 +1314,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./gameobject.coffee":5}],9:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1,"./gameobject.coffee":5}],9:[function(require,module,exports){
 (function() {
-  var GameObject, Shape,
+  var Easie, GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
+
+  Easie = require('../vendor/easie.coffee');
 
   Shape = (function(_super) {
     __extends(Shape, _super);
@@ -1390,6 +1390,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         x: this.size.width / 2,
         y: this.size.height / 2
       };
+      this.tweens = [];
     }
 
     /*
@@ -1636,7 +1637,20 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.update = function(delta) {
+      var i, tween;
       Shape.__super__.update.call(this, delta);
+      i = this.tweens.length;
+      while (i--) {
+        tween = this.tweens[i];
+        tween.time += delta * 1000;
+        if (tween.time > tween.duration) {
+          tween.time = tween.duration;
+        }
+        this[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration);
+        if (tween.time === tween.duration) {
+          this.tweens.splice(i, 1);
+        }
+      }
       this.velocity.x += this.acceleration.x;
       this.velocity.y += this.acceleration.y;
       this.position.x += this.velocity.x * this.speed * delta;
@@ -1654,6 +1668,23 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       return Math.abs(this.position.x - other.position.x) < this.size.width / 2 + other.size.width / 2 && Math.abs(this.position.y - other.position.y) < this.size.height / 2 + other.size.height / 2;
     };
 
+    Shape.prototype.tween = function(property, target, duration, easing) {
+      if (duration == null) {
+        duration = 500;
+      }
+      if (easing == null) {
+        easing = 'linearNone';
+      }
+      return this.tweens.push({
+        time: 0,
+        property: property,
+        start: this[property],
+        change: target - this[property],
+        duration: duration,
+        easingFunc: Easie[easing]
+      });
+    };
+
     return Shape;
 
   })(GameObject);
@@ -1663,13 +1694,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],10:[function(_dereq_,module,exports){
+},{"../vendor/easie.coffee":11,"./gameobject.coffee":5}],10:[function(require,module,exports){
 (function() {
   var GameObject, Sprite,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
   Sprite = (function(_super) {
     __extends(Sprite, _super);
@@ -1759,6 +1790,299 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":5}]},{},[1])
+},{"./gameobject.coffee":5}],11:[function(require,module,exports){
+/*
+Easie.coffee (https://github.com/jimjeffers/Easie)
+Project created by J. Jeffers
+
+Robert Penner's Easing Equations in CoffeeScript
+http://robertpenner.com/easing/
+
+DISCLAIMER: Software provided as is with no warranty of any type. 
+Don't do bad things with this :)
+*/
+
+
+(function() {
+  this.Easie = (function() {
+    function Easie() {}
+
+    Easie.backIn = function(time, begin, change, duration, overshoot) {
+      if (overshoot == null) {
+        overshoot = 1.70158;
+      }
+      return change * (time /= duration) * time * ((overshoot + 1) * time - overshoot) + begin;
+    };
+
+    Easie.backOut = function(time, begin, change, duration, overshoot) {
+      if (overshoot == null) {
+        overshoot = 1.70158;
+      }
+      return change * ((time = time / duration - 1) * time * ((overshoot + 1) * time + overshoot) + 1) + begin;
+    };
+
+    Easie.backInOut = function(time, begin, change, duration, overshoot) {
+      if (overshoot == null) {
+        overshoot = 1.70158;
+      }
+      if ((time = time / (duration / 2)) < 1) {
+        return change / 2 * (time * time * (((overshoot *= 1.525) + 1) * time - overshoot)) + begin;
+      } else {
+        return change / 2 * ((time -= 2) * time * (((overshoot *= 1.525) + 1) * time + overshoot) + 2) + begin;
+      }
+    };
+
+    Easie.bounceOut = function(time, begin, change, duration) {
+      if ((time /= duration) < 1 / 2.75) {
+        return change * (7.5625 * time * time) + begin;
+      } else if (time < 2 / 2.75) {
+        return change * (7.5625 * (time -= 1.5 / 2.75) * time + 0.75) + begin;
+      } else if (time < 2.5 / 2.75) {
+        return change * (7.5625 * (time -= 2.25 / 2.75) * time + 0.9375) + begin;
+      } else {
+        return change * (7.5625 * (time -= 2.625 / 2.75) * time + 0.984375) + begin;
+      }
+    };
+
+    Easie.bounceIn = function(time, begin, change, duration) {
+      return change - Easie.bounceOut(duration - time, 0, change, duration) + begin;
+    };
+
+    Easie.bounceInOut = function(time, begin, change, duration) {
+      if (time < duration / 2) {
+        return Easie.bounceIn(time * 2, 0, change, duration) * 0.5 + begin;
+      } else {
+        return Easie.bounceOut(time * 2 - duration, 0, change, duration) * 0.5 + change * 0.5 + begin;
+      }
+    };
+
+    Easie.circIn = function(time, begin, change, duration) {
+      return -change * (Math.sqrt(1 - (time = time / duration) * time) - 1) + begin;
+    };
+
+    Easie.circOut = function(time, begin, change, duration) {
+      return change * Math.sqrt(1 - (time = time / duration - 1) * time) + begin;
+    };
+
+    Easie.circInOut = function(time, begin, change, duration) {
+      if ((time = time / (duration / 2)) < 1) {
+        return -change / 2 * (Math.sqrt(1 - time * time) - 1) + begin;
+      } else {
+        return change / 2 * (Math.sqrt(1 - (time -= 2) * time) + 1) + begin;
+      }
+    };
+
+    Easie.cubicIn = function(time, begin, change, duration) {
+      return change * (time /= duration) * time * time + begin;
+    };
+
+    Easie.cubicOut = function(time, begin, change, duration) {
+      return change * ((time = time / duration - 1) * time * time + 1) + begin;
+    };
+
+    Easie.cubicInOut = function(time, begin, change, duration) {
+      if ((time = time / (duration / 2)) < 1) {
+        return change / 2 * time * time * time + begin;
+      } else {
+        return change / 2 * ((time -= 2) * time * time + 2) + begin;
+      }
+    };
+
+    Easie.elasticOut = function(time, begin, change, duration, amplitude, period) {
+      var overshoot;
+      if (amplitude == null) {
+        amplitude = null;
+      }
+      if (period == null) {
+        period = null;
+      }
+      if (time === 0) {
+        return begin;
+      } else if ((time = time / duration) === 1) {
+        return begin + change;
+      } else {
+        if (period == null) {
+          period = duration * 0.3;
+        }
+        if ((amplitude == null) || amplitude < Math.abs(change)) {
+          amplitude = change;
+          overshoot = period / 4;
+        } else {
+          overshoot = period / (2 * Math.PI) * Math.asin(change / amplitude);
+        }
+        return (amplitude * Math.pow(2, -10 * time)) * Math.sin((time * duration - overshoot) * (2 * Math.PI) / period) + change + begin;
+      }
+    };
+
+    Easie.elasticIn = function(time, begin, change, duration, amplitude, period) {
+      var overshoot;
+      if (amplitude == null) {
+        amplitude = null;
+      }
+      if (period == null) {
+        period = null;
+      }
+      if (time === 0) {
+        return begin;
+      } else if ((time = time / duration) === 1) {
+        return begin + change;
+      } else {
+        if (period == null) {
+          period = duration * 0.3;
+        }
+        if ((amplitude == null) || amplitude < Math.abs(change)) {
+          amplitude = change;
+          overshoot = period / 4;
+        } else {
+          overshoot = period / (2 * Math.PI) * Math.asin(change / amplitude);
+        }
+        time -= 1;
+        return -(amplitude * Math.pow(2, 10 * time)) * Math.sin((time * duration - overshoot) * (2 * Math.PI) / period) + begin;
+      }
+    };
+
+    Easie.elasticInOut = function(time, begin, change, duration, amplitude, period) {
+      var overshoot;
+      if (amplitude == null) {
+        amplitude = null;
+      }
+      if (period == null) {
+        period = null;
+      }
+      if (time === 0) {
+        return begin;
+      } else if ((time = time / (duration / 2)) === 2) {
+        return begin + change;
+      } else {
+        if (period == null) {
+          period = duration * (0.3 * 1.5);
+        }
+        if ((amplitude == null) || amplitude < Math.abs(change)) {
+          amplitude = change;
+          overshoot = period / 4;
+        } else {
+          overshoot = period / (2 * Math.PI) * Math.asin(change / amplitude);
+        }
+        if (time < 1) {
+          return -0.5 * (amplitude * Math.pow(2, 10 * (time -= 1))) * Math.sin((time * duration - overshoot) * ((2 * Math.PI) / period)) + begin;
+        } else {
+          return amplitude * Math.pow(2, -10 * (time -= 1)) * Math.sin((time * duration - overshoot) * (2 * Math.PI) / period) + change + begin;
+        }
+      }
+    };
+
+    Easie.expoIn = function(time, begin, change, duration) {
+      if (time === 0) {
+        return begin;
+      }
+      return change * Math.pow(2, 10 * (time / duration - 1)) + begin;
+    };
+
+    Easie.expoOut = function(time, begin, change, duration) {
+      if (time === duration) {
+        return begin + change;
+      }
+      return change * (-Math.pow(2, -10 * time / duration) + 1) + begin;
+    };
+
+    Easie.expoInOut = function(time, begin, change, duration) {
+      if (time === 0) {
+        return begin;
+      } else if (time === duration) {
+        return begin + change;
+      } else if ((time = time / (duration / 2)) < 1) {
+        return change / 2 * Math.pow(2, 10 * (time - 1)) + begin;
+      } else {
+        return change / 2 * (-Math.pow(2, -10 * (time - 1)) + 2) + begin;
+      }
+    };
+
+    Easie.linearNone = function(time, begin, change, duration) {
+      return change * time / duration + begin;
+    };
+
+    Easie.linearIn = function(time, begin, change, duration) {
+      return Easie.linearNone(time, begin, change, duration);
+    };
+
+    Easie.linearOut = function(time, begin, change, duration) {
+      return Easie.linearNone(time, begin, change, duration);
+    };
+
+    Easie.linearInOut = function(time, begin, change, duration) {
+      return Easie.linearNone(time, begin, change, duration);
+    };
+
+    Easie.quadIn = function(time, begin, change, duration) {
+      return change * (time = time / duration) * time + begin;
+    };
+
+    Easie.quadOut = function(time, begin, change, duration) {
+      return -change * (time = time / duration) * (time - 2) + begin;
+    };
+
+    Easie.quadInOut = function(time, begin, change, duration) {
+      if ((time = time / (duration / 2)) < 1) {
+        return change / 2 * time * time + begin;
+      } else {
+        return -change / 2 * ((time -= 1) * (time - 2) - 1) + begin;
+      }
+    };
+
+    Easie.quartIn = function(time, begin, change, duration) {
+      return change * (time = time / duration) * time * time * time + begin;
+    };
+
+    Easie.quartOut = function(time, begin, change, duration) {
+      return -change * ((time = time / duration - 1) * time * time * time - 1) + begin;
+    };
+
+    Easie.quartInOut = function(time, begin, change, duration) {
+      if ((time = time / (duration / 2)) < 1) {
+        return change / 2 * time * time * time * time + begin;
+      } else {
+        return -change / 2 * ((time -= 2) * time * time * time - 2) + begin;
+      }
+    };
+
+    Easie.quintIn = function(time, begin, change, duration) {
+      return change * (time = time / duration) * time * time * time * time + begin;
+    };
+
+    Easie.quintOut = function(time, begin, change, duration) {
+      return change * ((time = time / duration - 1) * time * time * time * time + 1) + begin;
+    };
+
+    Easie.quintInOut = function(time, begin, change, duration) {
+      if ((time = time / (duration / 2)) < 1) {
+        return change / 2 * time * time * time * time * time + begin;
+      } else {
+        return change / 2 * ((time -= 2) * time * time * time * time + 2) + begin;
+      }
+    };
+
+    Easie.sineIn = function(time, begin, change, duration) {
+      return -change * Math.cos(time / duration * (Math.PI / 2)) + change + begin;
+    };
+
+    Easie.sineOut = function(time, begin, change, duration) {
+      return change * Math.sin(time / duration * (Math.PI / 2)) + begin;
+    };
+
+    Easie.sineInOut = function(time, begin, change, duration) {
+      return -change / 2 * (Math.cos(Math.PI * time / duration) - 1) + begin;
+    };
+
+    return Easie;
+
+  })();
+
+  module.exports = this.Easie;
+
+}).call(this);
+
+
+},{}]},{},[1])
 (1)
 });
+;

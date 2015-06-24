@@ -109,15 +109,24 @@ Title.prototype = new Arcadia.Scene();
 Title.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
 
-    this.label.text = Math.round(Arcadia.FPS)
+    this.label.text = Math.round(Arcadia.FPS);
 };
 
 Title.prototype.onPointStart = function (points) {
     this.shape.position.x = points[0].x;
     this.shape.position.y = points[0].y;
-}
+};
 
 Title.prototype.onPointMove = function (points) {
     this.shape.position.x = points[0].x;
     this.shape.position.y = points[0].y;
+};
+
+Title.prototype.onPointEnd = function (points) {
+    if (this.shape.scale >= 2) {
+        console.log(this.shape.scale);
+        this.shape.tween('scale', 1, 1000, 'elasticInOut');
+    } else {
+        this.shape.tween('scale', 2, 1000, 'elasticInOut');
+    }
 };

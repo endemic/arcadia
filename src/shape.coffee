@@ -1,4 +1,5 @@
-GameObject = require './gameobject.coffee'
+GameObject = require('./gameobject.coffee')
+Easie = require('../vendor/easie.coffee')
 
 class Shape extends GameObject
   ###
@@ -36,7 +37,8 @@ class Shape extends GameObject
     @size     = args.size if args.size
 
     @path     = args.path   if args.path  # Custom drawing function
-    @anchor = { x: @size.width / 2, y: @size.height / 2 }
+    @anchor   = { x: @size.width / 2, y: @size.height / 2 }
+    @tweens   = []
 
   ###
   @description Getter/setter for color
@@ -237,6 +239,14 @@ class Shape extends GameObject
   update: (delta) ->
     super(delta)
 
+    i = @tweens.length
+    while (i--)
+      tween = @tweens[i]
+      tween.time += delta * 1000 # (delta is in seconds)
+      tween.time = tween.duration if tween.time > tween.duration
+      @[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration) # time,begin,change,duration
+      @tweens.splice(i, 1) if tween.time == tween.duration
+
     @velocity.x += @acceleration.x
     @velocity.y += @acceleration.y
 
@@ -251,5 +261,23 @@ class Shape extends GameObject
   ###
   collidesWith: (other) ->
     Math.abs(@position.x - other.position.x) < @size.width / 2 + other.size.width / 2 && Math.abs(@position.y - other.position.y) < @size.height / 2 + other.size.height / 2
+
+  tween: (property, target, duration = 500, easing = 'linearNone') ->
+    # TODO: How to handle compound properties, such as @position?
+    # context = @
+    # if property.indexOf('.') != -1
+    #   # This is a compound value
+    #   property.split('.').forEach (segment) ->
+    #     context = context[segment]
+    # else
+    #   context = context[property]
+
+    @tweens.push
+      time: 0
+      property: property
+      start: @[property]
+      change: target - @[property]
+      duration: duration
+      easingFunc: Easie[easing]
 
 module.exports = Shape
