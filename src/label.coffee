@@ -52,7 +52,7 @@ class Label extends Shape
     @canvas.height = @size.height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
     context.font = @font
-    context.textAlign = @alignment  # TODO: alignment is broken for anything not "center"
+    context.textAlign = @alignment  # left, right, center, start, end
     context.textBaseline = 'middle' # top, hanging, middle, alphabetic, ideographic, bottom
 
     @setAnchorPoint()
@@ -64,7 +64,7 @@ class Label extends Shape
       context.arc @anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false
       context.stroke()
 
-    context.translate @anchor.x, @anchor.y
+    context.translate(@anchor.x, @anchor.y)
 
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
       context.shadowOffsetX = @_shadow.x
@@ -72,13 +72,21 @@ class Label extends Shape
       context.shadowBlur = @_shadow.blur
       context.shadowColor = @_shadow.color
 
+    # Handle x coord of text for alignment
+    x = if @alignment == 'start' || @alignment == 'left'
+          -@size.width / 2
+        else if @alignment == 'end' || @alignment == 'right'
+          @size.width / 2
+        else
+          0
+
     if @_color
       context.fillStyle = @_color
       if lineCount > 1
         @text.split('\n').forEach (text, index) =>
-          context.fillText(text, 0, -@size.height / 2 + lineHeight / 2 + (lineHeight * index))
+          context.fillText(text, x, -@size.height / 2 + lineHeight / 2 + (lineHeight * index))
       else
-        context.fillText(@text, 0, 0)
+        context.fillText(@text, x, 0)
 
     # Don't allow border to cast a shadow
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
@@ -91,9 +99,9 @@ class Label extends Shape
       context.strokeStyle = @_border.color
       if lineCount > 1
         @text.split('\n').forEach (text, index) =>
-          context.strokeText(text, 0, -@size.height / 2 + lineHeight / 2 + (lineHeight * index))
+          context.strokeText(text, x, -@size.height / 2 + lineHeight / 2 + (lineHeight * index))
       else
-        context.strokeText(@text, 0, 0)
+        context.strokeText(@text, x, 0)
 
     @dirty = false
 
