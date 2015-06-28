@@ -30,13 +30,12 @@ class Shape extends GameObject
     @fixed = args.fixed       || false # By default, moves with camera
     @angularVelocity = args.angularVelocity || 0
 
-    @color    = args.color  if args.color
-    @border   = args.border if args.border
-    @shadow   = args.shadow if args.shadow
-    @vertices = args.vertices if args.vertices
-    @size     = args.size if args.size
-
-    @path     = args.path   if args.path  # Custom drawing function
+    @color    = args.color if args.hasOwnProperty('color')
+    @border   = args.border if args.hasOwnProperty('border')
+    @shadow   = args.shadow if args.hasOwnProperty('shadow')
+    @vertices = args.vertices if args.hasOwnProperty('vertices')
+    @size     = args.size if args.hasOwnProperty('size')
+    @path     = args.path if args.hasOwnProperty('path')  # Custom drawing function
     @anchor   = { x: @size.width / 2, y: @size.height / 2 }
     @tweens   = []
 

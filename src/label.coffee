@@ -7,11 +7,12 @@ class Label extends Shape
     @_font = { size: 10, family: 'monospace' }
     @_text = 'text goes here'
     @_alignment = 'center'
+    @fixed = true # Does not move with camera/parent objects
 
-    @fixed = true # By default, does not move with camera
-    @font = args.font if args.font
-    @text = args.text if args.text
-    @alignment = args.alignment if args.alignment # allowed values: "left", "right", "center", "start", "end"
+    @fixed = args.fixed if args.hasOwnProperty('fixed')
+    @font = args.font if args.hasOwnProperty('font')
+    @text = args.text if args.hasOwnProperty('text')
+    @alignment = args.alignment if args.hasOwnProperty('alignment') # allowed values: "left", "right", "center", "start", "end"
     @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
   ###
