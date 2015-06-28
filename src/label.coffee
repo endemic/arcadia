@@ -24,23 +24,28 @@ class Label extends Shape
     # which can then be reused here
     Arcadia = require './arcadia.coffee'
     
-    context = @canvas.getContext '2d'
+    context = @canvas.getContext('2d')
+
+    lineCount = 1
+    newlines = @text.match(/\n/g)
+    lineCount = newlines.length + 1 if newlines
 
     # Determine width/height of text using offscreen <div>
     element = document.getElementById 'text-dimensions'
     
     if !element
-      element = document.createElement 'div'
+      element = document.createElement('div')
       element['id'] = 'text-dimensions'
       element.style['position'] = 'absolute'
       element.style['top'] = '-9999px'
-      document.body.appendChild element
+      document.body.appendChild(element)
 
     element.style['font'] = @font
     element.style['line-height'] = 1
-    element.innerHTML = @text
+    element.innerHTML = @text.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;')
     @size.width = element.offsetWidth
     @size.height = element.offsetHeight
+    lineHeight = @size.height / lineCount
     @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
     @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
@@ -52,7 +57,6 @@ class Label extends Shape
 
     @setAnchorPoint()
 
-    # Debug
     if @debug
       context.lineWidth = 1
       context.strokeStyle = '#f00'
@@ -70,7 +74,11 @@ class Label extends Shape
 
     if @_color
       context.fillStyle = @_color
-      context.fillText @text, 0, 0, Arcadia.WIDTH
+      if lineCount > 1
+        @text.split('\n').forEach (text, index) =>
+          context.fillText(text, 0, -@size.height / 2 + lineHeight / 2 + (lineHeight * index))
+      else
+        context.fillText(@text, 0, 0)
 
     # Don't allow border to cast a shadow
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
@@ -81,7 +89,13 @@ class Label extends Shape
     if @_border.width && @_border.color
       context.lineWidth = @_border.width
       context.strokeStyle = @_border.color
-      context.strokeText @text, 0, 0, Arcadia.WIDTH
+      if lineCount > 1
+        @text.split('\n').forEach (text, index) =>
+          context.strokeText(text, 0, -@size.height / 2 + lineHeight / 2 + (lineHeight * index))
+      else
+        context.strokeText(@text, 0, 0)
+
+    @dirty = false
 
   ###
   @description Getter/setter for font
@@ -102,7 +116,7 @@ class Label extends Shape
   @property 'text',
     get: -> return @_text
     set: (value) ->
-      @_text = value
+      @_text = String(value)
       @dirty = true
 
   @property 'alignment',
