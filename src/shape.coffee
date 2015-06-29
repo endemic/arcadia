@@ -54,7 +54,7 @@ class Shape extends GameObject
   @property 'border',
     get: -> "#{@_border.width}px #{@_border.color}"
     set: (border) ->
-      values = border.match(/^(\d+px) (.+)$/)
+      values = border.match(/^(\d+)(?:px)? (.+)$/)
 
       if values?.length == 3
         @_border.width = parseInt values[1], 10
@@ -69,13 +69,13 @@ class Shape extends GameObject
   @property 'shadow',
     get: -> "#{@_shadow.x}px #{@_shadow.y}px #{@_shadow.blur}px #{@_shadow.color}"
     set: (shadow) ->
-      values = shadow.match(/^(.+) (.+) (.+) (.+)$/)
+      values = shadow.match(/^(\d+)(?:px)? (\d+)(?:px)? (\d+)(?:px)? (.+)$/)
 
       if values?.length == 5
         @_shadow.x = parseInt values[1], 10
         @_shadow.y = parseInt values[2], 10
         @_shadow.blur = parseInt values[3], 10
-        @_shadow.color = values[4] # TODO: rgba(x, x, x, x) doesn't work
+        @_shadow.color = values[4]
         @dirty = true
       else
         console.warn('Use format "(x)px (y)px (blur)px (color)" when setting shadows')
