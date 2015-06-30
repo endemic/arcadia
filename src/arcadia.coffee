@@ -56,12 +56,9 @@ Arcadia.ENV = do ->
 ###
 @description Change the active scene being displayed
 ###
-Arcadia.changeScene = (SceneClass) ->
-  throw "Invalid scene!" if typeof SceneClass != "function"
-
-  # Clean up previous scene
-  Arcadia.instance.active.destroy()
-  Arcadia.instance.active = new SceneClass()
+Arcadia.changeScene = (SceneClass, options = {}) ->
+  Arcadia.instance.active.destroy() # Clean up previous scene
+  Arcadia.instance.active = new SceneClass(options)
 
 ###
 @description Static method to translate mouse/touch input to coordinates the game will understand

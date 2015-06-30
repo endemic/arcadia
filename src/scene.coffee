@@ -67,10 +67,10 @@ class Scene extends GameObject
     console.log 'Scene#transition'
 
   ###
-  TODO: Handle removing event listeners, etc.?
+  Handle removing event listeners, etc.?
   ###
   destroy: ->
-    console.log 'Scene#destroy'
+    @children.destroyAll()
 
   ###
   @description Getter/setter for camera target
