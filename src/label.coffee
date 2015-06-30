@@ -2,12 +2,12 @@ Shape = require './shape.coffee'
 
 class Label extends Shape
   constructor: (args = {}) ->
-    super args
-
     @_font = { size: 10, family: 'monospace' }
     @_text = 'text goes here'
     @_alignment = 'center'
     @fixed = true # Does not move with camera/parent objects
+    
+    super(args)
 
     @fixed = args.fixed if args.hasOwnProperty('fixed')
     @font = args.font if args.hasOwnProperty('font')
