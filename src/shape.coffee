@@ -4,13 +4,19 @@ Easie = require('../vendor/easie.coffee')
 class Shape extends GameObject
   ###
   @description Shape constructor
-  @param {Object} args Object representing shape options
+  @param {Object} options Object representing shape options
   ###
-  constructor: (args = {}) ->
-    super(args)
+  constructor: (options = {}) ->
+    super(options)
 
     # Internal drawing cache
     @canvas = document.createElement('canvas')
+
+    # Trigger initial cache draw
+    @dirty = true
+
+    # Data structure to hold animations
+    @tweens = []
 
     # Default graphical options; changing these requires using setters/getters,
     # since the cache would need to be redrawn
@@ -18,26 +24,19 @@ class Shape extends GameObject
     @_border   = { width: 0, color: '#fff' }
     @_shadow   = { x: 0, y: 0, blur: 0, color: '#fff' }
     @_vertices = 4
-    @_size     = { width: 10, height: 10 }
+    @_size = { width: 10, height: 10 }
+    @speed = 1
+    @velocity = { x: 0, y: 0 }
+    @angularVelocity = 0
+    @acceleration = { x: 0, y: 0 }
+    @fixed = false # By default, moves with camera
+    @debug = false
 
-    # Trigger initial cache draw
-    @dirty = true
+    # Pass through any property of the options object
+    for property of options
+      @[property] = options[property] if options.hasOwnProperty(property)
 
-    @velocity = args.velocity || { x: 0, y: 0 }
-    @acceleration = args.acceleration || { x: 0, y: 0 }
-    @speed = args.speed       || 1
-    @debug = args.debug       || false
-    @fixed = args.fixed       || false # By default, moves with camera
-    @angularVelocity = args.angularVelocity || 0
-
-    @color    = args.color if args.hasOwnProperty('color')
-    @border   = args.border if args.hasOwnProperty('border')
-    @shadow   = args.shadow if args.hasOwnProperty('shadow')
-    @vertices = args.vertices if args.hasOwnProperty('vertices')
-    @size     = args.size if args.hasOwnProperty('size')
-    @path     = args.path if args.hasOwnProperty('path')  # Custom drawing function
-    @anchor   = { x: @size.width / 2, y: @size.height / 2 }
-    @tweens   = []
+    @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
   ###
   @description Getter/setter for color
