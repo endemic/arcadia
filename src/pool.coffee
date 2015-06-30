@@ -110,6 +110,16 @@ class Pool
     @length = @children.length
 
   ###
+  @description Destroy all child objects
+  ###
+  destroyAll: ->
+    @length = @children.length
+    while @length--
+      @tmp = @children[@length]
+      @tmp.destroy() if typeof @tmp.destroy == 'function'
+    @length = 0
+
+  ###
   @description Passthrough method to update active child objects
   ###
   update: (delta) ->
