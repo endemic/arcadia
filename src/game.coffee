@@ -2,7 +2,7 @@ class Game
   ###
    * @constructor
    * @description Main "game" object; sets up screens, input, etc.
-   * @param {Object} args Config object. Allowed keys: width, height, scene, fitWindow
+   * @param {Object} args Config object. Allowed keys: width, height, scene, scaleToFit
   ###
   constructor: (args = {}) ->
     Arcadia = require './arcadia.coffee'
@@ -88,9 +88,9 @@ class Game
     @active = new args.scene()
 
     # Fit <canvas> to window
-    if args.fitWindow
+    if args.scaleToFit
       @onResize()
-      window.addEventListener 'resize', @onResize, false
+      window.addEventListener('resize', @onResize, false)
 
     # Start animation request
     @start()
