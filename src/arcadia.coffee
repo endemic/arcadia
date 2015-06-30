@@ -16,6 +16,8 @@ if window.performance == undefined
 Function::property = (prop, desc) ->
   Object.defineProperty @prototype, prop, desc
 
+Sona = require('sona')
+
 Arcadia =
   Game: require('./game.coffee')
   Button: require('./button.coffee')
