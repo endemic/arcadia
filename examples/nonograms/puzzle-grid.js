@@ -16,12 +16,14 @@ var PuzzleGrid = function (args) {
     // this.border = '5px #000';
     this.shadow = '5px 5px 0px #000';
 
+    this.horizontalClues = [];
+    this.verticalClues = [];
+
     // Draw horizontal clues
     i = this.gridSize;
     var label;
     while (i--) {
         label = new Arcadia.Label({
-            text: '  4 2 1 3',
             font: '16px uni_05_53',
             color: '#000',
             alignment: 'right',
@@ -29,13 +31,13 @@ var PuzzleGrid = function (args) {
             fixed: false
         });
         this.add(label);
+        this.horizontalClues.unshift(label);
     }
 
     // Draw vertical clues
     i = this.gridSize;
     while (i--) {
         label = new Arcadia.Label({
-            text: "2\n3\n5\n3\n1",
             font: '16px uni_05_53',
             color: '#000',
             alignment: 'center',
@@ -43,7 +45,10 @@ var PuzzleGrid = function (args) {
             fixed: false
         });
         this.add(label);
+        this.verticalClues.unshift(label);
     }
+
+    this.generateClueLabels();
 
     this.path = function (context) {
         var i,
@@ -87,6 +92,75 @@ var PuzzleGrid = function (args) {
 };
 
 PuzzleGrid.prototype = new Arcadia.Shape();
+
+PuzzleGrid.prototype.generateClueLabels = function () {
+    for (var i = 0; i < this.gridSize; i += 1) {
+        var horizontalClue = '',
+            verticalClue = '',
+            horizontalCounter = 0,
+            verticalCounter = 0,
+            previousVertical = false,
+            previousHorizontal = false,
+            j, index;
+
+        // Horizontal clues
+        for (j = 0; j < this.gridSize; j += 1) {
+            index = i * this.gridSize + j;
+            if (this.clues[index] === 1) {
+                horizontalCounter += 1;
+                this.totalHits += 1;
+                previousHorizontal = true;
+            } else if (previousHorizontal) {
+                horizontalClue += horizontalCounter + ' ';
+                horizontalCounter = 0;
+                previousHorizontal = false;
+            }
+        }
+
+        // Vertical clues
+        for (j = 0; j < this.gridSize; j += 1) {
+            index = j * this.gridSize + i;
+            if (this.clues[index] === 1) {
+                verticalCounter += 1;
+                previousVertical = true;
+            } else if (previousVertical) {
+                verticalClue += verticalCounter + '\n';
+                verticalCounter = 0;
+                previousVertical = false;
+            }
+        }
+
+         // Check for condition when a row or column ends with filled blocks
+        if (previousHorizontal) {
+            horizontalClue += horizontalCounter;
+        }
+
+        if (previousVertical) {
+            verticalClue += verticalCounter + '\n';
+        }
+
+        // Handle when there are no clues for a row/column
+        if (horizontalClue === '') {
+            horizontalClue = '0';
+            // @elem.find('.horizontal.clue').eq(i).addClass('complete')
+        }
+        if (verticalClue === '') {
+            verticalClue = '0\n';
+            // @elem.find('.vertical.clue').eq(i).addClass('complete')
+        }
+
+        // match = verticalClue.match(/<br>/g)
+        // length = if match? then match.length else 0
+
+        // # Add some manual padding for vertical clues so they are bottom aligned
+        // if length < 5
+        //   for [length .. 4]
+        //     verticalClue = "<br>#{verticalClue}"
+
+        this.horizontalClues[i].text = horizontalClue;
+        this.verticalClues[i].text = verticalClue;
+    }
+};
 
 PuzzleGrid.prototype.containsPoint = function (point) {
     return point.x < this.gridBounds.right &&

@@ -11,9 +11,14 @@ var Game = function (options) {
     Arcadia.playMusic('bgm-tutorial');
 
     this.difficulty = options.difficulty || 'easy';
-    this.level = options.level || 1;
+    this.level = options.level || 0;
 
     this.clues = LEVELS[this.difficulty][this.level].clues;
+
+    if (this.difficulty === 'random') {
+        this.clues = this.generateRandomPuzzle(this.level);
+    }
+
     this.action = Game.MARK;
     this.state = [];
 
@@ -225,6 +230,30 @@ Game.prototype.markOrFill = function (row, column) {
         }
     }
 
+};
+
+Game.prototype.generateRandomPuzzle = function (difficulty) {
+    var clues, value, percentage;
+
+    if (difficulty === 0) {
+        percentage = 0.68;
+    } else if (difficulty === 1) {
+        percentage = 0.62;
+    } else {
+        percentage = 0.55;
+    }
+
+    while (clues.length < 100) {
+        if (Math.random() < percentage) {
+            value = 1;
+        } else {
+            value = 0;
+        }
+
+        clues.push(value);
+    }
+
+    return clues;
 };
 
 Game.prototype.setupButtons = function () {
