@@ -5,7 +5,7 @@ class Game
    * @param {Object} args Config object. Allowed keys: width, height, scene, scaleToFit
   ###
   constructor: (args = {}) ->
-    Arcadia = require './arcadia.coffee'
+    Arcadia = require('./arcadia.coffee')
     Arcadia.WIDTH = parseInt(args.width, 10) || 320
     Arcadia.HEIGHT = parseInt(args.height, 10) || 480
 
@@ -84,16 +84,19 @@ class Game
       document.addEventListener 'pause', @pause, false
       document.addEventListener 'resume', @resume, false
 
-    # Instantiate initial scene
-    @active = new args.scene()
-
     # Fit <canvas> to window
     if args.scaleToFit
       @onResize()
       window.addEventListener('resize', @onResize, false)
 
-    # Start animation request
-    @start()
+    if args.hasOwnProperty('sounds')
+      Arcadia.loadSfx(args.sounds, =>
+        @active = new args.scene()
+        @start()
+      )
+    else
+      @active = new args.scene()
+      @start()
 
   ###
   @description Pause active scene if it has a pause method
