@@ -43,15 +43,19 @@ class Label extends Shape
     element.style['font'] = @font
     element.style['line-height'] = 1
     element.innerHTML = @text.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;')
-    @size.width = element.offsetWidth
-    @size.height = element.offsetHeight
+    @size.width = element.offsetWidth * Arcadia.PIXEL_RATIO
+    @size.height = element.offsetHeight * Arcadia.PIXEL_RATIO
     lineHeight = @size.height / lineCount
     @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
     @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
     @canvas.height = @size.height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
-    context.font = @font
+    if Arcadia.PIXEL_RATIO > 1
+      @canvas.width *= Arcadia.PIXEL_RATIO
+      @canvas.height *= Arcadia.PIXEL_RATIO
+
+    context.font = "#{@_font.size * Arcadia.PIXEL_RATIO}px #{@_font.family}"
     context.textAlign = @alignment  # left, right, center, start, end
     context.textBaseline = 'middle' # top, hanging, middle, alphabetic, ideographic, bottom
 
@@ -67,9 +71,9 @@ class Label extends Shape
     context.translate(@anchor.x, @anchor.y)
 
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
-      context.shadowOffsetX = @_shadow.x
-      context.shadowOffsetY = @_shadow.y
-      context.shadowBlur = @_shadow.blur
+      context.shadowOffsetX = @_shadow.x * Arcadia.PIXEL_RATIO
+      context.shadowOffsetY = @_shadow.y * Arcadia.PIXEL_RATIO
+      context.shadowBlur = @_shadow.blur * Arcadia.PIXEL_RATIO
       context.shadowColor = @_shadow.color
 
     # Handle x coord of text for alignment
@@ -95,7 +99,7 @@ class Label extends Shape
       context.shadowBlur = 0
 
     if @_border.width && @_border.color
-      context.lineWidth = @_border.width
+      context.lineWidth = @_border.width * Arcadia.PIXEL_RATIO
       context.strokeStyle = @_border.color
       if lineCount > 1
         @text.split('\n').forEach (text, index) =>
@@ -110,9 +114,9 @@ class Label extends Shape
   TODO: Handle bold text
   ###
   @property 'font',
-    get: -> return "#{@_font.size} #{@_font.family}"
+    get: -> return "#{@_font.size}px #{@_font.family}"
     set: (font) ->
-      values = font.match(/^(.+) (.+)$/)
+      values = font.match(/^(\d+)(?:px)? (.+)$/)
 
       if values.length == 3
         @_font.size = values[1]

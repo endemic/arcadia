@@ -110,6 +110,10 @@ class Shape extends GameObject
     @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
     @canvas.height = @size.height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
+    if Arcadia.PIXEL_RATIO > 1
+      @canvas.width *= Arcadia.PIXEL_RATIO
+      @canvas.height *= Arcadia.PIXEL_RATIO
+
     @setAnchorPoint()
 
     context = @canvas.getContext('2d')
@@ -119,7 +123,7 @@ class Shape extends GameObject
 
     # Draw anchor point and border in red
     if @debug
-      context.lineWidth = 1
+      context.lineWidth = 1 * Arcadia.PIXEL_RATIO
       context.strokeStyle = '#f00'
       context.strokeRect(0, 0, @canvas.width, @canvas.height)
       context.arc(@anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false)
@@ -140,21 +144,21 @@ class Shape extends GameObject
           context.lineTo(-@size.width / 2, @size.height / 2)
           context.lineTo(0, -@size.height / 2)
         when 4
-          context.moveTo(-@size.width / 2, -@size.height / 2)
-          context.lineTo(@size.width / 2, -@size.height / 2)
-          context.lineTo(@size.width / 2, @size.height / 2)
-          context.lineTo(-@size.width / 2, @size.height / 2)
-          context.lineTo(-@size.width / 2, -@size.height / 2)
+          context.moveTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
+          context.lineTo(@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
+          context.lineTo(@size.width / 2 * Arcadia.PIXEL_RATIO, @size.height / 2 * Arcadia.PIXEL_RATIO)
+          context.lineTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, @size.height / 2 * Arcadia.PIXEL_RATIO)
+          context.lineTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
         else
-          context.arc(0, 0, @size.width / 2, 0, 2 * Math.PI) # x, y, radius, startAngle, endAngle
+          context.arc(0, 0, @size.width / 2 * Arcadia.PIXEL_RATIO, 0, 2 * Math.PI) # x, y, radius, startAngle, endAngle
 
     context.closePath()
 
     # Draw shadow
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
-      context.shadowOffsetX = @_shadow.x
-      context.shadowOffsetY = @_shadow.y
-      context.shadowBlur = @_shadow.blur
+      context.shadowOffsetX = @_shadow.x * Arcadia.PIXEL_RATIO
+      context.shadowOffsetY = @_shadow.y * Arcadia.PIXEL_RATIO
+      context.shadowBlur = @_shadow.blur * Arcadia.PIXEL_RATIO
       context.shadowColor = @_shadow.color
 
     # Fill with color
@@ -170,7 +174,7 @@ class Shape extends GameObject
 
     # Draw border
     if @_border.width && @_border.color
-      context.lineWidth = @_border.width
+      context.lineWidth = @_border.width * Arcadia.PIXEL_RATIO
       context.strokeStyle = @_border.color
       context.stroke()
 
@@ -193,8 +197,8 @@ class Shape extends GameObject
     y -= @_shadow.y if @_shadow.y < 0
 
     # Set anchor point (midpoint of shape)
-    @anchor.x = x
-    @anchor.y = y
+    @anchor.x = x * Arcadia.PIXEL_RATIO
+    @anchor.y = y * Arcadia.PIXEL_RATIO
 
   ###
   @description Draw object
@@ -205,10 +209,10 @@ class Shape extends GameObject
 
     context.save()
 
-    context.translate(offsetX, offsetY)
+    context.translate(offsetX * Arcadia.PIXEL_RATIO, offsetY * Arcadia.PIXEL_RATIO)
     context.rotate(offsetRotation) if offsetRotation != 0
 
-    context.translate(@position.x, @position.y)
+    context.translate(@position.x * Arcadia.PIXEL_RATIO, @position.y * Arcadia.PIXEL_RATIO)
     context.rotate(@rotation) if @rotation != 0
 
     context.scale(@scale, @scale) if @scale != 1
