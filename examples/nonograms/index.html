@@ -1,0 +1,85 @@
+<html>
+  <head>
+	<!-- Set viewport -->
+	<!-- <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"> -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+	<!-- Launch in "fullscreen" mode if from home screen -->
+	<meta name="mobile-web-app-capable" content="yes">
+
+	<!-- Does Apple support the above? -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+
+	<!-- controls the appearance of the status bar in full-screen mode -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  	<style type="text/css">
+	  	body { margin: 0; padding: 0; background: #333; }
+	  	#arcadia canvas {
+	  		background-image: url('assets/images/background.png');
+	  		background-size: cover;
+	  		cursor: url('assets/images/cursor.cur'), default;
+	  	}
+	  	#test { font: 16px 'uni_05_53'; }
+	  	@font-face {
+	  		font-family: 'uni_05_53';
+	  		src: url('assets/fonts/uni0553-webfont-webfont.eot');
+	  		src: url('assets/fonts/uni0553-webfont-webfont.eot?#iefix') format('embedded-opentype'),
+	  		     url('assets/fonts/uni0553-webfont-webfont.woff') format('woff'),
+	  		     url('assets/fonts/uni0553-webfont-webfont.ttf') format('truetype'),
+	  		     url('assets/fonts/uni0553-webfont-webfont.svg#uni_05_53regular') format('svg');
+	  		font-weight: normal;
+	  		font-style: normal;
+	  	}
+  	</style>
+
+  	<!-- engine -->
+  	<script src="../../dist/arcadia.js"></script>
+
+  	<!-- objects -->
+  	<script src="levels.js"></script>
+  	<script src="puzzle-grid.js"></script>
+  	<script src="preview.js"></script>
+
+  	<!-- scenes -->
+    <script src="title.js"></script>
+    <script src="options.js"></script>
+    <script src="difficulty-select.js"></script>
+    <script src="level-select.js"></script>
+    <script src="game.js"></script>
+
+	<script>
+		Storage.prototype.setBoolean = function (key, value) {
+			this.setItem(key, !!value);
+		};
+
+		Storage.prototype.getBoolean = function (key) {
+			return this.getItem(key) == 'true';
+		};
+
+		window.onload = function () {
+			new Arcadia.Game({
+				width: 320,
+				height: 568,
+				scene: Title,
+				scaleToFit: true,
+				sounds: [
+					{ url: 'assets/music/1.mp3', id: 'bgm-one' },
+					{ url: 'assets/music/2.mp3', id: 'bgm-two' },
+					{ url: 'assets/music/tutorial.mp3', id: 'bgm-tutorial' },
+					{ url: 'assets/sounds/button.mp3', id: 'button' },
+					{ url: 'assets/sounds/error.mp3', id: 'error' },
+					{ url: 'assets/sounds/fill.mp3', id: 'fill' },
+					{ url: 'assets/sounds/mark.mp3', id: 'mark' },
+					{ url: 'assets/sounds/invalid.mp3', id: 'invalid' },
+					{ url: 'assets/sounds/win.mp3', id: 'win' }
+				]
+			});
+		};
+	</script>
+
+  </head>
+  <body>
+  	<div id="test" style="position: absolute; left: -9999px;">need to use a custom font elsewhere first</div>
+  </body>
+</html>
