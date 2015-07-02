@@ -2,10 +2,10 @@ class Game
   ###
    * @constructor
    * @description Main "game" object; sets up screens, input, etc.
-   * @param {Object} args Config object. Allowed keys: width, height, scene, fitWindow
+   * @param {Object} args Config object. Allowed keys: width, height, scene, scaleToFit
   ###
   constructor: (args = {}) ->
-    Arcadia = require './arcadia.coffee'
+    Arcadia = require('./arcadia.coffee')
     Arcadia.WIDTH = parseInt(args.width, 10) || 320
     Arcadia.HEIGHT = parseInt(args.height, 10) || 480
 
@@ -19,15 +19,12 @@ class Game
     @element.id = 'arcadia'
 
     @canvas = document.createElement('canvas')
-    @canvas.width = Arcadia.WIDTH
-    @canvas.height = Arcadia.HEIGHT
+    @context = @canvas.getContext('2d')
 
     @element.appendChild(@canvas)
     document.body.appendChild(@element)
 
-    @context = @canvas.getContext('2d')
-
-    # @setPixelRatio()
+    @setPixelRatio()
 
     # Map of current input, used to prevent duplicate events being sent to handlers
     # ("keydown" events fire continuously while a key is held)
@@ -84,16 +81,19 @@ class Game
       document.addEventListener 'pause', @pause, false
       document.addEventListener 'resume', @resume, false
 
-    # Instantiate initial scene
-    @active = new args.scene()
-
     # Fit <canvas> to window
-    if args.fitWindow
+    if args.scaleToFit
       @onResize()
-      window.addEventListener 'resize', @onResize, false
+      window.addEventListener('resize', @onResize, false)
 
-    # Start animation request
-    @start()
+    if args.hasOwnProperty('sounds')
+      Arcadia.loadSfx(args.sounds, =>
+        @active = new args.scene()
+        @start()
+      )
+    else
+      @active = new args.scene()
+      @start()
 
   ###
   @description Pause active scene if it has a pause method
@@ -240,14 +240,19 @@ class Game
       @context.backingStorePixelRatio = @context.webkitBackingStorePixelRatio || 1
 
     Arcadia.PIXEL_RATIO = window.devicePixelRatio / @context.backingStorePixelRatio
+    # Arcadia.PIXEL_RATIO = 1
+    # console.debug("pixel ratio is #{Arcadia.PIXEL_RATIO}")
 
+    # Set "real" width/height
     @canvas.width = Arcadia.WIDTH * Arcadia.PIXEL_RATIO
     @canvas.height = Arcadia.HEIGHT * Arcadia.PIXEL_RATIO
 
+    # console.debug("Scaling <canvas> to #{Arcadia.HEIGHT * Arcadia.PIXEL_RATIO}x#{Arcadia.WIDTH * Arcadia.PIXEL_RATIO}")
+
+    # Scale (via CSS) to screen size
     @canvas.style.width = "#{Arcadia.WIDTH}px"
     @canvas.style.height = "#{Arcadia.HEIGHT}px"
-    # @context.scale(Arcadia.PIXEL_RATIO, Arcadia.PIXEL_RATIO)
-    # @context.setTransform(Arcadia.PIXEL_RATIO, 0, 0, Arcadia.PIXEL_RATIO, 0, 0)
+    # console.debug("Reducing <canvas> to #{Arcadia.HEIGHT}x#{Arcadia.WIDTH} via CSS")
 
   ###
   @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
@@ -257,20 +262,20 @@ class Game
     height = window.innerHeight
 
     if width > height
-      orientation = "landscape"
+      orientation = 'landscape'
       aspectRatio = Arcadia.WIDTH / Arcadia.HEIGHT
     else
-      orientation = "portrait"
+      orientation = 'portrait'
       aspectRatio = Arcadia.HEIGHT / Arcadia.WIDTH
 
-    if orientation == "landscape"
+    if orientation == 'landscape'
       if width / aspectRatio > height  # Too wide
         width = height * aspectRatio
         margin = '0 ' + ((window.innerWidth - width) / 2) + 'px'
       else if width / aspectRatio < height  # Too high
         height = width / aspectRatio
         margin = ((window.innerHeight - height) / 2) + 'px 0'
-    else if orientation == "portrait"
+    else if orientation == 'portrait'
       if height / aspectRatio > width   # Too high
         height = width * aspectRatio
         margin = ((window.innerHeight - height) / 2) + 'px 0'
@@ -283,7 +288,12 @@ class Game
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
 
     @element.setAttribute 'style', "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    # @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; width: #{width}px; height: #{height}px;"
-    @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
+    @canvas.style['position'] = 'absolute'
+    @canvas.style['left'] = '0'
+    @canvas.style['top'] = '0'
+    @canvas.style['-webkit-transform'] = "scale(#{Arcadia.SCALE})" # Safari sux
+    @canvas.style['-webkit-transform-origin'] = '0 0'
+    @canvas.style['transform'] = "scale(#{Arcadia.SCALE})"
+    @canvas.style['transform-origin'] = '0 0'
 
 module.exports = Game

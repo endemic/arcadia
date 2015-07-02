@@ -50,9 +50,9 @@ class Button extends Shape
   ###
   @description Clean up event listeners
   ###
-  destroy: () ->
-    Arcadia.element.removeEventListener 'mouseup', @onPointEnd, false
-    Arcadia.element.removeEventListener 'touchend', @onPointEnd, false
+  destroy: ->
+    Arcadia.element.removeEventListener('mouseup', @onPointEnd, false)
+    Arcadia.element.removeEventListener('touchend', @onPointEnd, false)
 
   ###
   @description Getter/setter for text value

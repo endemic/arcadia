@@ -27,6 +27,8 @@ Arcadia =
   Shape: require('./shape.coffee')
   Sprite: require('./sprite.coffee')
 
+Sona = require('sona')
+
 # Static variables tracking performance
 Arcadia.FPS = 60
 Arcadia.garbageCollected = false
@@ -56,12 +58,9 @@ Arcadia.ENV = do ->
 ###
 @description Change the active scene being displayed
 ###
-Arcadia.changeScene = (SceneClass) ->
-  throw "Invalid scene!" if typeof SceneClass != "function"
-
-  # Clean up previous scene
-  Arcadia.instance.active.destroy()
-  Arcadia.instance.active = new SceneClass()
+Arcadia.changeScene = (SceneClass, options = {}) ->
+  Arcadia.instance.active.destroy() # Clean up previous scene
+  Arcadia.instance.active = new SceneClass(options)
 
 ###
 @description Static method to translate mouse/touch input to coordinates the game will understand
@@ -84,51 +83,53 @@ Arcadia.getPoints = (event) ->
         y: (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
 
 ###
-@description Static variables used to store music/sound effects
+@description Static variable used to identify currently playing music track
 ###
-Arcadia.music = {}
-Arcadia.sounds = {}
 Arcadia.currentMusic = null
 
-###/**
+###
+@description Instantiate a Sona object and load it's assets
+###
+Arcadia.loadSfx = (assets, callback) ->
+  Arcadia.sona = new Sona(assets)
+  Arcadia.sona.load(callback)
+
+###
 @description Static method to play sound effects.
-             Assumes you have an instance property 'sounds' filled with Buzz sound objects.
-             Otherwise you can override this method to use whatever sound library you like.
+Assumes you have a static property which is a Sona object
+Otherwise you can override this method to use whatever sound library you like.
 ###
 Arcadia.playSfx = (id) ->
-  return if localStorage.getItem('playSfx') == "false"
-
-  if Arcadia.sounds[id] != undefined && typeof Arcadia.sounds[id].play == "function"
-      Arcadia.sounds[id].play()
+  return if localStorage.getItem('playSfx') == 'false'
+  Arcadia.sona.play(id)
 
 ###
- * @description Static method to play music.
- * Assumes you have an instance property 'music' filled with Buzz sound objects.
- * Otherwise you can override this method to use whatever sound library you like.
+@description Static method to play music.
+Assumes you have a static property which is a Sona object
+Otherwise you can override this method to use whatever sound library you like.
 ###
 Arcadia.playMusic = (id) ->
-  return if localStorage.getItem('playMusic') == "false"
-
+  return if localStorage.getItem('playMusic') == 'false'
   return if Arcadia.currentMusic == id
 
   if id == undefined && Arcadia.currentMusic != null
       id = Arcadia.currentMusic
 
   if Arcadia.currentMusic != null
-      Arcadia.music[Arcadia.currentMusic]?.stop()
+      Arcadia.sona.stop(Arcadia.currentMusic)
 
-  Arcadia.music[id]?.play()
+  Arcadia.sona.loop(id)
   Arcadia.currentMusic = id
 
 ###
 @description Static method to stop music.
-             Assumes you have an instance property 'music' filled with Buzz sound objects.
-             Otherwise you can override this method to use whatever sound library you like.
+Assumes you have a static property which is a Sona object
+Otherwise you can override this method to use whatever sound library you like.
 ###
 Arcadia.stopMusic = ->
   return if Arcadia.currentMusic == null
 
-  Arcadia.music[Arcadia.currentMusic]?.stop()
+  Arcadia.sona.stop(Arcadia.currentMusic)
   Arcadia.currentMusic = null
 
 module.exports = global.Arcadia = Arcadia

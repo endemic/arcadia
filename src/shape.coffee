@@ -1,15 +1,22 @@
-GameObject = require './gameobject.coffee'
+GameObject = require('./gameobject.coffee')
+Easie = require('../vendor/easie.coffee')
 
 class Shape extends GameObject
   ###
   @description Shape constructor
-  @param {Object} args Object representing shape options
+  @param {Object} options Object representing shape options
   ###
-  constructor: (args = {}) ->
-    super(args)
+  constructor: (options = {}) ->
+    super(options)
 
     # Internal drawing cache
     @canvas = document.createElement('canvas')
+
+    # Trigger initial cache draw
+    @dirty = true
+
+    # Data structure to hold animations
+    @tweens = []
 
     # Default graphical options; changing these requires using setters/getters,
     # since the cache would need to be redrawn
@@ -17,25 +24,18 @@ class Shape extends GameObject
     @_border   = { width: 0, color: '#fff' }
     @_shadow   = { x: 0, y: 0, blur: 0, color: '#fff' }
     @_vertices = 4
-    @_size     = { width: 10, height: 10 }
+    @_size = { width: 10, height: 10 }
+    @speed = 1
+    @velocity = { x: 0, y: 0 }
+    @angularVelocity = 0
+    @acceleration = { x: 0, y: 0 }
+    @fixed = false # By default, moves with camera
+    @debug = false
 
-    # Trigger initial cache draw
-    @dirty = true
+    # Pass through any property of the options object
+    for property of options
+      @[property] = options[property] if options.hasOwnProperty(property)
 
-    @velocity = args.velocity || { x: 0, y: 0 }
-    @acceleration = args.acceleration || { x: 0, y: 0 }
-    @speed = args.speed       || 1
-    @debug = args.debug       || false
-    @fixed = args.fixed       || false # By default, moves with camera
-    @angularVelocity = args.angularVelocity || 0
-
-    @color    = args.color  if args.color
-    @border   = args.border if args.border
-    @shadow   = args.shadow if args.shadow
-    @vertices = args.vertices if args.vertices
-    @size     = args.size if args.size
-
-    @path     = args.path   if args.path  # Custom drawing function
     @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
   ###
@@ -53,7 +53,7 @@ class Shape extends GameObject
   @property 'border',
     get: -> "#{@_border.width}px #{@_border.color}"
     set: (border) ->
-      values = border.match(/^(\d+px) (.+)$/)
+      values = border.match(/^(\d+)(?:px)? (.+)$/)
 
       if values?.length == 3
         @_border.width = parseInt values[1], 10
@@ -68,13 +68,13 @@ class Shape extends GameObject
   @property 'shadow',
     get: -> "#{@_shadow.x}px #{@_shadow.y}px #{@_shadow.blur}px #{@_shadow.color}"
     set: (shadow) ->
-      values = shadow.match(/^(.+) (.+) (.+) (.+)$/)
+      values = shadow.match(/^(\d+)(?:px)? (\d+)(?:px)? (\d+)(?:px)? (.+)$/)
 
       if values?.length == 5
         @_shadow.x = parseInt values[1], 10
         @_shadow.y = parseInt values[2], 10
         @_shadow.blur = parseInt values[3], 10
-        @_shadow.color = values[4] # TODO: rgba(x, x, x, x) doesn't work
+        @_shadow.color = values[4]
         @dirty = true
       else
         console.warn('Use format "(x)px (y)px (blur)px (color)" when setting shadows')
@@ -110,6 +110,10 @@ class Shape extends GameObject
     @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
     @canvas.height = @size.height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
 
+    if Arcadia.PIXEL_RATIO > 1
+      @canvas.width *= Arcadia.PIXEL_RATIO
+      @canvas.height *= Arcadia.PIXEL_RATIO
+
     @setAnchorPoint()
 
     context = @canvas.getContext('2d')
@@ -119,7 +123,7 @@ class Shape extends GameObject
 
     # Draw anchor point and border in red
     if @debug
-      context.lineWidth = 1
+      context.lineWidth = 1 * Arcadia.PIXEL_RATIO
       context.strokeStyle = '#f00'
       context.strokeRect(0, 0, @canvas.width, @canvas.height)
       context.arc(@anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false)
@@ -140,21 +144,21 @@ class Shape extends GameObject
           context.lineTo(-@size.width / 2, @size.height / 2)
           context.lineTo(0, -@size.height / 2)
         when 4
-          context.moveTo(-@size.width / 2, -@size.height / 2)
-          context.lineTo(@size.width / 2, -@size.height / 2)
-          context.lineTo(@size.width / 2, @size.height / 2)
-          context.lineTo(-@size.width / 2, @size.height / 2)
-          context.lineTo(-@size.width / 2, -@size.height / 2)
+          context.moveTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
+          context.lineTo(@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
+          context.lineTo(@size.width / 2 * Arcadia.PIXEL_RATIO, @size.height / 2 * Arcadia.PIXEL_RATIO)
+          context.lineTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, @size.height / 2 * Arcadia.PIXEL_RATIO)
+          context.lineTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
         else
-          context.arc(0, 0, @size.width / 2, 0, 2 * Math.PI) # x, y, radius, startAngle, endAngle
+          context.arc(0, 0, @size.width / 2 * Arcadia.PIXEL_RATIO, 0, 2 * Math.PI) # x, y, radius, startAngle, endAngle
 
     context.closePath()
 
     # Draw shadow
     if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
-      context.shadowOffsetX = @_shadow.x
-      context.shadowOffsetY = @_shadow.y
-      context.shadowBlur = @_shadow.blur
+      context.shadowOffsetX = @_shadow.x * Arcadia.PIXEL_RATIO
+      context.shadowOffsetY = @_shadow.y * Arcadia.PIXEL_RATIO
+      context.shadowBlur = @_shadow.blur * Arcadia.PIXEL_RATIO
       context.shadowColor = @_shadow.color
 
     # Fill with color
@@ -170,7 +174,7 @@ class Shape extends GameObject
 
     # Draw border
     if @_border.width && @_border.color
-      context.lineWidth = @_border.width
+      context.lineWidth = @_border.width * Arcadia.PIXEL_RATIO
       context.strokeStyle = @_border.color
       context.stroke()
 
@@ -193,8 +197,8 @@ class Shape extends GameObject
     y -= @_shadow.y if @_shadow.y < 0
 
     # Set anchor point (midpoint of shape)
-    @anchor.x = x
-    @anchor.y = y
+    @anchor.x = x * Arcadia.PIXEL_RATIO
+    @anchor.y = y * Arcadia.PIXEL_RATIO
 
   ###
   @description Draw object
@@ -205,10 +209,10 @@ class Shape extends GameObject
 
     context.save()
 
-    context.translate(offsetX, offsetY)
+    context.translate(offsetX * Arcadia.PIXEL_RATIO, offsetY * Arcadia.PIXEL_RATIO)
     context.rotate(offsetRotation) if offsetRotation != 0
 
-    context.translate(@position.x, @position.y)
+    context.translate(@position.x * Arcadia.PIXEL_RATIO, @position.y * Arcadia.PIXEL_RATIO)
     context.rotate(@rotation) if @rotation != 0
 
     context.scale(@scale, @scale) if @scale != 1
@@ -237,6 +241,14 @@ class Shape extends GameObject
   update: (delta) ->
     super(delta)
 
+    i = @tweens.length
+    while (i--)
+      tween = @tweens[i]
+      tween.time += delta * 1000 # (delta is in seconds)
+      tween.time = tween.duration if tween.time > tween.duration
+      @[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration) # time,begin,change,duration
+      @tweens.splice(i, 1) if tween.time == tween.duration
+
     @velocity.x += @acceleration.x
     @velocity.y += @acceleration.y
 
@@ -250,6 +262,25 @@ class Shape extends GameObject
    * @param {Shape} other Shape object to test collision with
   ###
   collidesWith: (other) ->
+    return false if @ == other
     Math.abs(@position.x - other.position.x) < @size.width / 2 + other.size.width / 2 && Math.abs(@position.y - other.position.y) < @size.height / 2 + other.size.height / 2
+
+  tween: (property, target, duration = 500, easing = 'linearNone') ->
+    # TODO: How to handle compound properties, such as @position?
+    # context = @
+    # if property.indexOf('.') != -1
+    #   # This is a compound value
+    #   property.split('.').forEach (segment) ->
+    #     context = context[segment]
+    # else
+    #   context = context[property]
+
+    @tweens.push
+      time: 0
+      property: property
+      start: @[property]
+      change: target - @[property]
+      duration: duration
+      easingFunc: Easie[easing]
 
 module.exports = Shape
