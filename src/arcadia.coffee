@@ -66,7 +66,7 @@ Arcadia.changeScene = (SceneClass, options = {}) ->
 @description Static method to translate mouse/touch input to coordinates the game will understand
              Takes the <canvas> offset and scale into account
 ###
-Arcadia.getPoints = (event) ->
+Arcadia.getPoints = (event, touchEnd = false) ->
   # http://jsperf.com/empty-javascript-array
   while Arcadia.points.length > 0
     Arcadia.points.pop()
@@ -76,11 +76,13 @@ Arcadia.getPoints = (event) ->
       x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
       y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
   else
-    i = event.touches.length
+    source = if touchEnd then 'changedTouches' else 'touches'
+
+    i = event[source].length
     while i--
       Arcadia.points.unshift
-        x: (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
-        y: (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
+        x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
+        y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
 
 ###
 @description Static variable used to identify currently playing music track

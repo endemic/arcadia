@@ -13,7 +13,7 @@
 * [ ] Ensure correct anchor point for shapes when using large shadows
 * [ ] Inset borders so they don't make shapes actually larger
 * [ ] RGBA colors don't work for shadows
-* [ ] Button "onPointEnd" event listener not getting touch coords on mobile
+* [x] Button "onPointEnd" event listener not getting touch coords on mobile
 * [ ] Canvas scaling when pinned to screen in Android is strange
 * [x] Make getters/setters for size & vertices
 * [ ] Rename Emitter to "Particles" or something

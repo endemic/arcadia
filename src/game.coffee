@@ -116,7 +116,7 @@ class Game
   @description Mouse/touch event callback
   ###
   onPointStart: (event) ->
-    Arcadia.getPoints event
+    Arcadia.getPoints(event)
 
     if event.type.indexOf('mouse') != -1
       @element.addEventListener('mousemove', @onPointMove, false)
@@ -127,7 +127,7 @@ class Game
   @description Mouse/touch event callback
   ###
   onPointMove: (event) ->
-    Arcadia.getPoints event
+    Arcadia.getPoints(event)
 
     @active.onPointMove(@points) if typeof @active.onPointMove == "function"
 
@@ -136,7 +136,7 @@ class Game
   TODO: Generates garbage
   ###
   onPointEnd: (event) ->
-    Arcadia.getPoints(event)
+    Arcadia.getPoints(event, end = true)
 
     if event.type.indexOf('mouse') != -1
       @element.removeEventListener('mousemove', @onPointMove, false)

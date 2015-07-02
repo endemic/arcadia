@@ -1,6 +1,108 @@
-!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Arcadia=e():"undefined"!=typeof global?global.Arcadia=e():"undefined"!=typeof self&&(self.Arcadia=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};(function() {
-  var Arcadia, nowOffset;
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Arcadia=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+var Sona;
+
+Sona = (function() {
+  function Sona(sources) {
+    var AudioContext;
+    AudioContext = AudioContext || webkitAudioContext;
+    this.supported = !!AudioContext;
+    if (!this.supported) {
+      return;
+    }
+    this.context = new AudioContext();
+    this.sources = sources;
+    this.buffers = {};
+    this.sounds = {};
+  }
+
+  Sona.prototype.load = function(callback) {
+    var request, source;
+    if (!this.supported) {
+      return;
+    }
+    source = this.sources.shift();
+    request = new XMLHttpRequest();
+    request.open('GET', source.url, true);
+    request.responseType = 'arraybuffer';
+    request.onload = (function(_this) {
+      return function() {
+        return _this.context.decodeAudioData(request.response, function(buffer) {
+          _this.buffers[source.id] = buffer;
+          return _this.next(callback);
+        }, function(e) {
+          return _this.next(callback);
+        });
+      };
+    })(this);
+    return request.send();
+  };
+
+  Sona.prototype.next = function(callback) {
+    if (this.sources.length) {
+      return this.load(callback);
+    } else if (typeof callback === 'function') {
+      return callback();
+    }
+  };
+
+  Sona.prototype.play = function(id, _loop) {
+    if (_loop == null) {
+      _loop = false;
+    }
+    if (!this.supported || this.buffers[id] === void 0) {
+      return;
+    }
+    this.sounds[id] = this.sounds[id] || {};
+    this.sounds[id].sourceNode = this.context.createBufferSource();
+    this.sounds[id].sourceNode.buffer = this.buffers[id];
+    this.sounds[id].sourceNode.loop = _loop;
+    if (!this.sounds[id].gainNode) {
+      this.sounds[id].gainNode = this.context.createGain();
+      this.sounds[id].gainNode.connect(this.context.destination);
+    }
+    this.sounds[id].sourceNode.connect(this.sounds[id].gainNode);
+    return this.sounds[id].sourceNode.start(0);
+  };
+
+  Sona.prototype.loop = function(id) {
+    return this.play(id, true);
+  };
+
+  Sona.prototype.stop = function(id) {
+    if (!this.supported || this.sounds[id] === void 0) {
+      return;
+    }
+    return this.sounds[id].sourceNode.stop(0);
+  };
+
+  Sona.prototype.getVolume = function(id) {
+    if (!this.supported || this.sounds[id] === void 0) {
+      return;
+    }
+    return this.sounds[id].gainNode.gain.value;
+  };
+
+  Sona.prototype.setVolume = function(id, volume) {
+    if (!this.supported || this.sounds[id] === void 0) {
+      return;
+    }
+    return this.sounds[id].gainNode.gain.value = volume;
+  };
+
+  return Sona;
+
+})();
+
+if (typeof exports !== 'undefined') {
+  module.exports = Sona;
+} else {
+  window.Sona = Sona;
+}
+
+},{}],2:[function(_dereq_,module,exports){
+(function (global){
+(function() {
+  var Arcadia, Sona, nowOffset;
 
   if (window.requestAnimationFrame === void 0) {
     window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -24,16 +126,18 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
   };
 
   Arcadia = {
-    Game: require('./game.coffee'),
-    Button: require('./button.coffee'),
-    Emitter: require('./emitter.coffee'),
-    GameObject: require('./gameobject.coffee'),
-    Label: require('./label.coffee'),
-    Pool: require('./pool.coffee'),
-    Scene: require('./scene.coffee'),
-    Shape: require('./shape.coffee'),
-    Sprite: require('./sprite.coffee')
+    Game: _dereq_('./game.coffee'),
+    Button: _dereq_('./button.coffee'),
+    Emitter: _dereq_('./emitter.coffee'),
+    GameObject: _dereq_('./gameobject.coffee'),
+    Label: _dereq_('./label.coffee'),
+    Pool: _dereq_('./pool.coffee'),
+    Scene: _dereq_('./scene.coffee'),
+    Shape: _dereq_('./shape.coffee'),
+    Sprite: _dereq_('./sprite.coffee')
   };
+
+  Sona = _dereq_('sona');
 
   Arcadia.FPS = 60;
 
@@ -68,12 +172,12 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
   */
 
 
-  Arcadia.changeScene = function(SceneClass) {
-    if (typeof SceneClass !== "function") {
-      throw "Invalid scene!";
+  Arcadia.changeScene = function(SceneClass, options) {
+    if (options == null) {
+      options = {};
     }
     Arcadia.instance.active.destroy();
-    return Arcadia.instance.active = new SceneClass();
+    return Arcadia.instance.active = new SceneClass(options);
   };
 
   /*
@@ -82,8 +186,11 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
   */
 
 
-  Arcadia.getPoints = function(event) {
-    var i, _results;
+  Arcadia.getPoints = function(event, touchEnd) {
+    var i, source, _results;
+    if (touchEnd == null) {
+      touchEnd = false;
+    }
     while (Arcadia.points.length > 0) {
       Arcadia.points.pop();
     }
@@ -93,12 +200,13 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
       });
     } else {
-      i = event.touches.length;
+      source = touchEnd ? 'changedTouches' : 'touches';
+      i = event[source].length;
       _results = [];
       while (i--) {
         _results.push(Arcadia.points.unshift({
-          x: (event.touches[i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
-          y: (event.touches[i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
+          x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
+          y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
         }));
       }
       return _results;
@@ -106,42 +214,45 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
   };
 
   /*
-  @description Static variables used to store music/sound effects
+  @description Static variable used to identify currently playing music track
   */
 
 
-  Arcadia.music = {};
-
-  Arcadia.sounds = {};
-
   Arcadia.currentMusic = null;
 
-  /*/**
+  /*
+  @description Instantiate a Sona object and load it's assets
+  */
+
+
+  Arcadia.loadSfx = function(assets, callback) {
+    Arcadia.sona = new Sona(assets);
+    return Arcadia.sona.load(callback);
+  };
+
+  /*
   @description Static method to play sound effects.
-               Assumes you have an instance property 'sounds' filled with Buzz sound objects.
-               Otherwise you can override this method to use whatever sound library you like.
+  Assumes you have a static property which is a Sona object
+  Otherwise you can override this method to use whatever sound library you like.
   */
 
 
   Arcadia.playSfx = function(id) {
-    if (localStorage.getItem('playSfx') === "false") {
+    if (localStorage.getItem('playSfx') === 'false') {
       return;
     }
-    if (Arcadia.sounds[id] !== void 0 && typeof Arcadia.sounds[id].play === "function") {
-      return Arcadia.sounds[id].play();
-    }
+    return Arcadia.sona.play(id);
   };
 
   /*
-   * @description Static method to play music.
-   * Assumes you have an instance property 'music' filled with Buzz sound objects.
-   * Otherwise you can override this method to use whatever sound library you like.
+  @description Static method to play music.
+  Assumes you have a static property which is a Sona object
+  Otherwise you can override this method to use whatever sound library you like.
   */
 
 
   Arcadia.playMusic = function(id) {
-    var _ref, _ref1;
-    if (localStorage.getItem('playMusic') === "false") {
+    if (localStorage.getItem('playMusic') === 'false') {
       return;
     }
     if (Arcadia.currentMusic === id) {
@@ -151,31 +262,24 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       id = Arcadia.currentMusic;
     }
     if (Arcadia.currentMusic !== null) {
-      if ((_ref = Arcadia.music[Arcadia.currentMusic]) != null) {
-        _ref.stop();
-      }
+      Arcadia.sona.stop(Arcadia.currentMusic);
     }
-    if ((_ref1 = Arcadia.music[id]) != null) {
-      _ref1.play();
-    }
+    Arcadia.sona.loop(id);
     return Arcadia.currentMusic = id;
   };
 
   /*
   @description Static method to stop music.
-               Assumes you have an instance property 'music' filled with Buzz sound objects.
-               Otherwise you can override this method to use whatever sound library you like.
+  Assumes you have a static property which is a Sona object
+  Otherwise you can override this method to use whatever sound library you like.
   */
 
 
   Arcadia.stopMusic = function() {
-    var _ref;
     if (Arcadia.currentMusic === null) {
       return;
     }
-    if ((_ref = Arcadia.music[Arcadia.currentMusic]) != null) {
-      _ref.stop();
-    }
+    Arcadia.sona.stop(Arcadia.currentMusic);
     return Arcadia.currentMusic = null;
   };
 
@@ -184,13 +288,14 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./button.coffee":3,"./emitter.coffee":4,"./game.coffee":5,"./gameobject.coffee":6,"./label.coffee":7,"./pool.coffee":8,"./scene.coffee":9,"./shape.coffee":10,"./sprite.coffee":11,"sona":1}],3:[function(_dereq_,module,exports){
 (function() {
   var Button, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Shape = require('./shape.coffee');
+  Shape = _dereq_('./shape.coffee');
 
   Button = (function(_super) {
     __extends(Button, _super);
@@ -200,8 +305,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (args == null) {
         args = {};
       }
-      Arcadia = require('./arcadia.coffee');
-      Label = require('./label.coffee');
+      Arcadia = _dereq_('./arcadia.coffee');
+      Label = _dereq_('./label.coffee');
       this.padding = args.padding || 10;
       this.label = args.label || new Label({
         text: args.text,
@@ -220,12 +325,16 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       this.fixed = true;
       this.action = args.action;
       this.onPointEnd = this.onPointEnd.bind(this);
-      Arcadia.element.addEventListener('mouseup', this.onPointEnd, false);
-      Arcadia.element.addEventListener('touchend', this.onPointEnd, false);
+      if (Arcadia.ENV.mobile) {
+        Arcadia.element.addEventListener('touchend', this.onPointEnd, false);
+      } else {
+        Arcadia.element.addEventListener('mouseup', this.onPointEnd, false);
+      }
     }
 
     /*
     @description If touch/mouse end is inside button, execute the user-supplied callback
+    this method will get fired for each different button object on the screen
     */
 
 
@@ -257,8 +366,11 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
 
     Button.prototype.destroy = function() {
-      Arcadia.element.removeEventListener('mouseup', this.onPointEnd, false);
-      return Arcadia.element.removeEventListener('touchend', this.onPointEnd, false);
+      if (Arcadia.ENV.mobile) {
+        return Arcadia.element.removeEventListener('touchend', this.onPointEnd, false);
+      } else {
+        return Arcadia.element.removeEventListener('mouseup', this.onPointEnd, false);
+      }
     };
 
     /*
@@ -271,8 +383,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         return this.label.text;
       },
       set: function(text) {
-        this.label.text = text;
-        return this.label.dirty = true;
+        return this.label.text = text;
       }
     });
 
@@ -286,8 +397,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         return this.label.font;
       },
       set: function(font) {
-        this.label.font = font;
-        return this.label.dirty = true;
+        return this.label.font = font;
       }
     });
 
@@ -300,17 +410,17 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(require,module,exports){
+},{"./arcadia.coffee":2,"./label.coffee":7,"./shape.coffee":10}],4:[function(_dereq_,module,exports){
 (function() {
   var Emitter, GameObject, Pool, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  GameObject = _dereq_('./gameobject.coffee');
 
-  Pool = require('./pool.coffee');
+  Pool = _dereq_('./pool.coffee');
 
-  Shape = require('./shape.coffee');
+  Shape = _dereq_('./shape.coffee');
 
   Emitter = (function(_super) {
     __extends(Emitter, _super);
@@ -408,7 +518,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
+},{"./gameobject.coffee":6,"./pool.coffee":8,"./shape.coffee":10}],5:[function(_dereq_,module,exports){
 (function() {
   var Game,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -417,16 +527,17 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
     /*
      * @constructor
      * @description Main "game" object; sets up screens, input, etc.
-     * @param {Object} args Config object. Allowed keys: width, height, scene, fitWindow
+     * @param {Object} args Config object. Allowed keys: width, height, scene, scaleToFit
     */
 
     function Game(args) {
-      var Arcadia;
+      var Arcadia,
+        _this = this;
       if (args == null) {
         args = {};
       }
       this.update = __bind(this.update, this);
-      Arcadia = require('./arcadia.coffee');
+      Arcadia = _dereq_('./arcadia.coffee');
       Arcadia.WIDTH = parseInt(args.width, 10) || 320;
       Arcadia.HEIGHT = parseInt(args.height, 10) || 480;
       Arcadia.SCALE = 1;
@@ -437,11 +548,10 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       this.element = document.createElement('div');
       this.element.id = 'arcadia';
       this.canvas = document.createElement('canvas');
-      this.canvas.width = Arcadia.WIDTH;
-      this.canvas.height = Arcadia.HEIGHT;
+      this.context = this.canvas.getContext('2d');
       this.element.appendChild(this.canvas);
       document.body.appendChild(this.element);
-      this.context = this.canvas.getContext('2d');
+      this.setPixelRatio();
       this.input = {
         'left': false,
         'up': false,
@@ -484,12 +594,19 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         document.addEventListener('pause', this.pause, false);
         document.addEventListener('resume', this.resume, false);
       }
-      this.active = new args.scene();
-      if (args.fitWindow) {
+      if (args.scaleToFit) {
         this.onResize();
         window.addEventListener('resize', this.onResize, false);
       }
-      this.start();
+      if (args.hasOwnProperty('sounds')) {
+        Arcadia.loadSfx(args.sounds, function() {
+          _this.active = new args.scene();
+          return _this.start();
+        });
+      } else {
+        this.active = new args.scene();
+        this.start();
+      }
     }
 
     /*
@@ -551,7 +668,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
 
     Game.prototype.onPointEnd = function(event) {
-      Arcadia.getPoints(event);
+      var end;
+      Arcadia.getPoints(event, end = true);
       if (event.type.indexOf('mouse') !== -1) {
         this.element.removeEventListener('mousemove', this.onPointMove, false);
       }
@@ -704,13 +822,13 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       width = window.innerWidth;
       height = window.innerHeight;
       if (width > height) {
-        orientation = "landscape";
+        orientation = 'landscape';
         aspectRatio = Arcadia.WIDTH / Arcadia.HEIGHT;
       } else {
-        orientation = "portrait";
+        orientation = 'portrait';
         aspectRatio = Arcadia.HEIGHT / Arcadia.WIDTH;
       }
-      if (orientation === "landscape") {
+      if (orientation === 'landscape') {
         if (width / aspectRatio > height) {
           width = height * aspectRatio;
           margin = '0 ' + ((window.innerWidth - width) / 2) + 'px';
@@ -718,7 +836,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
           height = width / aspectRatio;
           margin = ((window.innerHeight - height) / 2) + 'px 0';
         }
-      } else if (orientation === "portrait") {
+      } else if (orientation === 'portrait') {
         if (height / aspectRatio > width) {
           height = width * aspectRatio;
           margin = ((window.innerHeight - height) / 2) + 'px 0';
@@ -731,7 +849,13 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       Arcadia.OFFSET.x = (window.innerWidth - width) / 2;
       Arcadia.OFFSET.y = (window.innerHeight - height) / 2;
       this.element.setAttribute('style', "position: relative; width: " + width + "px; height: " + height + "px; margin: " + margin + ";");
-      return this.canvas.setAttribute('style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(" + Arcadia.SCALE + "); -webkit-transform-origin: 0 0; transform: scale(" + Arcadia.SCALE + "); transform-origin: 0 0;");
+      this.canvas.style['position'] = 'absolute';
+      this.canvas.style['left'] = '0';
+      this.canvas.style['top'] = '0';
+      this.canvas.style['-webkit-transform'] = "scale(" + Arcadia.SCALE + ")";
+      this.canvas.style['-webkit-transform-origin'] = '0 0';
+      this.canvas.style['transform'] = "scale(" + Arcadia.SCALE + ")";
+      return this.canvas.style['transform-origin'] = '0 0';
     };
 
     return Game;
@@ -743,11 +867,11 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./arcadia.coffee":1}],5:[function(require,module,exports){
+},{"./arcadia.coffee":2}],6:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Pool;
 
-  Pool = require('./pool.coffee');
+  Pool = _dereq_('./pool.coffee');
 
   GameObject = (function() {
     function GameObject(args) {
@@ -859,13 +983,13 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./pool.coffee":7}],6:[function(require,module,exports){
+},{"./pool.coffee":8}],7:[function(_dereq_,module,exports){
 (function() {
   var Label, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Shape = require('./shape.coffee');
+  Shape = _dereq_('./shape.coffee');
 
   Label = (function(_super) {
     __extends(Label, _super);
@@ -874,7 +998,6 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (args == null) {
         args = {};
       }
-      Label.__super__.constructor.call(this, args);
       this._font = {
         size: 10,
         family: 'monospace'
@@ -882,13 +1005,17 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       this._text = 'text goes here';
       this._alignment = 'center';
       this.fixed = true;
-      if (args.font) {
+      Label.__super__.constructor.call(this, args);
+      if (args.hasOwnProperty('fixed')) {
+        this.fixed = args.fixed;
+      }
+      if (args.hasOwnProperty('font')) {
         this.font = args.font;
       }
-      if (args.text) {
+      if (args.hasOwnProperty('text')) {
         this.text = args.text;
       }
-      if (args.alignment) {
+      if (args.hasOwnProperty('alignment')) {
         this.alignment = args.alignment;
       }
       this.anchor = {
@@ -903,12 +1030,18 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
 
     Label.prototype.drawCanvasCache = function() {
-      var Arcadia, context, element;
+      var Arcadia, context, element, lineCount, lineHeight, newlines, x,
+        _this = this;
       if (this.canvas === void 0) {
         return;
       }
-      Arcadia = require('./arcadia.coffee');
+      Arcadia = _dereq_('./arcadia.coffee');
       context = this.canvas.getContext('2d');
+      lineCount = 1;
+      newlines = this.text.match(/\n/g);
+      if (newlines) {
+        lineCount = newlines.length + 1;
+      }
       element = document.getElementById('text-dimensions');
       if (!element) {
         element = document.createElement('div');
@@ -919,16 +1052,21 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       }
       element.style['font'] = this.font;
       element.style['line-height'] = 1;
-      element.innerHTML = this.text;
-      this.size.width = element.offsetWidth;
-      this.size.height = element.offsetHeight;
+      element.innerHTML = this.text.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
+      this.size.width = element.offsetWidth * Arcadia.PIXEL_RATIO;
+      this.size.height = element.offsetHeight * Arcadia.PIXEL_RATIO;
+      lineHeight = this.size.height / lineCount;
       this.anchor = {
         x: this.size.width / 2,
         y: this.size.height / 2
       };
       this.canvas.width = this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
       this.canvas.height = this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
-      context.font = this.font;
+      if (Arcadia.PIXEL_RATIO > 1) {
+        this.canvas.width *= Arcadia.PIXEL_RATIO;
+        this.canvas.height *= Arcadia.PIXEL_RATIO;
+      }
+      context.font = "" + (this._font.size * Arcadia.PIXEL_RATIO) + "px " + this._font.family;
       context.textAlign = this.alignment;
       context.textBaseline = 'middle';
       this.setAnchorPoint();
@@ -941,14 +1079,21 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       }
       context.translate(this.anchor.x, this.anchor.y);
       if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
-        context.shadowOffsetX = this._shadow.x;
-        context.shadowOffsetY = this._shadow.y;
-        context.shadowBlur = this._shadow.blur;
+        context.shadowOffsetX = this._shadow.x * Arcadia.PIXEL_RATIO;
+        context.shadowOffsetY = this._shadow.y * Arcadia.PIXEL_RATIO;
+        context.shadowBlur = this._shadow.blur * Arcadia.PIXEL_RATIO;
         context.shadowColor = this._shadow.color;
       }
+      x = this.alignment === 'start' || this.alignment === 'left' ? -this.size.width / 2 : this.alignment === 'end' || this.alignment === 'right' ? this.size.width / 2 : 0;
       if (this._color) {
         context.fillStyle = this._color;
-        context.fillText(this.text, 0, 0, Arcadia.WIDTH);
+        if (lineCount > 1) {
+          this.text.split('\n').forEach(function(text, index) {
+            return context.fillText(text, x, -_this.size.height / 2 + lineHeight / 2 + (lineHeight * index));
+          });
+        } else {
+          context.fillText(this.text, x, 0);
+        }
       }
       if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
         context.shadowOffsetX = 0;
@@ -956,10 +1101,17 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         context.shadowBlur = 0;
       }
       if (this._border.width && this._border.color) {
-        context.lineWidth = this._border.width;
+        context.lineWidth = this._border.width * Arcadia.PIXEL_RATIO;
         context.strokeStyle = this._border.color;
-        return context.strokeText(this.text, 0, 0, Arcadia.WIDTH);
+        if (lineCount > 1) {
+          this.text.split('\n').forEach(function(text, index) {
+            return context.strokeText(text, x, -_this.size.height / 2 + lineHeight / 2 + (lineHeight * index));
+          });
+        } else {
+          context.strokeText(this.text, x, 0);
+        }
       }
+      return this.dirty = false;
     };
 
     /*
@@ -970,11 +1122,11 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
     Label.property('font', {
       get: function() {
-        return "" + this._font.size + " " + this._font.family;
+        return "" + this._font.size + "px " + this._font.family;
       },
       set: function(font) {
         var values;
-        values = font.match(/^(.+) (.+)$/);
+        values = font.match(/^(\d+)(?:px)? (.+)$/);
         if (values.length === 3) {
           this._font.size = values[1];
           this._font.family = values[2];
@@ -990,7 +1142,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         return this._text;
       },
       set: function(value) {
-        this._text = value;
+        this._text = String(value);
         return this.dirty = true;
       }
     });
@@ -1014,7 +1166,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(require,module,exports){
+},{"./arcadia.coffee":2,"./shape.coffee":10}],8:[function(_dereq_,module,exports){
 /*
 @description One possible way to store common recyclable objects.
 Assumes the objects you add will have an `active` property, and optionally an
@@ -1160,6 +1312,22 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
+    @description Destroy all child objects
+    */
+
+
+    Pool.prototype.destroyAll = function() {
+      this.length = this.children.length;
+      while (this.length--) {
+        this.tmp = this.children[this.length];
+        if (typeof this.tmp.destroy === 'function') {
+          this.tmp.destroy();
+        }
+      }
+      return this.length = 0;
+    };
+
+    /*
     @description Passthrough method to update active child objects
     */
 
@@ -1192,13 +1360,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Scene,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  GameObject = _dereq_('./gameobject.coffee');
 
   Scene = (function(_super) {
     __extends(Scene, _super);
@@ -1208,7 +1376,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       Scene.__super__.constructor.apply(this, arguments);
       this.canvas = document.createElement('canvas');
       this.context = this.canvas.getContext('2d');
-      Arcadia = require('./arcadia.coffee');
+      Arcadia = _dereq_('./arcadia.coffee');
       this.camera = {
         target: null,
         viewport: {
@@ -1278,12 +1446,12 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
-    TODO: Handle removing event listeners, etc.?
+    Handle removing event listeners, etc.?
     */
 
 
     Scene.prototype.destroy = function() {
-      return console.log('Scene#destroy');
+      return this.children.destroyAll();
     };
 
     /*
@@ -1314,31 +1482,34 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./gameobject.coffee":5}],9:[function(require,module,exports){
+},{"./arcadia.coffee":2,"./gameobject.coffee":6}],10:[function(_dereq_,module,exports){
 (function() {
   var Easie, GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  GameObject = _dereq_('./gameobject.coffee');
 
-  Easie = require('../vendor/easie.coffee');
+  Easie = _dereq_('../vendor/easie.coffee');
 
   Shape = (function(_super) {
     __extends(Shape, _super);
 
     /*
     @description Shape constructor
-    @param {Object} args Object representing shape options
+    @param {Object} options Object representing shape options
     */
 
 
-    function Shape(args) {
-      if (args == null) {
-        args = {};
+    function Shape(options) {
+      var property;
+      if (options == null) {
+        options = {};
       }
-      Shape.__super__.constructor.call(this, args);
+      Shape.__super__.constructor.call(this, options);
       this.canvas = document.createElement('canvas');
+      this.dirty = true;
+      this.tweens = [];
       this._color = '#fff';
       this._border = {
         width: 0,
@@ -1355,42 +1526,27 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         width: 10,
         height: 10
       };
-      this.dirty = true;
-      this.velocity = args.velocity || {
+      this.speed = 1;
+      this.velocity = {
         x: 0,
         y: 0
       };
-      this.acceleration = args.acceleration || {
+      this.angularVelocity = 0;
+      this.acceleration = {
         x: 0,
         y: 0
       };
-      this.speed = args.speed || 1;
-      this.debug = args.debug || false;
-      this.fixed = args.fixed || false;
-      this.angularVelocity = args.angularVelocity || 0;
-      if (args.color) {
-        this.color = args.color;
-      }
-      if (args.border) {
-        this.border = args.border;
-      }
-      if (args.shadow) {
-        this.shadow = args.shadow;
-      }
-      if (args.vertices) {
-        this.vertices = args.vertices;
-      }
-      if (args.size) {
-        this.size = args.size;
-      }
-      if (args.path) {
-        this.path = args.path;
+      this.fixed = false;
+      this.debug = false;
+      for (property in options) {
+        if (options.hasOwnProperty(property)) {
+          this[property] = options[property];
+        }
       }
       this.anchor = {
         x: this.size.width / 2,
         y: this.size.height / 2
       };
-      this.tweens = [];
     }
 
     /*
@@ -1419,7 +1575,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       },
       set: function(border) {
         var values;
-        values = border.match(/^(\d+px) (.+)$/);
+        values = border.match(/^(\d+)(?:px)? (.+)$/);
         if ((values != null ? values.length : void 0) === 3) {
           this._border.width = parseInt(values[1], 10);
           this._border.color = values[2];
@@ -1441,7 +1597,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       },
       set: function(shadow) {
         var values;
-        values = shadow.match(/^(.+) (.+) (.+) (.+)$/);
+        values = shadow.match(/^(\d+)(?:px)? (\d+)(?:px)? (\d+)(?:px)? (.+)$/);
         if ((values != null ? values.length : void 0) === 5) {
           this._shadow.x = parseInt(values[1], 10);
           this._shadow.y = parseInt(values[2], 10);
@@ -1504,12 +1660,16 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       }
       this.canvas.width = this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
       this.canvas.height = this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
+      if (Arcadia.PIXEL_RATIO > 1) {
+        this.canvas.width *= Arcadia.PIXEL_RATIO;
+        this.canvas.height *= Arcadia.PIXEL_RATIO;
+      }
       this.setAnchorPoint();
       context = this.canvas.getContext('2d');
       context.lineJoin = 'miter';
       context.beginPath();
       if (this.debug) {
-        context.lineWidth = 1;
+        context.lineWidth = 1 * Arcadia.PIXEL_RATIO;
         context.strokeStyle = '#f00';
         context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
         context.arc(this.anchor.x, this.anchor.y, 3, 0, 2 * Math.PI, false);
@@ -1531,21 +1691,21 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
             context.lineTo(0, -this.size.height / 2);
             break;
           case 4:
-            context.moveTo(-this.size.width / 2, -this.size.height / 2);
-            context.lineTo(this.size.width / 2, -this.size.height / 2);
-            context.lineTo(this.size.width / 2, this.size.height / 2);
-            context.lineTo(-this.size.width / 2, this.size.height / 2);
-            context.lineTo(-this.size.width / 2, -this.size.height / 2);
+            context.moveTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+            context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+            context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+            context.lineTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+            context.lineTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
             break;
           default:
-            context.arc(0, 0, this.size.width / 2, 0, 2 * Math.PI);
+            context.arc(0, 0, this.size.width / 2 * Arcadia.PIXEL_RATIO, 0, 2 * Math.PI);
         }
       }
       context.closePath();
       if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
-        context.shadowOffsetX = this._shadow.x;
-        context.shadowOffsetY = this._shadow.y;
-        context.shadowBlur = this._shadow.blur;
+        context.shadowOffsetX = this._shadow.x * Arcadia.PIXEL_RATIO;
+        context.shadowOffsetY = this._shadow.y * Arcadia.PIXEL_RATIO;
+        context.shadowBlur = this._shadow.blur * Arcadia.PIXEL_RATIO;
         context.shadowColor = this._shadow.color;
       }
       if (this._color) {
@@ -1558,7 +1718,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         context.shadowBlur = 0;
       }
       if (this._border.width && this._border.color) {
-        context.lineWidth = this._border.width;
+        context.lineWidth = this._border.width * Arcadia.PIXEL_RATIO;
         context.strokeStyle = this._border.color;
         context.stroke();
       }
@@ -1584,8 +1744,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this._shadow.y < 0) {
         y -= this._shadow.y;
       }
-      this.anchor.x = x;
-      return this.anchor.y = y;
+      this.anchor.x = x * Arcadia.PIXEL_RATIO;
+      return this.anchor.y = y * Arcadia.PIXEL_RATIO;
     };
 
     /*
@@ -1608,11 +1768,11 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         offsetX = offsetY = 0;
       }
       context.save();
-      context.translate(offsetX, offsetY);
+      context.translate(offsetX * Arcadia.PIXEL_RATIO, offsetY * Arcadia.PIXEL_RATIO);
       if (offsetRotation !== 0) {
         context.rotate(offsetRotation);
       }
-      context.translate(this.position.x, this.position.y);
+      context.translate(this.position.x * Arcadia.PIXEL_RATIO, this.position.y * Arcadia.PIXEL_RATIO);
       if (this.rotation !== 0) {
         context.rotate(this.rotation);
       }
@@ -1665,6 +1825,9 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.collidesWith = function(other) {
+      if (this === other) {
+        return false;
+      }
       return Math.abs(this.position.x - other.position.x) < this.size.width / 2 + other.size.width / 2 && Math.abs(this.position.y - other.position.y) < this.size.height / 2 + other.size.height / 2;
     };
 
@@ -1694,13 +1857,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"../vendor/easie.coffee":11,"./gameobject.coffee":5}],10:[function(require,module,exports){
+},{"../vendor/easie.coffee":12,"./gameobject.coffee":6}],11:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Sprite,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  GameObject = _dereq_('./gameobject.coffee');
 
   Sprite = (function(_super) {
     __extends(Sprite, _super);
@@ -1790,7 +1953,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],11:[function(require,module,exports){
+},{"./gameobject.coffee":6}],12:[function(_dereq_,module,exports){
 /*
 Easie.coffee (https://github.com/jimjeffers/Easie)
 Project created by J. Jeffers
@@ -2082,7 +2245,6 @@ Don't do bad things with this :)
 }).call(this);
 
 
-},{}]},{},[1])
-(1)
+},{}]},{},[2])
+(2)
 });
-;

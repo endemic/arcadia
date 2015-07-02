@@ -25,18 +25,23 @@ class Button extends Shape
 
     # Attach event listeners
     @onPointEnd = @onPointEnd.bind(@)
-    Arcadia.element.addEventListener('mouseup', @onPointEnd, false)
-    Arcadia.element.addEventListener('touchend', @onPointEnd, false)
+
+    if Arcadia.ENV.mobile
+      Arcadia.element.addEventListener('touchend', @onPointEnd, false)
+    else
+      Arcadia.element.addEventListener('mouseup', @onPointEnd, false)
 
   ###
   @description If touch/mouse end is inside button, execute the user-supplied callback
+  this method will get fired for each different button object on the screen
   ###
   onPointEnd: (event) ->
     return if typeof @action != 'function'
 
     i = Arcadia.points.length
     while i--
-      return @action() if @containsPoint(Arcadia.points[i])
+      if @containsPoint(Arcadia.points[i])
+        return @action()
 
   ###
   @description Helper method to determine if mouse/touch is inside button graphic
@@ -51,27 +56,27 @@ class Button extends Shape
   @description Clean up event listeners
   ###
   destroy: ->
-    Arcadia.element.removeEventListener('mouseup', @onPointEnd, false)
-    Arcadia.element.removeEventListener('touchend', @onPointEnd, false)
+    if Arcadia.ENV.mobile
+      Arcadia.element.removeEventListener('touchend', @onPointEnd, false)
+    else
+      Arcadia.element.removeEventListener('mouseup', @onPointEnd, false)
 
   ###
   @description Getter/setter for text value
   ###
   @property 'text',
     get: ->
-      return @label.text
+      @label.text
     set: (text) ->
       @label.text = text
-      @label.dirty = true
 
   ###
   @description Getter/setter for font value
   ###
   @property 'font',
     get: ->
-      return @label.font
+      @label.font
     set: (font) ->
       @label.font = font
-      @label.dirty = true
 
 module.exports = Button
