@@ -63,10 +63,7 @@ var Game = function () {
     // store bridges
     this.bridges = new Arcadia.Pool();
     this.bridges.factory = function () {
-        return new Arcadia.Shape({
-            border: '2px #fff',
-            color: null
-        });
+        return new Bridge();
     };
     this.add(this.bridges);
 
@@ -75,6 +72,7 @@ var Game = function () {
         size: { width: 2, height: 2 }
     });
     this.add(this.activeBridge);
+    this.deactivate(this.activeBridge);
 };
 
 Game.prototype = new Arcadia.Scene();
@@ -156,16 +154,24 @@ Game.prototype.onPointEnd = function (points) {
                     j = this.bridges.length;
                     while (j--) {
                         if (tmpBridge.collidesWith(this.bridges.at(j))) {
-                            collision = true;
+                            // collision = true;
+                            collision = this.bridges.at(j);
                         }
                     }
                     // If successful, add the bridge
                     if (!collision) {
+                        tmpBridge.start = this.startIsland;
+                        tmpBridge.end = endIsland;
                         this.bridges.add(tmpBridge);
-                        success = true;
+                        Arcadia.playSfx('build');
+                    } else if (collision.start.id == this.startIsland.id && collision.end.id == endIsland.id) {
+                        // trying to draw over existing bridge
+                        collision.increment();
+                        Arcadia.playSfx('build');
+                        this.bridges.deactivate(tmpBridge);
                     } else {
-                        // play some sort of sfx to indicate collision
-                        console.debug('Bridge collision');
+                        this.bridges.deactivate(tmpBridge);
+                        Arcadia.playSfx('invalid');
                     }
                 // horizontal bridge
                 } else if (this.startIsland.position.y === endIsland.position.y) {
@@ -188,22 +194,16 @@ Game.prototype.onPointEnd = function (points) {
                     }
                     // If successful, add the bridge
                     if (!collision) {
-                        success = true;
+                        tmpBridge.start = this.startIsland;
+                        tmpBridge.end = endIsland;
+                        this.bridges.add(tmpBridge);
+                        Arcadia.playSfx('build');
                     } else {
-                        // play some sort of sfx to indicate collision
-                        console.debug('Bridge collision');
+                        this.bridges.deactivate(tmpBridge);
+                        Arcadia.playSfx('invalid');
                     }
                 }
             }
-        }
-
-        if (success) {
-            tmpBridge.start = this.startIsland;
-            tmpBridge.end = endIsland;
-            Arcadia.playSfx('build');
-        } else if (tmpBridge) {
-            this.bridges.deactivate(tmpBridge);
-            Arcadia.playSfx('invalid');
         }
 
         this.deactivate(this.activeBridge);
