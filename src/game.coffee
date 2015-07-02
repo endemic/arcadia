@@ -240,18 +240,19 @@ class Game
       @context.backingStorePixelRatio = @context.webkitBackingStorePixelRatio || 1
 
     Arcadia.PIXEL_RATIO = window.devicePixelRatio / @context.backingStorePixelRatio
-    # alert("pixel ratio is #{Arcadia.PIXEL_RATIO}")
+    # Arcadia.PIXEL_RATIO = 1
+    # console.debug("pixel ratio is #{Arcadia.PIXEL_RATIO}")
 
     # Set "real" width/height
     @canvas.width = Arcadia.WIDTH * Arcadia.PIXEL_RATIO
     @canvas.height = Arcadia.HEIGHT * Arcadia.PIXEL_RATIO
 
-    # alert("Scaling <canvas> to #{Arcadia.HEIGHT * Arcadia.PIXEL_RATIO}x#{Arcadia.WIDTH * Arcadia.PIXEL_RATIO}")
+    # console.debug("Scaling <canvas> to #{Arcadia.HEIGHT * Arcadia.PIXEL_RATIO}x#{Arcadia.WIDTH * Arcadia.PIXEL_RATIO}")
 
     # Scale (via CSS) to screen size
     @canvas.style.width = "#{Arcadia.WIDTH}px"
     @canvas.style.height = "#{Arcadia.HEIGHT}px"
-    # alert("Reducing <canvas> to #{Arcadia.HEIGHT}x#{Arcadia.WIDTH} via CSS")
+    # console.debug("Reducing <canvas> to #{Arcadia.HEIGHT}x#{Arcadia.WIDTH} via CSS")
 
   ###
   @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
@@ -287,11 +288,12 @@ class Game
     Arcadia.OFFSET.y = (window.innerHeight - height) / 2
 
     @element.setAttribute 'style', "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    # @canvas.setAttribute 'style', "position: absolute; left: 0; top: 0; -webkit-transform: scale(#{Arcadia.SCALE}); -webkit-transform-origin: 0 0; transform: scale(#{Arcadia.SCALE}); transform-origin: 0 0;"
-    @canvas.style.position = 'absolute'
-    @canvas.style.left = '0'
-    @canvas.style.top = '0'
-    @canvas.style.transform = "scale(#{Arcadia.SCALE})"
+    @canvas.style['position'] = 'absolute'
+    @canvas.style['left'] = '0'
+    @canvas.style['top'] = '0'
+    @canvas.style['-webkit-transform'] = "scale(#{Arcadia.SCALE})" # Safari sux
+    @canvas.style['-webkit-transform-origin'] = '0 0'
+    @canvas.style['transform'] = "scale(#{Arcadia.SCALE})"
     @canvas.style['transform-origin'] = '0 0'
 
 module.exports = Game
