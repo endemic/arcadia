@@ -2,7 +2,15 @@
 
 * What the hell, made major changes to which objects get returned in Pool and no tests broke,
   write extra tests which assert the object that is returned/rearranged when activated/deactivated
+* [x] Get clues actually displayed
+* [ ] Change to iPhone6 resolution
+* [x] Determine cause of slow button presses on iPhone
+* [ ] Fix sound effects firing too quickly  
+* [ ] Change `tween` object to use a Pool  
 * [x] Make setters for size & vertices
+* [ ] Inset borders so they don't make shapes actually larger
+* [x] Get `Sona` embedded
+* [ ] Allow buttons to be disabled
 * [ ] Maybe change Scene's `color` prop to `clearColor`
 * [x] Allow access to `Arcadia.points` instead of `Arcadia.instance.points`
 * [ ] Maybe make an `Arcadia.random(min,max)` helper method
@@ -12,7 +20,7 @@
 * [ ] Allow strings to be passed for border, font, shadow, etc. instead of objects - use setter methods
 * [ ] Ensure correct anchor point for shapes when using large shadows
 * [ ] Inset borders so they don't make shapes actually larger
-* [ ] RGBA colors don't work for shadows
+* [x] RGBA colors don't work for shadows
 * [x] Button "onPointEnd" event listener not getting touch coords on mobile
 * [ ] Canvas scaling when pinned to screen in Android is strange
 * [x] Make getters/setters for size & vertices
