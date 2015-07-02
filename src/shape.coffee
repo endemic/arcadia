@@ -262,6 +262,7 @@ class Shape extends GameObject
    * @param {Shape} other Shape object to test collision with
   ###
   collidesWith: (other) ->
+    return false if @ == other
     Math.abs(@position.x - other.position.x) < @size.width / 2 + other.size.width / 2 && Math.abs(@position.y - other.position.y) < @size.height / 2 + other.size.height / 2
 
   tween: (property, target, duration = 500, easing = 'linearNone') ->
