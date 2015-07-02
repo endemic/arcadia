@@ -14,11 +14,14 @@
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
   	<style type="text/css">
-	  	body { margin: 0; padding: 0; background: #333; }
+	  	body { margin: 0; padding: 0; background: #000; }
 	  	#arcadia canvas {
 	  		background-image: url('assets/images/background.png');
 	  		background-size: cover;
 	  		cursor: url('assets/images/cursor.cur'), default;
+	  	}
+	  	#arcadia, #arcadia canvas {
+	  		-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 	  	}
 	  	#test { font: 16px 'uni_05_53'; }
 	  	@font-face {
@@ -59,20 +62,20 @@
 
 		window.onload = function () {
 			new Arcadia.Game({
-				width: 320,
-				height: 568,
-				scene: Title,
+				width: 375,
+				height: 667,
+				scene: LevelSelect,
 				scaleToFit: true,
 				sounds: [
-					{ url: 'assets/music/1.mp3', id: 'bgm-one' },
-					{ url: 'assets/music/2.mp3', id: 'bgm-two' },
-					{ url: 'assets/music/tutorial.mp3', id: 'bgm-tutorial' },
+					// { url: 'assets/music/1.mp3', id: 'bgm-one' },
+					// { url: 'assets/music/2.mp3', id: 'bgm-two' },
+					// { url: 'assets/music/tutorial.mp3', id: 'bgm-tutorial' },
 					{ url: 'assets/sounds/button.mp3', id: 'button' },
-					{ url: 'assets/sounds/error.mp3', id: 'error' },
-					{ url: 'assets/sounds/fill.mp3', id: 'fill' },
-					{ url: 'assets/sounds/mark.mp3', id: 'mark' },
-					{ url: 'assets/sounds/invalid.mp3', id: 'invalid' },
-					{ url: 'assets/sounds/win.mp3', id: 'win' }
+					// { url: 'assets/sounds/error.mp3', id: 'error' },
+					// { url: 'assets/sounds/fill.mp3', id: 'fill' },
+					// { url: 'assets/sounds/mark.mp3', id: 'mark' },
+					// { url: 'assets/sounds/invalid.mp3', id: 'invalid' },
+					// { url: 'assets/sounds/win.mp3', id: 'win' }
 				]
 			});
 		};

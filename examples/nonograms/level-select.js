@@ -1,5 +1,7 @@
 var LevelSelect = function (options) {
     Arcadia.Scene.apply(this, arguments);
+    
+    options = options || {};
 
     var title, button, _this = this;
 
@@ -7,15 +9,14 @@ var LevelSelect = function (options) {
     this.level = 0;
 
     var backButton = new Arcadia.Button({
-        position: { x: 65, y: 30 },
-        size: { width: 100, height: 30 },
+        position: { x: 75, y: 35 },
+        size: { width: 120, height: 40 },
         border: '5px solid #000',
         color: '#665945',
         shadow: '5px 5px 0 #000',
         label: new Arcadia.Label({
             text: '< back',
-            color: '#fff',
-            font: '20px uni_05_53',
+            font: '25px uni_05_53',
             position: { x: 0, y: -3 }
         }),
         action: function () {
@@ -27,26 +28,25 @@ var LevelSelect = function (options) {
 
     title = new Arcadia.Label({
         text: 'Choose\nPuzzle',
-        font: '55px uni_05_53',
+        font: '65px uni_05_53',
         color: '#fff',
         shadow: '0px 0px 10px #000',
         position: {
             x: Arcadia.WIDTH / 2,
-            y: 100
+            y: 130
         }
     });
     this.add(title);
 
     var startButton = new Arcadia.Button({
-        position: { x: Arcadia.WIDTH / 2, y: 500 },
-        size: { width: 145, height: 40 },
+        position: { x: Arcadia.WIDTH / 2, y: Arcadia.HEIGHT - 50 },
+        size: { width: 180, height: 50 },
         border: '5px solid #000',
         color: '#665945',
         shadow: '5px 5px 0 #000',
         label: new Arcadia.Label({
-            text: 'START',
-            color: '#fff',
-            font: '30px uni_05_53',
+            text: 'Play',
+            font: '35px uni_05_53',
             position: { x: 0, y: -3 }
         }),
         action: function () {
@@ -61,15 +61,14 @@ var LevelSelect = function (options) {
 
     // Create previous/next buttons
     var previousButton = new Arcadia.Button({
-        position: { x: 80, y: 400 },
-        size: { width: 40, height: 40 },
+        position: { x: 50, y: 350 },
+        size: { width: 60, height: 60 },
         border: '5px solid #000',
         color: '#665945',
         shadow: '5px 5px 0 rgba(0, 0, 0, 0.5)',
         label: new Arcadia.Label({
             text: '<',
-            color: '#fff',
-            font: '30px uni_05_53',
+            font: '40px uni_05_53',
             position: { x: 0, y: -3 }
         }),
         action: function () {
@@ -79,15 +78,14 @@ var LevelSelect = function (options) {
     });
 
     var nextButton = new Arcadia.Button({
-        position: { x: Arcadia.WIDTH - 80, y: 400 },
-        size: { width: 40, height: 40 },
+        position: { x: Arcadia.WIDTH - 50, y: 350 },
+        size: { width: 60, height: 60 },
         border: '5px solid #000',
         color: '#665945',
         shadow: '5px 5px 0 rgba(0, 0, 0, 0.5)',
         label: new Arcadia.Label({
             text: '>',
-            color: '#fff',
-            font: '30px uni_05_53',
+            font: '40px uni_05_53',
             position: { x: 0, y: -3 }
         }),
         action: function () {
