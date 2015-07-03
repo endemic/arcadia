@@ -68,11 +68,11 @@ var Game = function () {
     this.add(this.bridges);
 
     // drawing target
-    this.activeBridge = new Arcadia.Shape({
+    this.drawingBridge = new Arcadia.Shape({
         size: { width: 2, height: 2 }
     });
-    this.add(this.activeBridge);
-    this.deactivate(this.activeBridge);
+    this.add(this.drawingBridge);
+    this.deactivate(this.drawingBridge);
 };
 
 Game.prototype = new Arcadia.Scene();
@@ -95,10 +95,10 @@ Game.prototype.onPointStart = function (points) {
         if (this.cursor.collidesWith(island)) {
             this.startIsland = island;
             var distance = Math.sqrt(Math.pow(this.cursor.position.x - this.startIsland.position.x, 2) + Math.pow(this.cursor.position.y - this.startIsland.position.y, 2));
-            this.activate(this.activeBridge);
-            this.activeBridge.size = { width: 2, height: distance };
-            this.activeBridge.rotation = Math.atan2(this.cursor.position.y - this.startIsland.position.y, this.cursor.position.x - this.startIsland.position.x) + Math.PI / 2;
-            this.activeBridge.position = {
+            this.activate(this.drawingBridge);
+            this.drawingBridge.size = { width: 2, height: distance };
+            this.drawingBridge.rotation = Math.atan2(this.cursor.position.y - this.startIsland.position.y, this.cursor.position.x - this.startIsland.position.x) + Math.PI / 2;
+            this.drawingBridge.position = {
                 // halfway between cursor and island
                 x: (this.cursor.position.x + this.startIsland.position.x) / 2,
                 y: (this.cursor.position.y + this.startIsland.position.y) / 2
@@ -115,9 +115,9 @@ Game.prototype.onPointMove = function (points) {
 
     if (this.startIsland) {
         var distance = Math.sqrt(Math.pow(this.cursor.position.x - this.startIsland.position.x, 2) + Math.pow(this.cursor.position.y - this.startIsland.position.y, 2));
-        this.activeBridge.size = { width: 2, height: distance };
-        this.activeBridge.rotation = Math.atan2(this.cursor.position.y - this.startIsland.position.y, this.cursor.position.x - this.startIsland.position.x) + Math.PI / 2;
-        this.activeBridge.position = {
+        this.drawingBridge.size = { width: 2, height: distance };
+        this.drawingBridge.rotation = Math.atan2(this.cursor.position.y - this.startIsland.position.y, this.cursor.position.x - this.startIsland.position.x) + Math.PI / 2;
+        this.drawingBridge.position = {
             x: (this.cursor.position.x + this.startIsland.position.x) / 2,
             y: (this.cursor.position.y + this.startIsland.position.y) / 2
         };
@@ -127,9 +127,10 @@ Game.prototype.onPointMove = function (points) {
 Game.prototype.onPointEnd = function (points) {
     var success = false,
         collision = false,
+        islandIds,
         i,
         endIsland,
-        tmpBridge;
+        bridge;
 
     if (this.startIsland) {
         // Determine if user ended touch on an island
@@ -141,78 +142,95 @@ Game.prototype.onPointEnd = function (points) {
                 // vertical bridge
                 if (this.startIsland.position.x === endIsland.position.x) {
                     // Place bridge object
-                    tmpBridge = this.bridges.activate();
-                    tmpBridge.position = {
+                    bridge = this.bridges.activate();
+                    bridge.position = {
                         x: this.startIsland.position.x,
                         y: (this.startIsland.position.y + endIsland.position.y) / 2
                     };
-                    tmpBridge.size = {
+                    bridge.size = {
                         width: Island.SIZE / 2,
                         height: Math.abs(this.startIsland.position.y - endIsland.position.y) - Island.SIZE
                     };
                     // check collision
                     j = this.bridges.length;
                     while (j--) {
-                        if (tmpBridge.collidesWith(this.bridges.at(j))) {
+                        if (bridge.collidesWith(this.bridges.at(j))) {
                             // collision = true;
                             collision = this.bridges.at(j);
+                            islandIds = [collision.start.id, collision.end.id]
                         }
                     }
                     // If successful, add the bridge
                     if (!collision) {
-                        tmpBridge.start = this.startIsland;
-                        tmpBridge.end = endIsland;
-                        this.bridges.add(tmpBridge);
+                        bridge.start = this.startIsland;
+                        bridge.end = endIsland;
+                        bridge.start.increment();
+                        bridge.end.increment();
                         Arcadia.playSfx('build');
-                    } else if (collision.start.id == this.startIsland.id && collision.end.id == endIsland.id) {
+                    } else if (islandIds.indexOf(this.startIsland.id) !== -1 &&  islandIds.indexOf(endIsland.id) !== -1) {
                         // trying to draw over existing bridge
                         collision.increment();
+                        collision.start.increment();
+                        collision.end.increment();
                         Arcadia.playSfx('build');
-                        this.bridges.deactivate(tmpBridge);
+                        this.bridges.deactivate(bridge);
                     } else {
-                        this.bridges.deactivate(tmpBridge);
+                        this.bridges.deactivate(bridge);
                         Arcadia.playSfx('invalid');
                     }
                 // horizontal bridge
                 } else if (this.startIsland.position.y === endIsland.position.y) {
                     // Generate bridge object
-                    tmpBridge = this.bridges.activate();
-                    tmpBridge.position = {
+                    bridge = this.bridges.activate();
+                    bridge.position = {
                         x: (this.startIsland.position.x + endIsland.position.x) / 2,
                         y: this.startIsland.position.y
                     };
-                    tmpBridge.size = {
+                    bridge.size = {
                         width: Math.abs(this.startIsland.position.x - endIsland.position.x) - Island.SIZE,
                         height: Island.SIZE / 2
                     };
                     // check collision
                     j = this.bridges.length;
                     while (j--) {
-                        if (tmpBridge.collidesWith(this.bridges.at(j))) {
-                            collision = true;
+                        if (bridge.collidesWith(this.bridges.at(j))) {
+                            // collision = true;
+                            collision = this.bridges.at(j);
+                            islandIds = [collision.start.id, collision.end.id];
                         }
                     }
                     // If successful, add the bridge
                     if (!collision) {
-                        tmpBridge.start = this.startIsland;
-                        tmpBridge.end = endIsland;
-                        this.bridges.add(tmpBridge);
+                        bridge.start = this.startIsland;
+                        bridge.end = endIsland;
+                        bridge.start.increment();
+                        bridge.end.increment();
                         Arcadia.playSfx('build');
+                    } else if (islandIds.indexOf(this.startIsland.id) !== -1 &&  islandIds.indexOf(endIsland.id) !== -1) {
+                        // trying to draw over existing bridge
+                        collision.increment();
+                        collision.start.increment();
+                        collision.end.increment();
+                        Arcadia.playSfx('build');
+                        this.bridges.deactivate(bridge);
                     } else {
-                        this.bridges.deactivate(tmpBridge);
+                        this.bridges.deactivate(bridge);
                         Arcadia.playSfx('invalid');
                     }
                 }
             }
         }
 
-        this.deactivate(this.activeBridge);
+        this.deactivate(this.drawingBridge);
         this.startIsland = null;
     } else {
         // Determine if user touched a bridge; if so, remove it
         i = this.bridges.length;
         while (i--) {
             if (this.cursor.collidesWith(this.bridges.at(i))) {
+                bridge = this.bridges.at(i);
+                bridge.start.decrement(bridge.count);
+                bridge.end.decrement(bridge.count);
                 this.bridges.deactivate(i);
                 Arcadia.playSfx('erase');
             }

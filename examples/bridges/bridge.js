@@ -35,6 +35,12 @@ var Bridge = function (options) {
 Bridge.prototype = new Arcadia.Shape();
 
 Bridge.prototype.increment = function () {
-    this.count += 1;
-    this.dirty = true;
+    if (this.count < 2) {
+        this.count += 1;
+        this.dirty = true;
+    }
+};
+
+Bridge.prototype.reset = function () {
+    this.count = 1;
 };
