@@ -20,9 +20,9 @@ class Shape extends GameObject
 
     # Default graphical options; changing these requires using setters/getters,
     # since the cache would need to be redrawn
-    @_color    = '#fff';
-    @_border   = { width: 0, color: '#fff' }
-    @_shadow   = { x: 0, y: 0, blur: 0, color: '#fff' }
+    @_color = '#fff';
+    @_border = { width: 0, color: '#fff' }
+    @_shadow = { x: 0, y: 0, blur: 0, color: '#fff' }
     @_vertices = 4
     @_size = { width: 10, height: 10 }
     @speed = 1
@@ -247,7 +247,9 @@ class Shape extends GameObject
       tween.time += delta * 1000 # (delta is in seconds)
       tween.time = tween.duration if tween.time > tween.duration
       @[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration) # time,begin,change,duration
-      @tweens.splice(i, 1) if tween.time == tween.duration
+      if tween.time == tween.duration
+        @tweens.splice(i, 1)
+        tween.callback() if typeof tween.callback == 'function'
 
     @velocity.x += @acceleration.x
     @velocity.y += @acceleration.y
@@ -265,7 +267,7 @@ class Shape extends GameObject
     return false if @ == other
     Math.abs(@position.x - other.position.x) < @size.width / 2 + other.size.width / 2 && Math.abs(@position.y - other.position.y) < @size.height / 2 + other.size.height / 2
 
-  tween: (property, target, duration = 500, easing = 'linearNone') ->
+  tween: (property, target, duration = 500, easing = 'linearNone', callback) ->
     # TODO: How to handle compound properties, such as @position?
     # context = @
     # if property.indexOf('.') != -1
@@ -282,5 +284,6 @@ class Shape extends GameObject
       change: target - @[property]
       duration: duration
       easingFunc: Easie[easing]
+      callback: callback
 
 module.exports = Shape
