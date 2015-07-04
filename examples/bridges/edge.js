@@ -1,9 +1,11 @@
-var Bridge = function (options) {
+var Edge = function (options) {
     Arcadia.Shape.apply(this, arguments);
 
     this.color = '#fff';
     this.border= '2px #fff';
     this.count = 1;
+
+    this.vertices = [];
     
     this.path = function (context) {
         if (this.count === 1) {
@@ -32,15 +34,17 @@ var Bridge = function (options) {
     };
 };
 
-Bridge.prototype = new Arcadia.Shape();
+Edge.prototype = new Arcadia.Shape();
 
-Bridge.prototype.increment = function () {
+Edge.prototype.increment = function () {
     if (this.count < 2) {
         this.count += 1;
         this.dirty = true;
+        return true;
     }
 };
 
-Bridge.prototype.reset = function () {
+Edge.prototype.reset = function () {
     this.count = 1;
+    this.vertices = [];
 };

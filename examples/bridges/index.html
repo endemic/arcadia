@@ -24,6 +24,13 @@
 		-webkit-tap-highlight-color: rgba(255, 255, 255, 0); 
 	}
 	</style>
+	<script type="text/javascript">
+		function assert(value1, value2) {
+			if (value1 !== value2) {
+				throw new Error(value1 + ' != ' + value2);
+			}
+		}
+	</script>
 
 	<!-- Engine -->
 	<script src="../../dist/arcadia.js"></script>
@@ -35,8 +42,8 @@
 	<script src="difficulty-select.js"></script>
 
 	<!-- Objects -->
-	<script src="island.js"></script>
-	<script src="bridge.js"></script>
+	<script src="vertex.js"></script>
+	<script src="edge.js"></script>
 
 	<script type="text/javascript">
 		window.onload = function () {

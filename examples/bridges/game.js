@@ -4,104 +4,110 @@
 var Game = function () {
     Arcadia.Scene.apply(this, arguments);
 
+    // Background color
     this.color = 'purple';
 
+    // Object that tracks player's cursor/finger; used for collision detection 
     this.cursor = new Arcadia.Shape({
         size: { width: 8, height: 8 },
-        color: 'red'
+        vertices: 0,
+        color: 'white'
     });
     this.add(this.cursor);
     this.deactivate(this.cursor);
 
-    // Store islands
-    this.islands = [];
+    // Data structure for the vertices in the graph
+    this.vertices = [];
 
+    // TODO: Load the puzzle here
+    // Temporary vertices for testing
     var i;
 
-    i = new Island({
+    i = new Vertex({
         position: { x: 100, y: 100 },
-        id: this.islands.length
+        id: this.vertices.length
     });
     this.add(i);
-    this.islands.push(i);
+    this.vertices.push(i);
 
-    i = new Island({
+    i = new Vertex({
         position: { x: 200, y: 100 },
-        id: this.islands.length
+        id: this.vertices.length
     });
     this.add(i);
-    this.islands.push(i);
+    this.vertices.push(i);
 
-    i = new Island({
+    i = new Vertex({
         position: { x: 200, y: 200 },
-        id: this.islands.length
+        id: this.vertices.length
     });
     this.add(i);
-    this.islands.push(i);
+    this.vertices.push(i);
 
-    i = new Island({
+    i = new Vertex({
         position: { x: 100, y: 200 },
-        id: this.islands.length
+        id: this.vertices.length
     });
     this.add(i);
-    this.islands.push(i);
+    this.vertices.push(i);
 
-    i = new Island({
-        position: { x: 150, y: 150 },
-        id: this.islands.length
-    });
-    this.add(i);
-    this.islands.push(i);
+    // i = new Vertex({
+    //     position: { x: 400, y: 100 },
+    //     id: this.vertices.length
+    // });
+    // this.add(i);
+    // this.vertices.push(i);
+    // i = new Vertex({
+    //     position: { x: 400, y: 200 },
+    //     id: this.vertices.length
+    // });
+    // this.add(i);
+    // this.vertices.push(i);
 
-    i = new Island({
-        position: { x: 150, y: 250 },
-        id: this.islands.length
-    });
-    this.add(i);
-    this.islands.push(i);
-
-    // store bridges
-    this.bridges = new Arcadia.Pool();
-    this.bridges.factory = function () {
-        return new Bridge();
+    // Data structure for edges
+    this.edges = new Arcadia.Pool();
+    this.edges.factory = function () {
+        return new Edge();
     };
-    this.add(this.bridges);
+    this.add(this.edges);
 
-    // drawing target
-    this.drawingBridge = new Arcadia.Shape({
+    // Line that is shown while dragging from one vertex to another
+    this.activeEdge = new Arcadia.Shape({
         size: { width: 2, height: 2 }
     });
-    this.add(this.drawingBridge);
-    this.deactivate(this.drawingBridge);
+    this.add(this.activeEdge);
+    this.deactivate(this.activeEdge);
 };
 
 Game.prototype = new Arcadia.Scene();
 
 Game.prototype.onPointStart = function (points) {
-    var i, island;
+    var i, vertex;
 
+    // Show the "cursor" object; move it to the mouse/touch point
     this.activate(this.cursor);
     this.cursor.position = {
         x: points[0].x,
         y: points[0].y
     };
 
-    // Determine if user touched an island
-    i = this.islands.length;
+    i = this.vertices.length;
     while (i--) {
-        island = this.islands[i];
+        vertex = this.vertices[i];
 
-        // If so, start drawing a line
-        if (this.cursor.collidesWith(island)) {
-            this.startIsland = island;
-            var distance = Math.sqrt(Math.pow(this.cursor.position.x - this.startIsland.position.x, 2) + Math.pow(this.cursor.position.y - this.startIsland.position.y, 2));
-            this.activate(this.drawingBridge);
-            this.drawingBridge.size = { width: 2, height: distance };
-            this.drawingBridge.rotation = Math.atan2(this.cursor.position.y - this.startIsland.position.y, this.cursor.position.x - this.startIsland.position.x) + Math.PI / 2;
-            this.drawingBridge.position = {
-                // halfway between cursor and island
-                x: (this.cursor.position.x + this.startIsland.position.x) / 2,
-                y: (this.cursor.position.y + this.startIsland.position.y) / 2
+        // Determine if user touched a vertex
+        if (this.cursor.collidesWith(vertex)) {
+            this.startVertex = vertex;
+            var distance = Math.sqrt(Math.pow(this.cursor.position.x - this.startVertex.position.x, 2) + Math.pow(this.cursor.position.y - this.startVertex.position.y, 2));
+
+            // If so, start drawing a line
+            this.activate(this.activeEdge);
+            this.activeEdge.size = { width: 2, height: distance };
+            this.activeEdge.rotation = Math.atan2(this.cursor.position.y - this.startVertex.position.y, this.cursor.position.x - this.startVertex.position.x) + Math.PI / 2;
+            this.activeEdge.position = {
+                // halfway between cursor and vertex
+                x: (this.cursor.position.x + this.startVertex.position.x) / 2,
+                y: (this.cursor.position.y + this.startVertex.position.y) / 2
             };
         }
     }
@@ -113,13 +119,15 @@ Game.prototype.onPointMove = function (points) {
         y: points[0].y
     };
 
-    if (this.startIsland) {
-        var distance = Math.sqrt(Math.pow(this.cursor.position.x - this.startIsland.position.x, 2) + Math.pow(this.cursor.position.y - this.startIsland.position.y, 2));
-        this.drawingBridge.size = { width: 2, height: distance };
-        this.drawingBridge.rotation = Math.atan2(this.cursor.position.y - this.startIsland.position.y, this.cursor.position.x - this.startIsland.position.x) + Math.PI / 2;
-        this.drawingBridge.position = {
-            x: (this.cursor.position.x + this.startIsland.position.x) / 2,
-            y: (this.cursor.position.y + this.startIsland.position.y) / 2
+    // If currently drawing an edge (from the startVertex), update the
+    // "interactive" drawing line
+    if (this.startVertex) {
+        var distance = Math.sqrt(Math.pow(this.cursor.position.x - this.startVertex.position.x, 2) + Math.pow(this.cursor.position.y - this.startVertex.position.y, 2));
+        this.activeEdge.size = { width: 2, height: distance };
+        this.activeEdge.rotation = Math.atan2(this.cursor.position.y - this.startVertex.position.y, this.cursor.position.x - this.startVertex.position.x) + Math.PI / 2;
+        this.activeEdge.position = {
+            x: (this.cursor.position.x + this.startVertex.position.x) / 2,
+            y: (this.cursor.position.y + this.startVertex.position.y) / 2
         };
     }
 };
@@ -127,115 +135,166 @@ Game.prototype.onPointMove = function (points) {
 Game.prototype.onPointEnd = function (points) {
     var success = false,
         collision = false,
-        islandIds,
+        vertexIds,
         i,
-        endIsland,
-        bridge;
+        endVertex,
+        edge;
 
-    if (this.startIsland) {
-        // Determine if user ended touch on an island
-        i = this.islands.length;
+    if (this.startVertex) {
+        i = this.vertices.length;
         while (i--) {
-            endIsland = this.islands[i];
+            endVertex = this.vertices[i];
 
-            if (this.cursor.collidesWith(endIsland) && endIsland.id != this.startIsland.id) {
-                // vertical bridge
-                if (this.startIsland.position.x === endIsland.position.x) {
-                    // Place bridge object
-                    bridge = this.bridges.activate();
-                    bridge.position = {
-                        x: this.startIsland.position.x,
-                        y: (this.startIsland.position.y + endIsland.position.y) / 2
+            // Determine if player ended click/touch on a vertex
+            // (that's different from the starting vertex)
+            if (this.cursor.collidesWith(endVertex) && endVertex.id != this.startVertex.id) {
+
+                // TODO: the vertical/horizontal conditions contain lots of dupe code
+
+                // Handle vertical edges
+                if (this.startVertex.position.x === endVertex.position.x) {
+                    // Place edge object
+                    edge = this.edges.activate();
+                    edge.position = {
+                        x: this.startVertex.position.x,
+                        y: (this.startVertex.position.y + endVertex.position.y) / 2
                     };
-                    bridge.size = {
-                        width: Island.SIZE / 2,
-                        height: Math.abs(this.startIsland.position.y - endIsland.position.y) - Island.SIZE
-                    };
-                    // check collision
-                    j = this.bridges.length;
-                    while (j--) {
-                        if (bridge.collidesWith(this.bridges.at(j))) {
-                            // collision = true;
-                            collision = this.bridges.at(j);
-                            islandIds = [collision.start.id, collision.end.id]
-                        }
-                    }
-                    // If successful, add the bridge
-                    if (!collision) {
-                        bridge.start = this.startIsland;
-                        bridge.end = endIsland;
-                        bridge.start.increment();
-                        bridge.end.increment();
-                        Arcadia.playSfx('build');
-                    } else if (islandIds.indexOf(this.startIsland.id) !== -1 &&  islandIds.indexOf(endIsland.id) !== -1) {
-                        // trying to draw over existing bridge
-                        collision.increment();
-                        collision.start.increment();
-                        collision.end.increment();
-                        Arcadia.playSfx('build');
-                        this.bridges.deactivate(bridge);
-                    } else {
-                        this.bridges.deactivate(bridge);
-                        Arcadia.playSfx('invalid');
-                    }
-                // horizontal bridge
-                } else if (this.startIsland.position.y === endIsland.position.y) {
-                    // Generate bridge object
-                    bridge = this.bridges.activate();
-                    bridge.position = {
-                        x: (this.startIsland.position.x + endIsland.position.x) / 2,
-                        y: this.startIsland.position.y
-                    };
-                    bridge.size = {
-                        width: Math.abs(this.startIsland.position.x - endIsland.position.x) - Island.SIZE,
-                        height: Island.SIZE / 2
+                    edge.size = {
+                        width: Vertex.SIZE / 2,
+                        height: Math.abs(this.startVertex.position.y - endVertex.position.y) - Vertex.SIZE
                     };
                     // check collision
-                    j = this.bridges.length;
+                    j = this.edges.length;
                     while (j--) {
-                        if (bridge.collidesWith(this.bridges.at(j))) {
-                            // collision = true;
-                            collision = this.bridges.at(j);
-                            islandIds = [collision.start.id, collision.end.id];
+                        if (edge.collidesWith(this.edges.at(j))) {
+                            collision = this.edges.at(j);
+                            vertexIds = [collision.vertices[0].id, collision.vertices[1].id];
                         }
                     }
-                    // If successful, add the bridge
+                    // If successful, add the edge
                     if (!collision) {
-                        bridge.start = this.startIsland;
-                        bridge.end = endIsland;
-                        bridge.start.increment();
-                        bridge.end.increment();
+                        this.startVertex.addEdge(edge);
+                        endVertex.addEdge(edge);
+                        edge.vertices.push(this.startVertex);
+                        edge.vertices.push(endVertex);
+
                         Arcadia.playSfx('build');
-                    } else if (islandIds.indexOf(this.startIsland.id) !== -1 &&  islandIds.indexOf(endIsland.id) !== -1) {
-                        // trying to draw over existing bridge
-                        collision.increment();
-                        collision.start.increment();
-                        collision.end.increment();
-                        Arcadia.playSfx('build');
-                        this.bridges.deactivate(bridge);
+                    } else if (vertexIds.indexOf(this.startVertex.id) !== -1 &&  vertexIds.indexOf(endVertex.id) !== -1) {
+                        // trying to draw over existing edge
+                        if (collision.increment()) {
+                            collision.vertices[0].updateColor();
+                            collision.vertices[1].updateColor();
+                            Arcadia.playSfx('build');
+                        } else {
+                            Arcadia.playSfx('invalid');
+                        }
+                        this.edges.deactivate(edge);
                     } else {
-                        this.bridges.deactivate(bridge);
+                        this.edges.deactivate(edge);
                         Arcadia.playSfx('invalid');
                     }
+                // Handle horizontal edges
+                } else if (this.startVertex.position.y === endVertex.position.y) {
+                    // Generate edge object
+                    edge = this.edges.activate();
+                    edge.position = {
+                        x: (this.startVertex.position.x + endVertex.position.x) / 2,
+                        y: this.startVertex.position.y
+                    };
+                    edge.size = {
+                        width: Math.abs(this.startVertex.position.x - endVertex.position.x) - Vertex.SIZE,
+                        height: Vertex.SIZE / 2
+                    };
+                    // check collision
+                    j = this.edges.length;
+                    while (j--) {
+                        if (edge.collidesWith(this.edges.at(j))) {
+                            collision = this.edges.at(j);
+                            vertexIds = [collision.vertices[0].id, collision.vertices[1].id];
+                        }
+                    }
+                    // If successful, add the edge
+                    if (!collision) {
+                        this.startVertex.addEdge(edge);
+                        endVertex.addEdge(edge);
+                        edge.vertices.push(this.startVertex);
+                        edge.vertices.push(endVertex);
+
+                        Arcadia.playSfx('build');
+                    } else if (vertexIds.indexOf(this.startVertex.id) !== -1 &&  vertexIds.indexOf(endVertex.id) !== -1) {
+                        // trying to draw over existing edge
+                        if (collision.increment()) {
+                            collision.vertices[0].updateColor();
+                            collision.vertices[1].updateColor();
+                            Arcadia.playSfx('build');
+                        } else {
+                            Arcadia.playSfx('invalid');
+                        }
+                        this.edges.deactivate(edge);
+                    } else {
+                        this.edges.deactivate(edge);
+                        Arcadia.playSfx('invalid');
+                    }
+                // Diagonal, etc. edges aren't allowed
+                } else {
+                    Arcadia.playSfx('invalid');
                 }
             }
         }
 
-        this.deactivate(this.drawingBridge);
-        this.startIsland = null;
+        this.deactivate(this.activeEdge);
+        this.startVertex = null;
     } else {
-        // Determine if user touched a bridge; if so, remove it
-        i = this.bridges.length;
+        // Determine if user touched a edge; if so, remove it
+        i = this.edges.length;
         while (i--) {
-            if (this.cursor.collidesWith(this.bridges.at(i))) {
-                bridge = this.bridges.at(i);
-                bridge.start.decrement(bridge.count);
-                bridge.end.decrement(bridge.count);
-                this.bridges.deactivate(i);
+            if (this.cursor.collidesWith(this.edges.at(i))) {
+                edge = this.edges.at(i);
+                edge.vertices[0].removeEdge(edge);
+                edge.vertices[1].removeEdge(edge);
+                this.edges.deactivate(i);
                 Arcadia.playSfx('erase');
             }
         }
     }
 
+    // Check for completeness
+    // Fast check - ensure all vertices have correct # of edges
+    var complete = this.vertices.every(function (vertex) {
+        return vertex.isComplete();
+    });
+
+    console.log(complete);
+
+    // Slow check - ensure all nodes on the graph are connected
+    if (complete) {
+        var foundVertices = [];
+        this.search(this.vertices[0], foundVertices);
+        // Basically start at one vertex, and see if we can traverse the whole
+        // graph -- if the # of vertices found by the search equals the number
+        // in the puzzle, then it's a correct solution
+        if (foundVertices.length === this.vertices.length) {
+            alert('u won, bro');
+        } else {
+            alert('nice try, cheeter');
+        }
+    }
+
     this.deactivate(this.cursor);
+};
+
+// https://en.wikipedia.org/wiki/Depth-first_search
+// Need each vertex to store a list of its connected edges
+Game.prototype.search = function (vertex, listOfTraversedVertices) {
+    var _this = this;
+
+    if (listOfTraversedVertices.indexOf(vertex.id) !== -1) {
+        return;
+    }
+
+    listOfTraversedVertices.push(vertex.id);
+    vertex.edges.forEach(function (edge) {
+       _this.search(edge.vertices[0], listOfTraversedVertices);
+       _this.search(edge.vertices[1], listOfTraversedVertices);
+    });
 };
