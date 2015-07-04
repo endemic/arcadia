@@ -1,8 +1,8 @@
 # TODO
 
-[ ] Draw bridges correctly; i.e. one line per bridge
-[ ] Allow user to draw a second bridge between islands
-[ ] Program a "win" condition
+[x] Draw bridges correctly; i.e. one line per bridge
+[x] Allow user to draw a second bridge between islands
+[x] Program a "win" condition
 [ ] "you win" effect - bridges disappear, islands grow, then shrink to nothing,
 	generating a particle effect when they disappear
 [ ] Some kind of level editor

@@ -274,7 +274,8 @@ Game.prototype.onPointEnd = function (points) {
         // graph -- if the # of vertices found by the search equals the number
         // in the puzzle, then it's a correct solution
         if (foundVertices.length === this.vertices.length) {
-            alert('u won, bro');
+            // alert('u won, bro');
+            this.win();
         } else {
             alert('nice try, cheeter');
         }
@@ -296,5 +297,46 @@ Game.prototype.search = function (vertex, listOfTraversedVertices) {
     vertex.edges.forEach(function (edge) {
        _this.search(edge.vertices[0], listOfTraversedVertices);
        _this.search(edge.vertices[1], listOfTraversedVertices);
+    });
+};
+
+Game.prototype.win = function () {
+    // Hide edges
+    var i = this.edges.length,
+        _this = this;
+
+    while (i--) {
+        this.edges.at(i).tween('alpha', 0, 1000);
+    }
+
+    // Particle emitters
+    this.particles = new Arcadia.Pool();
+    this.particles.factory = function () {
+        var emitter,
+            factory;
+
+        factory = function () {
+            return new Arcadia.Shape({
+                color: '#fff',
+                size: { width: 3, height: 3 },
+                vertices: 0
+            });
+        };
+        emitter = new Arcadia.Emitter(factory);
+        emitter.duration = 1.0;
+        emitter.scale = -1;
+        return emitter;
+    };
+    while (this.particles.length < this.vertices.length) {
+        this.particles.activate();
+    }
+    this.particles.deactivateAll();
+    this.add(this.particles);
+
+    // Shrink vertices, then show an "explosion"
+    this.vertices.forEach(function (vertex) {
+        vertex.tween('scale', 0, 2000, 'elasticInOut', function () {
+            _this.particles.activate().startAt(vertex.position.x, vertex.position.y);
+        });
     });
 };
