@@ -28,29 +28,29 @@ class GameObject
   @description Draw child objects
   @param {CanvasRenderingContext2D} context
   ###
-  draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0) ->
-    @children.draw context, offsetX, offsetY, offsetRotation
+  draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0, offsetScale = 1) ->
+    @children.draw(context, offsetX, offsetY, offsetRotation, offsetScale)
 
   ###
   @description Update child objects
   @param {Number} delta Time since last update (in seconds)
   ###
   update: (delta) ->
-    @children.update delta
+    @children.update(delta)
 
   ###
   @description Add child object
   @param {Object} object Object to be added
   ###
   add: (object) ->
-    @children.add object
+    @children.add(object)
 
   ###
   @description Remove child object
   @param {Object} objectOrIndex Object or index of object to be removed
   ###
   remove: (objectOrIndex) ->
-    @children.remove objectOrIndex
+    @children.remove(objectOrIndex)
 
   ###
   @description Activate child object

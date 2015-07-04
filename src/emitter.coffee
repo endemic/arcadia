@@ -11,7 +11,7 @@ class Emitter extends GameObject
    * @param {number} [count=25] The number of particles created for the system
   ###
   constructor: (factory, count = 25) ->
-    throw 'Emitter requires a factory function' if typeof factory != 'function'
+    throw new Error('Emitter requires a factory function') if typeof factory != 'function'
 
     super
 

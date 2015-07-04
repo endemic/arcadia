@@ -58,7 +58,7 @@ class Scene extends GameObject
       context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 
     # Draw child objects
-    super context, @camera.viewport.width / 2 - @camera.position.x, @camera.viewport.height / 2 - @camera.position.y
+    super(context, @camera.viewport.width / 2 - @camera.position.x, @camera.viewport.height / 2 - @camera.position.y)
 
   ###
   @description Move scene's <canvas> into place

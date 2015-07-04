@@ -125,16 +125,17 @@ class Pool
   update: (delta) ->
     @tmp = @length
     while @tmp--
-      @children[@tmp].update delta
+      @children[@tmp].update(delta)
     return
 
   ###
   @description Passthrough method to draw active child objects
+  TODO: perhaps change `draw` call to `draw.apply(@, arguments)`
   ###
-  draw: (context, offsetX, offsetY, offsetRotation) ->
+  draw: (context, offsetX, offsetY, offsetRotation, offsetScale) ->
     @tmp = @length
     while @tmp--
-      @children[@tmp].draw(context, offsetX, offsetY, offsetRotation)
+      @children[@tmp].draw(context, offsetX, offsetY, offsetRotation, offsetScale)
     return
 
 module.exports = Pool
