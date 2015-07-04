@@ -36,7 +36,7 @@ class Pool
   @description Remove an object from the recycle pool
   ###
   remove: (objectOrIndex) ->
-    throw 'Must specify an object/index to remove' if objectOrIndex is undefined
+    throw new Error('Must specify an object/index to remove') if objectOrIndex is undefined
 
     index = if typeof objectOrIndex != 'number' then @children.indexOf objectOrIndex else objectOrIndex
     return if index is -1
@@ -69,7 +69,7 @@ class Pool
       @children[@length - 1].reset() if typeof @children[@length - 1].reset == 'function'
       return @children[@length - 1]
 
-    throw 'Pools need a factory function' if typeof @factory != 'function'
+    throw new Error('Pools need a factory function') if typeof @factory != 'function'
 
     @children.push @factory()
     @length += 1
