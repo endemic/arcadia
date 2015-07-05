@@ -2,26 +2,24 @@
 <head>
 	<title>Let's Build Bridges</title>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<meta name="mobile-web-app-capable" content="yes">                            
-	<meta name="apple-mobile-web-app-capable" content="yes">                      
-	<meta name="apple-mobile-web-app-status-bar-style" content="black"> 
+
+	<!-- Set viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+	<!-- Launch in "fullscreen" mode if from home screen -->
+	<meta name="mobile-web-app-capable" content="yes">
+
+	<!-- Does Apple support the above? -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+
+	<!-- controls the appearance of the status bar in full-screen mode -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 	<style type="text/css">
-	body {
-		background: #ccc;
-		padding: 0; 
-		margin: 0; 
-	}
-
+	body { margin: 0; padding: 0; background: #000; }
 	#arcadia, #arcadia canvas {
-		/*-webkit-touch-callout: none;*/
-		/*-webkit-user-select: none;*/
-		/*-moz-user-select: none;*/
-		/*-ms-user-select: none;*/
-		/*user-select: none;*/
-		/*outline: none;*/
-		-webkit-tap-highlight-color: rgba(255, 255, 255, 0); 
+		cursor: pointer;
+		-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 	}
 	</style>
 	<script type="text/javascript">
@@ -30,6 +28,14 @@
 				throw new Error(value1 + ' != ' + value2);
 			}
 		}
+
+		Storage.prototype.setBoolean = function (key, value) {
+			this.setItem(key, !!value);
+		};
+
+		Storage.prototype.getBoolean = function (key) {
+			return this.getItem(key) == 'true';
+		};
 	</script>
 
 	<!-- Engine -->
@@ -39,7 +45,6 @@
 	<script src="title.js"></script>
 	<script src="game.js"></script>
 	<script src="level-select.js"></script>
-	<script src="difficulty-select.js"></script>
 
 	<!-- Objects -->
 	<script src="vertex.js"></script>
@@ -48,10 +53,10 @@
 	<script type="text/javascript">
 		window.onload = function () {
 			var game = new Arcadia.Game({
-				width: 568,
-				height: 320,
+				width: 375,
+				height: 667,
 				scene: Game,
-				scaleToFit: false,
+				scaleToFit: true,
 				sounds: [
 					{ url: 'assets/sounds/button.mp3', id: 'button' },
 					{ url: 'assets/sounds/fill.mp3', id: 'build' },

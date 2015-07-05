@@ -25,6 +25,7 @@ var Game = function () {
 
     i = new Vertex({
         position: { x: 100, y: 100 },
+        number: 2,
         id: this.vertices.length
     });
     this.add(i);
@@ -32,6 +33,7 @@ var Game = function () {
 
     i = new Vertex({
         position: { x: 200, y: 100 },
+        number: 2,
         id: this.vertices.length
     });
     this.add(i);
@@ -39,6 +41,7 @@ var Game = function () {
 
     i = new Vertex({
         position: { x: 200, y: 200 },
+        number: 2,
         id: this.vertices.length
     });
     this.add(i);
@@ -46,6 +49,7 @@ var Game = function () {
 
     i = new Vertex({
         position: { x: 100, y: 200 },
+        number: 2,
         id: this.vertices.length
     });
     this.add(i);
@@ -264,8 +268,6 @@ Game.prototype.onPointEnd = function (points) {
         return vertex.isComplete();
     });
 
-    console.log(complete);
-
     // Slow check - ensure all nodes on the graph are connected
     if (complete) {
         var foundVertices = [];
@@ -274,9 +276,9 @@ Game.prototype.onPointEnd = function (points) {
         // graph -- if the # of vertices found by the search equals the number
         // in the puzzle, then it's a correct solution
         if (foundVertices.length === this.vertices.length) {
-            // alert('u won, bro');
             this.win();
         } else {
+            // TODO: display this in a better way
             alert('nice try, cheeter');
         }
     }
@@ -300,6 +302,7 @@ Game.prototype.search = function (vertex, listOfTraversedVertices) {
     });
 };
 
+// Show a "u won, next level?" sort of message
 Game.prototype.win = function () {
     // Hide edges
     var i = this.edges.length,
@@ -318,11 +321,11 @@ Game.prototype.win = function () {
         factory = function () {
             return new Arcadia.Shape({
                 color: '#fff',
-                size: { width: 3, height: 3 },
+                size: { width: 6, height: 6 },
                 vertices: 0
             });
         };
-        emitter = new Arcadia.Emitter(factory);
+        emitter = new Arcadia.Emitter(factory, 50);
         emitter.duration = 1.0;
         emitter.scale = -1;
         return emitter;

@@ -3,17 +3,34 @@
 [x] Draw bridges correctly; i.e. one line per bridge
 [x] Allow user to draw a second bridge between islands
 [x] Program a "win" condition
-[ ] "you win" effect - bridges disappear, islands grow, then shrink to nothing,
+[x] "you win" effect - bridges disappear, islands grow, then shrink to nothing,
 	generating a particle effect when they disappear
-[ ] Some kind of level editor
-
-[ ] How to associate a bridge with an island?
+[x] How to associate a bridge with an island?
 	* A graph?
 [x] How to clear bridges?
 	* Could we have an invisible hitbox between islands?
-[ ] Determine how to find out if a puzzle is cleared or not
+[x] Determine how to find out if a puzzle is cleared or not
 	* Store how many bridges lead out from an island
-[ ] Don't allow drawing lines from an island if it already has the max # of bridges
+[x] Don't allow drawing lines from an island if it already has the max # of bridges
+[ ] Check for collision of a vertex in between start/end vertices
+[ ] Some kind of level editor? How would this work?
+	* Re-use game mode, with "editor" flag? Or easier to copy/paste and change
+	  relevant bits?
+	* A touch that doesn't hit anything will create an empty vertex, snapped
+	  to intervals of vertex.size/2
+	* Can draw between vertices as normal, vertex connection count will simply
+	  increase/reflect current state
+	* Tapping an empty vertex will remove it
+	* Since this will be an "internal-only" tool for now, don't bother with
+	  enforcing graph connectedness
+	* Create a basic level select view, which will re-use the circular vertex
+	  object, and just display the puzzle # on it; completed puzzles will have
+	  a green background
+	* At this point, I don't care about a time limit or whatever
+
+[ ] Title screen will just be tap to start; take you to the next uncompleted puzzle
+[ ] Can get to level select by backing out of current puzzle, or at win condition
+[ ] Need some sort of button on the game view which allows user to quit puzzle
 
 # Rules
 

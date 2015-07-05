@@ -4,37 +4,48 @@
 var LevelSelect = function () {
     Arcadia.Scene.apply(this, arguments);
     // Background color
-    this.color = '#000';
+    this.color = 'purple';
 
-    // Basic text label
-    var title = new Arcadia.Label({
-        position: {
-            x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT / 4
-        },
-        color: '#fff',
-        font: '70px monospace',
-        shadow: '0 0 20px #fff',
-        text: "'Roids"
-    });
-    this.add(title);
+    var spacing = 52, // for 40x40 objects
+        counter = 0,
+        rows = 5,   // Show 25 levels per page; maybe shoot for 100 levels?
+        columns = 5,
+        centerX = Arcadia.WIDTH / 2,
+        centerY = Arcadia.HEIGHT / 2,
+        gridWidth = rows * spacing,
+        gridHeight = columns * spacing,
+        startX = centerX - gridWidth / 2 + spacing / 2,
+        startY = centerY - gridHeight / 2 + spacing / 2,
+        y,
+        x,
+        shape;
 
-    // "Start game" button
-    var button = new Arcadia.Button({
-        position: {
-            x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT - 100
-        },
-        color: '#000',
-        border: '2px #fff',
-        padding: 15,
-        text: 'START',
-        font: '20px monospace',
-        action: function () {
-            Arcadia.changeScene(AsteroidsGameScene);
+    // Draw grid of level buttons
+    // TODO: support circular buttons?
+    for (y = startY; y < startY + gridHeight; y += spacing) {
+        for (x = startX; x < startX + gridWidth; x += spacing) {
+            shape = new Vertex({
+                number: (counter + 1),
+                position: { x: x, y: y }
+            });
+            this.add(shape);
+            counter += 1;
         }
-    });
-    this.add(button);
+    }
+
+    // Create grid of puzzle buttons - clicking one will take you to
+    // the puzzle immediately (but temporarily will need a play/edit distinction
+    // so that levels can be created)
+
+    // Puzzles hidden behind IAP wall will be red, normal will be purple,
+    // completed will be green
+
+    // Need to allow circular buttons in Arcadia.Button
+
+    // Probably need pagination, as well, since will have more puzzles than
+    // can fit on one screen
+
+    // Can link to a more info/feedback view from here as well
 };
 
 LevelSelect.prototype = new Arcadia.Scene();

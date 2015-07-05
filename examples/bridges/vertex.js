@@ -1,12 +1,11 @@
 var Vertex = function (args) {
     Arcadia.Shape.apply(this, arguments);
 
-    this.size = { width: 32, height: 32 };
+    this.size = { width: 40, height: 40 };
     this.vertices = 0;
     this.color = 'purple';
     this.border = '2px #fff';
-    // this.number = Math.round(5 * Math.random()) + 1;    // args.number
-    this.number = 2;
+    this.number = args.number || (Math.round(5 * Math.random()) + 1);
     this.edges = [];
     this.id = args.id;
 
