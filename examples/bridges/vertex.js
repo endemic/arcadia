@@ -1,13 +1,21 @@
 var Vertex = function (args) {
     Arcadia.Shape.apply(this, arguments);
 
+    if (window.VERTEX_ID === undefined) {
+        window.VERTEX_ID = 0;
+    }
+
     this.size = { width: 40, height: 40 };
     this.vertices = 0;
     this.color = 'purple';
     this.border = '2px #fff';
-    this.number = args.number || (Math.round(5 * Math.random()) + 1);
+    this.number = 0;
     this.edges = [];
-    this.id = args.id;
+    this.id = window.VERTEX_ID++;
+
+    if (args.hasOwnProperty('number')) {
+        this.number = args.number;
+    }
 
     this.label = new Arcadia.Label({
         font: '16px monospace',
@@ -18,6 +26,16 @@ var Vertex = function (args) {
 };
 
 Vertex.prototype = new Arcadia.Shape();
+
+Vertex.prototype.highlight = function () {
+    this.border = '3px white';
+    this.scale = 1.2;
+};
+
+Vertex.prototype.lowlight = function () {
+    this.border = '2px white';
+    this.scale = 1;
+};
 
 Vertex.prototype.isComplete = function () {
     return this.number == this.edgeCount();
@@ -41,6 +59,16 @@ Vertex.prototype.removeEdge = function (edge) {
     this.updateColor();
 };
 
+Vertex.prototype.increment = function () {
+    this.number += 1;
+    this.label.text = this.number;
+};
+
+Vertex.prototype.decrement = function (count) {
+    this.number -= count;
+    this.label.text = this.number;
+};
+
 Vertex.prototype.updateColor = function () {
     var count = this.edgeCount();
 
@@ -53,4 +81,4 @@ Vertex.prototype.updateColor = function () {
     }
 };
 
-Vertex.SIZE = 32;
+Vertex.SIZE = 40;
