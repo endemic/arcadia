@@ -137,36 +137,46 @@ Game.prototype.onPointMove = function (points) {
 };
 
 Game.prototype.onPointEnd = function (points) {
-    var success = false,
-        collision = false,
-        vertexIds,
-        i,
+    var collision,
+        edge,
         endVertex,
-        edge;
+        i,
+        vertexIds;
 
     if (this.startVertex) {
         i = this.vertices.length;
         while (i--) {
             endVertex = this.vertices[i];
 
-            // Determine if player ended click/touch on a vertex
-            // (that's different from the starting vertex)
+            // Determine if player ended click/touch on a vertex (that's different from the starting vertex)
             if (this.cursor.collidesWith(endVertex) && endVertex.id != this.startVertex.id) {
-
-                // TODO: the vertical/horizontal conditions contain lots of dupe code
-
-                // Handle vertical edges
-                if (this.startVertex.position.x === endVertex.position.x) {
+                // If valid, 90 degree move
+                if (this.startVertex.position.x === endVertex.position.x || this.startVertex.position.y === endVertex.position.y) {
                     // Place edge object
                     edge = this.edges.activate();
-                    edge.position = {
-                        x: this.startVertex.position.x,
-                        y: (this.startVertex.position.y + endVertex.position.y) / 2
-                    };
-                    edge.size = {
-                        width: Vertex.SIZE / 2,
-                        height: Math.abs(this.startVertex.position.y - endVertex.position.y) - Vertex.SIZE
-                    };
+
+                    // Horizontal edge
+                    if (this.startVertex.position.x === endVertex.position.x) {
+                        edge.position = {
+                            x: this.startVertex.position.x,
+                            y: (this.startVertex.position.y + endVertex.position.y) / 2
+                        };
+                        edge.size = {
+                            width: Vertex.SIZE / 2,
+                            height: Math.abs(this.startVertex.position.y - endVertex.position.y) - Vertex.SIZE
+                        };
+                    // Vertical edge
+                    } else if (this.startVertex.position.y === endVertex.position.y) {
+                        edge.position = {
+                            x: (this.startVertex.position.x + endVertex.position.x) / 2,
+                            y: this.startVertex.position.y
+                        };
+                        edge.size = {
+                            width: Math.abs(this.startVertex.position.x - endVertex.position.x) - Vertex.SIZE,
+                            height: Vertex.SIZE / 2
+                        };
+                    }
+                    
                     // check collision
                     j = this.edges.length;
                     while (j--) {
@@ -183,8 +193,8 @@ Game.prototype.onPointEnd = function (points) {
                         edge.vertices.push(endVertex);
 
                         Arcadia.playSfx('build');
+                    // Increment existing edge
                     } else if (vertexIds.indexOf(this.startVertex.id) !== -1 &&  vertexIds.indexOf(endVertex.id) !== -1) {
-                        // trying to draw over existing edge
                         if (collision.increment()) {
                             collision.vertices[0].updateColor();
                             collision.vertices[1].updateColor();
@@ -193,54 +203,14 @@ Game.prototype.onPointEnd = function (points) {
                             Arcadia.playSfx('invalid');
                         }
                         this.edges.deactivate(edge);
+                    // Invalid move
+                    // TODO is this condition necessary?
                     } else {
                         this.edges.deactivate(edge);
                         Arcadia.playSfx('invalid');
                     }
-                // Handle horizontal edges
-                } else if (this.startVertex.position.y === endVertex.position.y) {
-                    // Generate edge object
-                    edge = this.edges.activate();
-                    edge.position = {
-                        x: (this.startVertex.position.x + endVertex.position.x) / 2,
-                        y: this.startVertex.position.y
-                    };
-                    edge.size = {
-                        width: Math.abs(this.startVertex.position.x - endVertex.position.x) - Vertex.SIZE,
-                        height: Vertex.SIZE / 2
-                    };
-                    // check collision
-                    j = this.edges.length;
-                    while (j--) {
-                        if (edge.collidesWith(this.edges.at(j))) {
-                            collision = this.edges.at(j);
-                            vertexIds = [collision.vertices[0].id, collision.vertices[1].id];
-                        }
-                    }
-                    // If successful, add the edge
-                    if (!collision) {
-                        this.startVertex.addEdge(edge);
-                        endVertex.addEdge(edge);
-                        edge.vertices.push(this.startVertex);
-                        edge.vertices.push(endVertex);
-
-                        Arcadia.playSfx('build');
-                    } else if (vertexIds.indexOf(this.startVertex.id) !== -1 &&  vertexIds.indexOf(endVertex.id) !== -1) {
-                        // trying to draw over existing edge
-                        if (collision.increment()) {
-                            collision.vertices[0].updateColor();
-                            collision.vertices[1].updateColor();
-                            Arcadia.playSfx('build');
-                        } else {
-                            Arcadia.playSfx('invalid');
-                        }
-                        this.edges.deactivate(edge);
-                    } else {
-                        this.edges.deactivate(edge);
-                        Arcadia.playSfx('invalid');
-                    }
-                // Diagonal, etc. edges aren't allowed
                 } else {
+                    // Diagonal edges aren't allowed
                     Arcadia.playSfx('invalid');
                 }
             }
@@ -262,28 +232,9 @@ Game.prototype.onPointEnd = function (points) {
         }
     }
 
-    // Check for completeness
-    // Fast check - ensure all vertices have correct # of edges
-    var complete = this.vertices.every(function (vertex) {
-        return vertex.isComplete();
-    });
-
-    // Slow check - ensure all nodes on the graph are connected
-    if (complete) {
-        var foundVertices = [];
-        this.search(this.vertices[0], foundVertices);
-        // Basically start at one vertex, and see if we can traverse the whole
-        // graph -- if the # of vertices found by the search equals the number
-        // in the puzzle, then it's a correct solution
-        if (foundVertices.length === this.vertices.length) {
-            this.win();
-        } else {
-            // TODO: display this in a better way
-            alert('nice try, cheeter');
-        }
-    }
-
     this.deactivate(this.cursor);
+
+    this.checkCompleteness();
 };
 
 // https://en.wikipedia.org/wiki/Depth-first_search
@@ -300,6 +251,31 @@ Game.prototype.search = function (vertex, listOfTraversedVertices) {
        _this.search(edge.vertices[0], listOfTraversedVertices);
        _this.search(edge.vertices[1], listOfTraversedVertices);
     });
+};
+
+Game.prototype.checkCompleteness = function () {
+    var complete,
+        foundVertices;
+
+    // Fast check - ensure all vertices have correct # of edges
+    complete = this.vertices.every(function (vertex) {
+        return vertex.isComplete();
+    });
+
+    // Slow check - ensure all nodes on the graph are connected
+    if (complete) {
+        foundVertices = [];
+        this.search(this.vertices[0], foundVertices);
+        // Basically start at one vertex, and see if we can traverse the whole
+        // graph -- if the # of vertices found by the search equals the number
+        // in the puzzle, then it's a correct solution
+        if (foundVertices.length === this.vertices.length) {
+            this.win();
+        } else {
+            // TODO: display this in a better way
+            alert('nice try, cheeter');
+        }
+    }
 };
 
 // Show a "u won, next level?" sort of message
