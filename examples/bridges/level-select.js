@@ -16,8 +16,10 @@ var LevelSelect = function () {
         startY = centerY - gridHeight / 2 + spacing / 2,
         y,
         x,
-        shape;
+        shape,
+        _this;
 
+    _this = this;
     this.color = 'purple';
     this.levels = [];
     this.selected = null;
@@ -111,7 +113,8 @@ var LevelSelect = function () {
         text: 'play',
         font: '20px monospace',
         action: function () {
-            Arcadia.changeScene(Game, { level: this.selected });
+            Arcadia.playSfx('button');
+            Arcadia.changeScene(Game, { level: _this.selected });
         }
     });
     this.add(this.playButton);
@@ -127,7 +130,8 @@ var LevelSelect = function () {
         text: 'edit',
         font: '20px monospace',
         action: function () {
-            Arcadia.changeScene(Game, { level: this.selected, edit: true });
+            Arcadia.playSfx('button');
+            Arcadia.changeScene(Editor, { level: _this.selected });
         }
     });
     this.add(this.editButton);

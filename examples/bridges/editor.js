@@ -1,9 +1,11 @@
 /*jslint sloppy: true, plusplus: true */
 /*globals Arcadia */
 
-var Editor = function () {
+var Editor = function (options) {
     Arcadia.Scene.apply(this, arguments);
-    var _this = this;
+    if (options === undefined) {
+        options = {};
+    }
 
     this.color = 'purple';
 
@@ -16,15 +18,12 @@ var Editor = function () {
     this.add(this.cursor);
     this.deactivate(this.cursor);
 
-    // Data structure for the vertices in the graph
+    // Data structures for the vertices/edges in the graph
     this.vertices = [];
+    this.edges = [];
 
-    // Data structure for edges
-    this.edges = new Arcadia.Pool();
-    this.edges.factory = function () {
-        return new Edge();
-    };
-    this.add(this.edges);
+    this.level = options.level || 0;
+    this.load();
 
     // Line that is shown while dragging from one vertex to another
     this.activeEdge = new Arcadia.Shape({
@@ -32,30 +31,39 @@ var Editor = function () {
     });
     this.add(this.activeEdge);
     this.deactivate(this.activeEdge);
-
-    // Export data to console
+    
+    // Export data to console/localStorage
     this.saveButton = new Arcadia.Button({
         color: null,
         border: '2px #fff',
         padding: 5,
-        text: 'export',
+        text: 'save',
         font: '20px monospace',
-        action: function (event) {
-            var data = _this.vertices.map(function (v) {
-                return {
-                    position: v.position,
-                    number: v.number
-                };
-            });
-            // TODO: might as well store edge data as well
-            console.log(JSON.stringify(data));
-        }
+        action: this.save.bind(this)
     });
     this.saveButton.position = {
         x: Arcadia.WIDTH - this.saveButton.size.width / 2,
         y: this.saveButton.size.height / 2
     };
     this.add(this.saveButton);
+
+    // Go back to level select
+    this.backButton = new Arcadia.Button({
+        color: null,
+        border: '2px #fff',
+        padding: 5,
+        text: 'quit',
+        font: '20px monospace',
+        action: function () {
+            Arcadia.playSfx('button');
+            Arcadia.changeScene(LevelSelect);
+        }
+    });
+    this.backButton.position = {
+        x: this.backButton.size.width / 2,
+        y: this.backButton.size.height / 2
+    };
+    this.add(this.backButton);
 
     // Hidden shape to allow for direct manipulation of puzzle area
     // Basically to prevent random touches from interfering with UI
@@ -74,6 +82,100 @@ var Editor = function () {
 };
 
 Editor.prototype = new Arcadia.Scene();
+
+Editor.prototype.save = function () {
+    var data,
+        levels;
+
+    Arcadia.playSfx('button');
+
+    data = {
+        vertices: this.vertices.map(function (vertex) {
+            return {
+                position: vertex.position,
+                number: vertex.number,
+                id: vertex.id
+            };
+        }),
+        edges: this.edges.map(function (edge) {
+            return {
+                count: edge.count,
+                vertexIds: edge.vertices.map(function (vertex) { return vertex.id; })
+            };
+        })
+    };
+
+    console.log(JSON.stringify(data));
+    
+    levels = localStorage.getObject('levels') || [];
+    levels[this.level] = data;
+    localStorage.setObject('levels', levels);
+};
+
+Editor.prototype.load = function () {
+    var levels = localStorage.getObject('levels'),
+        vertexData,
+        _this = this;
+
+    if (levels[this.level] === undefined) {
+        console.warn('No previously-stored level data.');
+        return;
+    }
+
+    data = levels[this.level];
+
+    data['vertices'].forEach(function (data) {
+        // Re-create vertices
+        var v = new Vertex({
+            position: data.position,
+            number: data.number,
+            id: data.id,
+        });
+
+        _this.vertices.push(v);
+        _this.add(v);
+    });
+
+    data['edges'].forEach(function (data) {
+        // Re-create edges
+        var e, v1, v2;
+
+        v1 = _this.vertices.find(function (v) { return v.id === data.vertexIds[0]; });
+        v2 = _this.vertices.find(function (v) { return v.id === data.vertexIds[1]; });
+
+        e = new Edge();
+        e.vertices = [v1, v2];
+
+        // Horizontal edge
+        if (v1.position.x === v2.position.x) {
+            e.position = {
+                x: v1.position.x,
+                y: (v1.position.y + v2.position.y) / 2
+            };
+            e.size = {
+                width: Vertex.SIZE / 2,
+                height: Math.abs(v1.position.y - v2.position.y) - Vertex.SIZE
+            };
+        // Vertical edge
+        } else if (v1.position.y === v2.position.y) {
+            e.position = {
+                x: (v1.position.x + v2.position.x) / 2,
+                y: v1.position.y
+            };
+            e.size = {
+                width: Math.abs(v1.position.x - v2.position.x) - Vertex.SIZE,
+                height: Vertex.SIZE / 2
+            };
+        }
+
+        if (data.count > 1) {
+            e.increment();
+        }
+
+        _this.edges.push(e);
+        _this.add(e);
+    });
+};
 
 Editor.prototype.onPointStart = function (points) {
     var i, vertex;
@@ -157,6 +259,7 @@ Editor.prototype.onPointEnd = function (points) {
         while (i--) {
             endVertex = this.vertices[i];
 
+            // Skip the rest of the iteration if not ending on a vertex
             if (!this.cursor.collidesWith(endVertex)) {
                 continue;
             }
@@ -166,7 +269,7 @@ Editor.prototype.onPointEnd = function (points) {
                 // If valid, 90 degree move
                 if (this.startVertex.position.x === endVertex.position.x || this.startVertex.position.y === endVertex.position.y) {
                     // Place edge object
-                    edge = this.edges.activate();
+                    edge = new Edge();
 
                     // Horizontal edge
                     if (this.startVertex.position.x === endVertex.position.x) {
@@ -193,19 +296,23 @@ Editor.prototype.onPointEnd = function (points) {
                     // check collision
                     j = this.edges.length;
                     while (j--) {
-                        if (edge.collidesWith(this.edges.at(j))) {
-                            collision = this.edges.at(j);
+                        if (edge.collidesWith(this.edges[j])) {
+                            collision = this.edges[j];
                             vertexIds = [collision.vertices[0].id, collision.vertices[1].id];
                         }
                     }
                     // If successful, add the edge
                     if (!collision) {
+                        // Update vertices
                         this.startVertex.increment();
                         this.startVertex.addEdge(edge);
                         endVertex.increment();
                         endVertex.addEdge(edge);
+                        // Update edge
                         edge.vertices.push(this.startVertex);
                         edge.vertices.push(endVertex);
+                        this.edges.push(edge);
+                        this.add(edge);
 
                         Arcadia.playSfx('build');
                     // Increment existing edge
@@ -217,12 +324,11 @@ Editor.prototype.onPointEnd = function (points) {
                         } else {
                             Arcadia.playSfx('invalid');
                         }
-                        this.edges.deactivate(edge);
                     // Invalid move
                     // TODO is this condition necessary?
                     } else {
-                        this.edges.deactivate(edge);
                         Arcadia.playSfx('invalid');
+                        throw new Error('strange condition');
                     }
                 } else {
                     // Diagonal edges aren't allowed
@@ -246,14 +352,17 @@ Editor.prototype.onPointEnd = function (points) {
         // Determine if user touched a edge; if so, remove it
         i = this.edges.length;
         while (i--) {
-            if (this.cursor.collidesWith(this.edges.at(i))) {
-                edge = this.edges.at(i);
+            edge = this.edges[i];
+
+            if (this.cursor.collidesWith(edge)) {
                 edge.vertices[0].decrement(edge.count);
                 edge.vertices[0].removeEdge(edge);
                 edge.vertices[1].decrement(edge.count);
                 edge.vertices[1].removeEdge(edge);
 
-                this.edges.deactivate(i);
+                this.remove(edge);
+                this.edges.splice(i, 1);
+
                 Arcadia.playSfx('erase');
                 removedEdge = true;
             }
@@ -279,7 +388,7 @@ Editor.prototype.onPointEnd = function (points) {
 
             i = this.edges.length;
             while (i--) {
-                if (v.collidesWith(this.edges.at(i))) {
+                if (v.collidesWith(this.edges[i])) {
                     success = false;
                 }
             }

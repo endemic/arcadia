@@ -1,8 +1,11 @@
 /*jslint sloppy: true, plusplus: true */
 /*globals Arcadia */
 
-var Game = function () {
+var Game = function (options) {
     Arcadia.Scene.apply(this, arguments);
+    if (options === undefined) {
+        options = {};
+    }
 
     // Background color
     this.color = 'purple';
@@ -16,64 +19,13 @@ var Game = function () {
     this.add(this.cursor);
     this.deactivate(this.cursor);
 
-    // Data structure for the vertices in the graph
+    // Data structure for the vertices/edges in the graph
     this.vertices = [];
+    this.edges = [];
 
     // TODO: Load the puzzle here
-    // Temporary vertices for testing
-    var i;
-
-    i = new Vertex({
-        position: { x: 100, y: 100 },
-        number: 2,
-        id: this.vertices.length
-    });
-    this.add(i);
-    this.vertices.push(i);
-
-    i = new Vertex({
-        position: { x: 200, y: 100 },
-        number: 2,
-        id: this.vertices.length
-    });
-    this.add(i);
-    this.vertices.push(i);
-
-    i = new Vertex({
-        position: { x: 200, y: 200 },
-        number: 2,
-        id: this.vertices.length
-    });
-    this.add(i);
-    this.vertices.push(i);
-
-    i = new Vertex({
-        position: { x: 100, y: 200 },
-        number: 2,
-        id: this.vertices.length
-    });
-    this.add(i);
-    this.vertices.push(i);
-
-    // i = new Vertex({
-    //     position: { x: 400, y: 100 },
-    //     id: this.vertices.length
-    // });
-    // this.add(i);
-    // this.vertices.push(i);
-    // i = new Vertex({
-    //     position: { x: 400, y: 200 },
-    //     id: this.vertices.length
-    // });
-    // this.add(i);
-    // this.vertices.push(i);
-
-    // Data structure for edges
-    this.edges = new Arcadia.Pool();
-    this.edges.factory = function () {
-        return new Edge();
-    };
-    this.add(this.edges);
+    this.level = options.level || 0;
+    this.load();
 
     // Line that is shown while dragging from one vertex to another
     this.activeEdge = new Arcadia.Shape({
@@ -84,6 +36,30 @@ var Game = function () {
 };
 
 Game.prototype = new Arcadia.Scene();
+
+Game.prototype.load = function () {
+    var levels = localStorage.getObject('levels'),
+        vertexData,
+        _this = this;
+
+    if (levels[this.level] === undefined) {
+        throw new Error('No previously-stored level data for #' + (this.level + 1));
+    }
+
+    data = levels[this.level];
+
+    // Re-create vertices
+    data['vertices'].forEach(function (data) {
+        var v = new Vertex({
+            position: data.position,
+            number: data.number,
+            id: data.id,
+        });
+
+        _this.vertices.push(v);
+        _this.add(v);
+    });
+};
 
 Game.prototype.onPointStart = function (points) {
     var i, vertex;
@@ -153,7 +129,7 @@ Game.prototype.onPointEnd = function (points) {
                 // If valid, 90 degree move
                 if (this.startVertex.position.x === endVertex.position.x || this.startVertex.position.y === endVertex.position.y) {
                     // Place edge object
-                    edge = this.edges.activate();
+                    edge = new Edge();
 
                     // Horizontal edge
                     if (this.startVertex.position.x === endVertex.position.x) {
@@ -180,8 +156,8 @@ Game.prototype.onPointEnd = function (points) {
                     // check collision
                     j = this.edges.length;
                     while (j--) {
-                        if (edge.collidesWith(this.edges.at(j))) {
-                            collision = this.edges.at(j);
+                        if (edge.collidesWith(this.edges[j])) {
+                            collision = this.edges[j];
                             vertexIds = [collision.vertices[0].id, collision.vertices[1].id];
                         }
                     }
@@ -191,6 +167,9 @@ Game.prototype.onPointEnd = function (points) {
                         endVertex.addEdge(edge);
                         edge.vertices.push(this.startVertex);
                         edge.vertices.push(endVertex);
+
+                        this.edges.push(edge);
+                        this.add(edge);
 
                         Arcadia.playSfx('build');
                     // Increment existing edge
@@ -202,12 +181,11 @@ Game.prototype.onPointEnd = function (points) {
                         } else {
                             Arcadia.playSfx('invalid');
                         }
-                        this.edges.deactivate(edge);
                     // Invalid move
                     // TODO is this condition necessary?
                     } else {
-                        this.edges.deactivate(edge);
                         Arcadia.playSfx('invalid');
+                        throw new Error('strange condition');
                     }
                 } else {
                     // Diagonal edges aren't allowed
@@ -222,11 +200,12 @@ Game.prototype.onPointEnd = function (points) {
         // Determine if user touched a edge; if so, remove it
         i = this.edges.length;
         while (i--) {
-            if (this.cursor.collidesWith(this.edges.at(i))) {
-                edge = this.edges.at(i);
+            if (this.cursor.collidesWith(this.edges[i])) {
+                edge = this.edges[i];
                 edge.vertices[0].removeEdge(edge);
                 edge.vertices[1].removeEdge(edge);
-                this.edges.deactivate(i);
+                this.remove(edge);
+                this.edges.splice(i, 1);
                 Arcadia.playSfx('erase');
             }
         }
@@ -285,7 +264,7 @@ Game.prototype.win = function () {
         _this = this;
 
     while (i--) {
-        this.edges.at(i).tween('alpha', 0, 1000);
+        this.edges[i].tween('alpha', 0, 1000);
     }
 
     // Particle emitters

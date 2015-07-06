@@ -11,7 +11,13 @@ var Vertex = function (args) {
     this.border = '2px #fff';
     this.number = 0;
     this.edges = [];
-    this.id = window.VERTEX_ID++;
+
+    if (args.hasOwnProperty('id')) {
+        this.id = args.id;
+    } else {
+        this.id = window.VERTEX_ID;
+        window.VERTEX_ID += 1;
+    }
 
     if (args.hasOwnProperty('number')) {
         this.number = args.number;

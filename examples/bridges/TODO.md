@@ -13,7 +13,7 @@
 	* Store how many bridges lead out from an island
 [x] Don't allow drawing lines from an island if it already has the max # of bridges
 [ ] Check for collision of a vertex in between start/end vertices
-[ ] Some kind of level editor? How would this work?
+[x] Some kind of level editor? How would this work?
 	* Re-use game mode, with "editor" flag? Or easier to copy/paste and change
 	  relevant bits?
 	* A touch that doesn't hit anything will create an empty vertex, snapped
@@ -31,6 +31,11 @@
 [ ] Title screen will just be tap to start; take you to the next uncompleted puzzle
 [ ] Can get to level select by backing out of current puzzle, or at win condition
 [ ] Need some sort of button on the game view which allows user to quit puzzle
+[ ] Draw edges in editor
+[ ] Combine editor/game?
+[ ] Scroll paginated level icons
+[ ] Upload to web
+[ ] Create basic icon
 
 # Rules
 
