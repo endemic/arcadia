@@ -5,6 +5,8 @@ var LevelSelect = function () {
     Arcadia.Scene.apply(this, arguments);
     
     var spacing = 52, // for 40x40 objects
+        completed,
+        levels,
         counter = 0,
         rows = 5,   // Show 25 levels per page; maybe shoot for 100 levels?
         columns = 5,
@@ -23,6 +25,8 @@ var LevelSelect = function () {
     this.color = 'purple';
     this.levels = [];
     this.selected = null;
+    completed = localStorage.getObject('completed') || [];
+    levels = localStorage.getObject('levels') || [];
 
     // Object that tracks player's cursor/finger; used for collision detection 
     this.cursor = new Arcadia.Shape({
@@ -43,6 +47,12 @@ var LevelSelect = function () {
             });
             this.add(shape);
             this.levels.push(shape);
+            if (completed[counter]) {
+                shape.color = 'lime';
+            }
+            if (!levels[counter]) {
+                shape.color = 'red';
+            }
             counter += 1;
         }
     }
@@ -161,7 +171,7 @@ LevelSelect.prototype.onPointEnd = function () {
     while (i--) {
         level = this.levels[i];
 
-        if (this.cursor.collidesWith(level)) {
+        if (this.cursor.collidesWith(level) && this.selected !== i) {
             level.highlight();
             Arcadia.playSfx('button');
 
@@ -170,6 +180,7 @@ LevelSelect.prototype.onPointEnd = function () {
             }
 
             this.selected = i;
+            return;
         }
     }
 };

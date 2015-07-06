@@ -113,9 +113,11 @@ Editor.prototype.save = function () {
 };
 
 Editor.prototype.load = function () {
-    var levels = localStorage.getObject('levels'),
+    var levels,
         vertexData,
         _this = this;
+
+    levels = localStorage.getObject('levels') || [];
 
     if (levels[this.level] === undefined) {
         console.warn('No previously-stored level data.');

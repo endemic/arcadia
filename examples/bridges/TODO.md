@@ -31,11 +31,16 @@
 [ ] Title screen will just be tap to start; take you to the next uncompleted puzzle
 [ ] Can get to level select by backing out of current puzzle, or at win condition
 [ ] Need some sort of button on the game view which allows user to quit puzzle
-[ ] Draw edges in editor
+[x] Draw edges in editor
+[x] Allow going back to level select after win
 [ ] Combine editor/game?
 [ ] Scroll paginated level icons
-[ ] Upload to web
-[ ] Create basic icon
+[x] Upload to web
+[x] Create basic icon
+[ ] Alpha isn't passed down to children
+[x] `onPointEnd` seems to be getting called twice on iOS
+[ ] Extract to its own repo
+[ ] Change red/green colors to be more readable w/ white text
 
 # Rules
 

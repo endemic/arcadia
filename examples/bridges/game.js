@@ -259,10 +259,13 @@ Game.prototype.checkCompleteness = function () {
 
 // Show a "u won, next level?" sort of message
 Game.prototype.win = function () {
-    // Hide edges
-    var i = this.edges.length,
+
+    var button,
+        completed,
+        i = this.edges.length,
         _this = this;
 
+    // Hide edges
     while (i--) {
         this.edges[i].tween('alpha', 0, 1000);
     }
@@ -297,4 +300,26 @@ Game.prototype.win = function () {
             _this.particles.activate().startAt(vertex.position.x, vertex.position.y);
         });
     });
+
+    completed = localStorage.getObject('completed') || [];
+    completed[this.level] = true;
+    localStorage.setObject('completed', completed);
+
+    button = new Arcadia.Button({
+        position: {
+            x: Arcadia.WIDTH / 2,
+            y: Arcadia.HEIGHT / 2
+        },
+        color: null,
+        border: '2px #fff',
+        padding: 15,
+        text: 'continue',
+        font: '20px monospace',
+        alpha: 0,
+        action: function () {
+            Arcadia.changeScene(LevelSelect);
+        }
+    });
+    this.add(button);
+    button.tween('alpha', 1, 2000);
 };
