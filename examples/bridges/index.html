@@ -22,24 +22,13 @@
 		-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 	}
 	</style>
-	<script type="text/javascript">
-		function assert(value1, value2) {
-			if (value1 !== value2) {
-				throw new Error(value1 + ' != ' + value2);
-			}
-		}
-
-		Storage.prototype.setBoolean = function (key, value) {
-			this.setItem(key, !!value);
-		};
-
-		Storage.prototype.getBoolean = function (key) {
-			return this.getItem(key) == 'true';
-		};
-	</script>
 
 	<!-- Engine -->
 	<script src="../../dist/arcadia.js"></script>
+
+	<!-- Polyfills, etc. -->
+	<script src="polyfills.js"></script>
+	<script src="storage-extensions.js"></script>
 
 	<!-- Scenes -->
 	<script src="title.js"></script>
@@ -56,7 +45,7 @@
 			var game = new Arcadia.Game({
 				width: 375,
 				height: 667,
-				scene: Editor,
+				scene: LevelSelect,
 				scaleToFit: true,
 				sounds: [
 					{ url: 'assets/sounds/button.mp3', id: 'button' },
