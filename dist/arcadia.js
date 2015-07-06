@@ -578,13 +578,16 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       this.onKeyUp = this.onKeyUp.bind(this);
       this.pause = this.pause.bind(this);
       this.resume = this.resume.bind(this);
-      document.addEventListener('keydown', this.onKeyDown, false);
-      document.addEventListener('keyup', this.onKeyUp, false);
-      this.element.addEventListener('mousedown', this.onPointStart, false);
-      this.element.addEventListener('mouseup', this.onPointEnd, false);
-      this.element.addEventListener('touchstart', this.onPointStart, false);
-      this.element.addEventListener('touchmove', this.onPointMove, false);
-      this.element.addEventListener('touchend', this.onPointEnd, false);
+      if (Arcadia.ENV.mobile) {
+        this.element.addEventListener('touchstart', this.onPointStart, false);
+        this.element.addEventListener('touchmove', this.onPointMove, false);
+        this.element.addEventListener('touchend', this.onPointEnd, false);
+      } else {
+        document.addEventListener('keydown', this.onKeyDown, false);
+        document.addEventListener('keyup', this.onKeyUp, false);
+        this.element.addEventListener('mousedown', this.onPointStart, false);
+        this.element.addEventListener('mouseup', this.onPointEnd, false);
+      }
       this.element.addEventListener('touchmove', function(e) {
         return e.preventDefault();
       });

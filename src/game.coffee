@@ -65,13 +65,15 @@ class Game
     @resume = @resume.bind @
 
     # Set up event listeners - mouse and touch use the same ones
-    document.addEventListener 'keydown', @onKeyDown, false
-    document.addEventListener 'keyup', @onKeyUp, false
-    @element.addEventListener 'mousedown', @onPointStart, false
-    @element.addEventListener 'mouseup', @onPointEnd, false
-    @element.addEventListener 'touchstart', @onPointStart, false
-    @element.addEventListener 'touchmove', @onPointMove, false
-    @element.addEventListener 'touchend', @onPointEnd, false
+    if Arcadia.ENV.mobile
+      @element.addEventListener 'touchstart', @onPointStart, false
+      @element.addEventListener 'touchmove', @onPointMove, false
+      @element.addEventListener 'touchend', @onPointEnd, false
+    else
+      document.addEventListener 'keydown', @onKeyDown, false
+      document.addEventListener 'keyup', @onKeyUp, false
+      @element.addEventListener 'mousedown', @onPointStart, false
+      @element.addEventListener 'mouseup', @onPointEnd, false
 
     # Prevent the page from scrolling when touching game element
     @element.addEventListener 'touchmove', (e) -> e.preventDefault()
