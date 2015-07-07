@@ -31,7 +31,7 @@ class Label extends Shape
     lineCount = newlines.length + 1 if newlines
 
     # Determine width/height of text using offscreen <div>
-    element = document.getElementById 'text-dimensions'
+    element = document.getElementById('text-dimensions')
     
     if !element
       element = document.createElement('div')
@@ -43,8 +43,8 @@ class Label extends Shape
     element.style['font'] = @font
     element.style['line-height'] = 1
     element.innerHTML = @text.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;')
-    @size.width = element.offsetWidth * Arcadia.PIXEL_RATIO
-    @size.height = element.offsetHeight * Arcadia.PIXEL_RATIO
+    @size.width = element.offsetWidth
+    @size.height = element.offsetHeight
     lineHeight = @size.height / lineCount
     @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
@@ -88,7 +88,7 @@ class Label extends Shape
       context.fillStyle = @_color
       if lineCount > 1
         @text.split('\n').forEach (text, index) =>
-          context.fillText(text, x, -@size.height / 2 + lineHeight / 2 + (lineHeight * index))
+          context.fillText(text, x, (-@size.height / 2) + (lineHeight / 2) + (lineHeight * index))
       else
         context.fillText(@text, x, 0)
 
@@ -103,7 +103,7 @@ class Label extends Shape
       context.strokeStyle = @_border.color
       if lineCount > 1
         @text.split('\n').forEach (text, index) =>
-          context.strokeText(text, x, -@size.height / 2 + lineHeight / 2 + (lineHeight * index))
+          context.strokeText(text, x, (-@size.height / 2) + (lineHeight / 2) + (lineHeight * index))
       else
         context.strokeText(@text, x, 0)
 

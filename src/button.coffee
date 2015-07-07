@@ -16,7 +16,6 @@ class Button extends Shape
 
     super(args)
 
-    #@label.position = { x: 0, y: 0 }
     @label.fixed = false
     @add(@label)
 
