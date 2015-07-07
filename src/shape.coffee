@@ -242,7 +242,16 @@ class Shape extends GameObject
       tween = @tweens[i]
       tween.time += delta * 1000 # (delta is in seconds)
       tween.time = tween.duration if tween.time > tween.duration
-      @[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration) # time,begin,change,duration
+
+      if typeof @[tween.property] == 'object'
+        obj = {}
+        for property of @[tween.property]
+          obj[property] = tween.easingFunc(tween.time, tween.start[property], tween.change[property], tween.duration) if @[tween.property].hasOwnProperty(property)
+
+        @[tween.property] = obj
+      else
+        @[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration) # time,begin,change,duration
+
       if tween.time == tween.duration
         @tweens.splice(i, 1)
         tween.callback() if typeof tween.callback == 'function'
@@ -263,21 +272,25 @@ class Shape extends GameObject
     return false if @ == other
     Math.abs(@position.x - other.position.x) < @size.width / 2 + other.size.width / 2 && Math.abs(@position.y - other.position.y) < @size.height / 2 + other.size.height / 2
 
+  ###
+  @description Add a transition to the `tween` stack
+  ###
   tween: (property, target, duration = 500, easing = 'linearNone', callback) ->
-    # TODO: How to handle compound properties, such as @position?
-    # context = @
-    # if property.indexOf('.') != -1
-    #   # This is a compound value
-    #   property.split('.').forEach (segment) ->
-    #     context = context[segment]
-    # else
-    #   context = context[property]
+    # Handle "compound" properties that have objects as values
+    # e.g. Shape.size = { width: 100, height: 100 }
+    change = if typeof target == 'object'
+      obj = {}
+      for key of @[property]
+        obj[key] = target[key] - @[property][key]
+      obj
+    else
+      target - @[property]
 
     @tweens.push
       time: 0
       property: property
       start: @[property]
-      change: target - @[property]
+      change: change
       duration: duration
       easingFunc: Easie[easing]
       callback: callback

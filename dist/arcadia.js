@@ -1057,8 +1057,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       element.style['font'] = this.font;
       element.style['line-height'] = 1;
       element.innerHTML = this.text.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
-      this.size.width = element.offsetWidth * Arcadia.PIXEL_RATIO;
-      this.size.height = element.offsetHeight * Arcadia.PIXEL_RATIO;
+      this.size.width = element.offsetWidth;
+      this.size.height = element.offsetHeight;
       lineHeight = this.size.height / lineCount;
       this.anchor = {
         x: this.size.width / 2,
@@ -1093,7 +1093,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         context.fillStyle = this._color;
         if (lineCount > 1) {
           this.text.split('\n').forEach(function(text, index) {
-            return context.fillText(text, x, -_this.size.height / 2 + lineHeight / 2 + (lineHeight * index));
+            return context.fillText(text, x, (-_this.size.height / 2) + (lineHeight / 2) + (lineHeight * index));
           });
         } else {
           context.fillText(this.text, x, 0);
@@ -1109,7 +1109,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         context.strokeStyle = this._border.color;
         if (lineCount > 1) {
           this.text.split('\n').forEach(function(text, index) {
-            return context.strokeText(text, x, -_this.size.height / 2 + lineHeight / 2 + (lineHeight * index));
+            return context.strokeText(text, x, (-_this.size.height / 2) + (lineHeight / 2) + (lineHeight * index));
           });
         } else {
           context.strokeText(this.text, x, 0);
@@ -1805,7 +1805,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Shape.prototype.update = function(delta) {
-      var i, tween;
+      var i, obj, property, tween;
       Shape.__super__.update.call(this, delta);
       i = this.tweens.length;
       while (i--) {
@@ -1814,7 +1814,17 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         if (tween.time > tween.duration) {
           tween.time = tween.duration;
         }
-        this[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration);
+        if (typeof this[tween.property] === 'object') {
+          obj = {};
+          for (property in this[tween.property]) {
+            if (this[tween.property].hasOwnProperty(property)) {
+              obj[property] = tween.easingFunc(tween.time, tween.start[property], tween.change[property], tween.duration);
+            }
+          }
+          this[tween.property] = obj;
+        } else {
+          this[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration);
+        }
         if (tween.time === tween.duration) {
           this.tweens.splice(i, 1);
           if (typeof tween.callback === 'function') {
@@ -1842,18 +1852,35 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       return Math.abs(this.position.x - other.position.x) < this.size.width / 2 + other.size.width / 2 && Math.abs(this.position.y - other.position.y) < this.size.height / 2 + other.size.height / 2;
     };
 
+    /*
+    @description Add a transition to the `tween` stack
+    */
+
+
     Shape.prototype.tween = function(property, target, duration, easing, callback) {
+      var change, key, obj;
       if (duration == null) {
         duration = 500;
       }
       if (easing == null) {
         easing = 'linearNone';
       }
+      change = (function() {
+        if (typeof target === 'object') {
+          obj = {};
+          for (key in this[property]) {
+            obj[key] = target[key] - this[property][key];
+          }
+          return obj;
+        } else {
+          return target - this[property];
+        }
+      }).call(this);
       return this.tweens.push({
         time: 0,
         property: property,
         start: this[property],
-        change: target - this[property],
+        change: change,
         duration: duration,
         easingFunc: Easie[easing],
         callback: callback
