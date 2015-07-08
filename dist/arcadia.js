@@ -3,13 +3,13 @@ var Sona;
 
 Sona = (function() {
   function Sona(sources) {
-    var AudioContext;
-    AudioContext = AudioContext || webkitAudioContext;
-    this.supported = !!AudioContext;
+    var StandardAudioContext;
+    StandardAudioContext = typeof webkitAudioContext !== 'undefined' ? webkitAudioContext : AudioContext;
+    this.supported = !!StandardAudioContext;
     if (!this.supported) {
       return;
     }
-    this.context = new AudioContext();
+    this.context = new StandardAudioContext();
     this.sources = sources;
     this.buffers = {};
     this.sounds = {};
