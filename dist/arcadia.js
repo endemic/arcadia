@@ -1630,6 +1630,12 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return this._size;
       },
       set: function(size) {
+        if (size.width < 1) {
+          size.width = 1;
+        }
+        if (size.height < 1) {
+          size.height = 1;
+        }
         this._size = {
           width: size.width,
           height: size.height

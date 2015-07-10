@@ -20,7 +20,7 @@ class Shape extends GameObject
 
     # Default graphical options; changing these requires using setters/getters,
     # since the cache would need to be redrawn
-    @_color = '#fff';
+    @_color = '#fff'
     @_border = { width: 0, color: '#fff' }
     @_shadow = { x: 0, y: 0, blur: 0, color: '#fff' }
     @_vertices = 4
@@ -88,6 +88,11 @@ class Shape extends GameObject
   @property 'size',
     get: -> @_size
     set: (size) ->
+      # Enforce minimum size of 1x1
+      # Bad things happen if you try to draw a 0x0 canvas
+      size.width = 1 if size.width < 1
+      size.height = 1 if size.height < 1
+
       @_size = { width: size.width, height: size.height }
       @dirty = true
 
