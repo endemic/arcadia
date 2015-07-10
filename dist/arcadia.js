@@ -321,7 +321,10 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       this.label.fixed = false;
       this.add(this.label);
       this.fixed = true;
-      this.action = args.action;
+      if (args.hasOwnProperty('action')) {
+        this.action = args.action;
+      }
+      this.disabled = false;
       this.onPointEnd = this.onPointEnd.bind(this);
       if (Arcadia.ENV.mobile) {
         Arcadia.element.addEventListener('touchend', this.onPointEnd, false);
@@ -338,7 +341,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
     Button.prototype.onPointEnd = function(event) {
       var i;
-      if (typeof this.action !== 'function') {
+      if (typeof this.action !== 'function' || this.disabled) {
         return;
       }
       i = Arcadia.points.length;

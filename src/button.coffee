@@ -20,7 +20,8 @@ class Button extends Shape
     @add(@label)
 
     @fixed = true
-    @action = args.action
+    @action = args.action if args.hasOwnProperty('action')
+    @disabled = false # Quick prop to allow "turning off" button action
 
     # Attach event listeners
     @onPointEnd = @onPointEnd.bind(@)
@@ -35,7 +36,7 @@ class Button extends Shape
   this method will get fired for each different button object on the screen
   ###
   onPointEnd: (event) ->
-    return if typeof @action != 'function'
+    return if typeof @action != 'function' || @disabled
 
     i = Arcadia.points.length
     while i--
