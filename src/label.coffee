@@ -45,7 +45,7 @@ class Label extends Shape
     element.innerHTML = @text.replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;')
     @size.width = element.offsetWidth
     @size.height = element.offsetHeight
-    lineHeight = @size.height / lineCount
+    lineHeight = @size.height / lineCount * Arcadia.PIXEL_RATIO
     @anchor = { x: @size.width / 2, y: @size.height / 2 }
 
     @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
@@ -62,7 +62,7 @@ class Label extends Shape
     @setAnchorPoint()
 
     if @debug
-      context.lineWidth = 1
+      context.lineWidth = 1 * Arcadia.PIXEL_RATIO
       context.strokeStyle = '#f00'
       context.strokeRect 0, 0, @canvas.width, @canvas.height
       context.arc @anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false
@@ -88,7 +88,7 @@ class Label extends Shape
       context.fillStyle = @_color
       if lineCount > 1
         @text.split('\n').forEach (text, index) =>
-          context.fillText(text, x, (-@size.height / 2) + (lineHeight / 2) + (lineHeight * index))
+          context.fillText(text, x, (-@size.height / 2 * Arcadia.PIXEL_RATIO) + (lineHeight / 2) + (lineHeight * index))
       else
         context.fillText(@text, x, 0)
 
@@ -103,7 +103,7 @@ class Label extends Shape
       context.strokeStyle = @_border.color
       if lineCount > 1
         @text.split('\n').forEach (text, index) =>
-          context.strokeText(text, x, (-@size.height / 2) + (lineHeight / 2) + (lineHeight * index))
+          context.strokeText(text, x, (-@size.height / 2 * Arcadia.PIXEL_RATIO) + (lineHeight / 2) + (lineHeight * index))
       else
         context.strokeText(@text, x, 0)
 
