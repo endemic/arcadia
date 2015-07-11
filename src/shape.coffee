@@ -209,7 +209,7 @@ class Shape extends GameObject
   @description Draw object
   @param {CanvasRenderingContext2D} context
   ###
-  draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0, offsetScale = 1) ->
+  draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0, offsetScale = 1, offsetAlpha = 1) ->
     offsetX = offsetY = 0 if @fixed
 
     context.save()
@@ -221,7 +221,7 @@ class Shape extends GameObject
     context.rotate(@rotation) if @rotation != 0
 
     context.scale(@scale * offsetScale, @scale * offsetScale) if @scale * offsetScale != 1
-    context.globalAlpha = @alpha if @alpha < 1
+    context.globalAlpha = @alpha * offsetAlpha if @alpha * offsetAlpha < 1
 
     # Update internal <canvas> cache if necessary
     @drawCanvasCache() if @dirty
@@ -233,7 +233,7 @@ class Shape extends GameObject
     context.restore()
 
     # Draw child objects last, so they will be on the "top"
-    super(context, @position.x + offsetX, @position.y + offsetY, @rotation + offsetRotation, @scale * offsetScale)
+    super(context, @position.x + offsetX, @position.y + offsetY, @rotation + offsetRotation, @scale * offsetScale, @alpha * offsetAlpha)
 
   ###
   @description Update object

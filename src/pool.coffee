@@ -130,12 +130,11 @@ class Pool
 
   ###
   @description Passthrough method to draw active child objects
-  TODO: perhaps change `draw` call to `draw.apply(@, arguments)`
   ###
-  draw: (context, offsetX, offsetY, offsetRotation, offsetScale) ->
+  draw: ->
     @tmp = @length
     while @tmp--
-      @children[@tmp].draw(context, offsetX, offsetY, offsetRotation, offsetScale)
+      @children[@tmp].draw.apply(@children[@tmp], arguments)
     return
 
 module.exports = Pool

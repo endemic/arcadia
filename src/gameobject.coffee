@@ -28,8 +28,8 @@ class GameObject
   @description Draw child objects
   @param {CanvasRenderingContext2D} context
   ###
-  draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0, offsetScale = 1) ->
-    @children.draw(context, offsetX, offsetY, offsetRotation, offsetScale)
+  draw: ->
+    @children.draw.apply(@children, arguments)
 
   ###
   @description Update child objects

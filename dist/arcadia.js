@@ -3,13 +3,13 @@ var Sona;
 
 Sona = (function() {
   function Sona(sources) {
-    var AudioContext;
-    AudioContext = AudioContext || webkitAudioContext;
-    this.supported = !!AudioContext;
+    var StandardAudioContext;
+    StandardAudioContext = typeof webkitAudioContext !== 'undefined' ? webkitAudioContext : AudioContext;
+    this.supported = !!StandardAudioContext;
     if (!this.supported) {
       return;
     }
-    this.context = new AudioContext();
+    this.context = new StandardAudioContext();
     this.sources = sources;
     this.buffers = {};
     this.sounds = {};
@@ -917,20 +917,8 @@ if (typeof exports !== 'undefined') {
     */
 
 
-    GameObject.prototype.draw = function(context, offsetX, offsetY, offsetRotation, offsetScale) {
-      if (offsetX == null) {
-        offsetX = 0;
-      }
-      if (offsetY == null) {
-        offsetY = 0;
-      }
-      if (offsetRotation == null) {
-        offsetRotation = 0;
-      }
-      if (offsetScale == null) {
-        offsetScale = 1;
-      }
-      return this.children.draw(context, offsetX, offsetY, offsetRotation, offsetScale);
+    GameObject.prototype.draw = function() {
+      return this.children.draw.apply(this.children, arguments);
     };
 
     /*
@@ -1350,14 +1338,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     /*
     @description Passthrough method to draw active child objects
-    TODO: perhaps change `draw` call to `draw.apply(@, arguments)`
     */
 
 
-    Pool.prototype.draw = function(context, offsetX, offsetY, offsetRotation, offsetScale) {
+    Pool.prototype.draw = function() {
       this.tmp = this.length;
       while (this.tmp--) {
-        this.children[this.tmp].draw(context, offsetX, offsetY, offsetRotation, offsetScale);
+        this.children[this.tmp].draw.apply(this.children[this.tmp], arguments);
       }
     };
 
@@ -1770,7 +1757,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Shape.prototype.draw = function(context, offsetX, offsetY, offsetRotation, offsetScale) {
+    Shape.prototype.draw = function(context, offsetX, offsetY, offsetRotation, offsetScale, offsetAlpha) {
       if (offsetX == null) {
         offsetX = 0;
       }
@@ -1782,6 +1769,9 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       }
       if (offsetScale == null) {
         offsetScale = 1;
+      }
+      if (offsetAlpha == null) {
+        offsetAlpha = 1;
       }
       if (this.fixed) {
         offsetX = offsetY = 0;
@@ -1798,15 +1788,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       if (this.scale * offsetScale !== 1) {
         context.scale(this.scale * offsetScale, this.scale * offsetScale);
       }
-      if (this.alpha < 1) {
-        context.globalAlpha = this.alpha;
+      if (this.alpha * offsetAlpha < 1) {
+        context.globalAlpha = this.alpha * offsetAlpha;
       }
       if (this.dirty) {
         this.drawCanvasCache();
       }
       context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
       context.restore();
-      return Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY, this.rotation + offsetRotation, this.scale * offsetScale);
+      return Shape.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY, this.rotation + offsetRotation, this.scale * offsetScale, this.alpha * offsetAlpha);
     };
 
     /*
