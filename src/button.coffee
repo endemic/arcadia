@@ -9,17 +9,18 @@ class Button extends Shape
     @label = args.label || new Label(text: args.text, font: args.font)
     @label.drawCanvasCache() # Draw cache to determine size of text
 
-    unless args.size
-      args.size =
-        width: @label.size.width + @padding
-        height: @label.size.height + @padding
-
     super(args)
 
-    @label.fixed = false
+    unless args.hasOwnProperty('size')
+      height = if @vertices == 0 then @label.size.width else @label.size.height
+
+      @size =
+        width: @label.size.width + @padding
+        height: height + @padding
+
     @add(@label)
 
-    @fixed = true
+    @fixed = true # Don't move with camera
     @action = args.action if args.hasOwnProperty('action')
     @disabled = false # Quick prop to allow "turning off" button action
 

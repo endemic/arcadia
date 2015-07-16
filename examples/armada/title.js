@@ -40,12 +40,6 @@ var Title = function () {
     });
     this.add(title);
 
-    /*
-    ideas for button API
-    -> two states, "off" and "on"
-    -> Pass in label as its' own arg?
-    */
-
     this.button = new Arcadia.Button({
         position: {
             x: Arcadia.WIDTH / 2,
@@ -60,11 +54,11 @@ var Title = function () {
             text: 'START',
             font: '20px monospace',
             shadow: '0 0 10px #fff'
-        })
+        }),
+        action: function () {
+            Arcadia.changeScene(Game);
+        }
     });
-    this.button.onUp = function () {
-        Arcadia.changeScene(Game);
-    };
     this.add(this.button);
 
     // Add a starfield background
@@ -76,12 +70,10 @@ var Title = function () {
                 x: Math.random() * Arcadia.WIDTH,
                 y: Math.random() * Arcadia.HEIGHT
             },
-            // vertices: 4,
             size: {
                 width: Math.random() * 5 + 5,
                 height: Math.random() * 5 + 5
             },
-            color: '#fff',
             angularVelocity: 4 * Math.random() * (Math.random() > 0.5 ? 1 : -1)
         });
         star.velocity.y = 200 / star.size.width;
@@ -124,7 +116,6 @@ Title.prototype.onPointMove = function (points) {
 
 Title.prototype.onPointEnd = function (points) {
     if (this.shape.scale >= 2) {
-        console.log(this.shape.scale);
         this.shape.tween('scale', 1, 1000, 'elasticInOut');
     } else {
         this.shape.tween('scale', 2, 1000, 'elasticInOut');
