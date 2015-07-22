@@ -27,8 +27,6 @@ Arcadia =
   Shape: require('./shape.coffee')
   Sprite: require('./sprite.coffee')
 
-Sona = require('sona')
-
 # Static variables tracking performance
 Arcadia.FPS = 60
 Arcadia.garbageCollected = false
@@ -83,55 +81,5 @@ Arcadia.getPoints = (event, touchEnd = false) ->
       Arcadia.points.unshift
         x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
         y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-
-###
-@description Static variable used to identify currently playing music track
-###
-Arcadia.currentMusic = null
-
-###
-@description Instantiate a Sona object and load it's assets
-###
-Arcadia.loadSfx = (assets, callback) ->
-  Arcadia.sona = new Sona(assets)
-  Arcadia.sona.load(callback)
-
-###
-@description Static method to play sound effects.
-Assumes you have a static property which is a Sona object
-Otherwise you can override this method to use whatever sound library you like.
-###
-Arcadia.playSfx = (id) ->
-  return if localStorage.getItem('playSfx') == 'false'
-  Arcadia.sona.play(id)
-
-###
-@description Static method to play music.
-Assumes you have a static property which is a Sona object
-Otherwise you can override this method to use whatever sound library you like.
-###
-Arcadia.playMusic = (id) ->
-  return if localStorage.getItem('playMusic') == 'false'
-  return if Arcadia.currentMusic == id
-
-  if id == undefined && Arcadia.currentMusic != null
-      id = Arcadia.currentMusic
-
-  if Arcadia.currentMusic != null
-      Arcadia.sona.stop(Arcadia.currentMusic)
-
-  Arcadia.sona.loop(id)
-  Arcadia.currentMusic = id
-
-###
-@description Static method to stop music.
-Assumes you have a static property which is a Sona object
-Otherwise you can override this method to use whatever sound library you like.
-###
-Arcadia.stopMusic = ->
-  return if Arcadia.currentMusic == null
-
-  Arcadia.sona.stop(Arcadia.currentMusic)
-  Arcadia.currentMusic = null
 
 module.exports = global.Arcadia = Arcadia

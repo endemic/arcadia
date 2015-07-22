@@ -1,108 +1,7 @@
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Arcadia=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-var Sona;
-
-Sona = (function() {
-  function Sona(sources) {
-    var StandardAudioContext;
-    StandardAudioContext = typeof webkitAudioContext !== 'undefined' ? webkitAudioContext : AudioContext;
-    this.supported = !!StandardAudioContext;
-    if (!this.supported) {
-      return;
-    }
-    this.context = new StandardAudioContext();
-    this.sources = sources;
-    this.buffers = {};
-    this.sounds = {};
-  }
-
-  Sona.prototype.load = function(callback) {
-    var request, source;
-    if (!this.supported) {
-      return;
-    }
-    source = this.sources.shift();
-    request = new XMLHttpRequest();
-    request.open('GET', source.url, true);
-    request.responseType = 'arraybuffer';
-    request.onload = (function(_this) {
-      return function() {
-        return _this.context.decodeAudioData(request.response, function(buffer) {
-          _this.buffers[source.id] = buffer;
-          return _this.next(callback);
-        }, function(e) {
-          return _this.next(callback);
-        });
-      };
-    })(this);
-    return request.send();
-  };
-
-  Sona.prototype.next = function(callback) {
-    if (this.sources.length) {
-      return this.load(callback);
-    } else if (typeof callback === 'function') {
-      return callback();
-    }
-  };
-
-  Sona.prototype.play = function(id, _loop) {
-    if (_loop == null) {
-      _loop = false;
-    }
-    if (!this.supported || this.buffers[id] === void 0) {
-      return;
-    }
-    this.sounds[id] = this.sounds[id] || {};
-    this.sounds[id].sourceNode = this.context.createBufferSource();
-    this.sounds[id].sourceNode.buffer = this.buffers[id];
-    this.sounds[id].sourceNode.loop = _loop;
-    if (!this.sounds[id].gainNode) {
-      this.sounds[id].gainNode = this.context.createGain();
-      this.sounds[id].gainNode.connect(this.context.destination);
-    }
-    this.sounds[id].sourceNode.connect(this.sounds[id].gainNode);
-    return this.sounds[id].sourceNode.start(0);
-  };
-
-  Sona.prototype.loop = function(id) {
-    return this.play(id, true);
-  };
-
-  Sona.prototype.stop = function(id) {
-    if (!this.supported || this.sounds[id] === void 0) {
-      return;
-    }
-    return this.sounds[id].sourceNode.stop(0);
-  };
-
-  Sona.prototype.getVolume = function(id) {
-    if (!this.supported || this.sounds[id] === void 0) {
-      return;
-    }
-    return this.sounds[id].gainNode.gain.value;
-  };
-
-  Sona.prototype.setVolume = function(id, volume) {
-    if (!this.supported || this.sounds[id] === void 0) {
-      return;
-    }
-    return this.sounds[id].gainNode.gain.value = volume;
-  };
-
-  return Sona;
-
-})();
-
-if (typeof exports !== 'undefined') {
-  module.exports = Sona;
-} else {
-  window.Sona = Sona;
-}
-
-},{}],2:[function(_dereq_,module,exports){
 (function (global){
 (function() {
-  var Arcadia, Sona, nowOffset;
+  var Arcadia, nowOffset;
 
   if (window.requestAnimationFrame === void 0) {
     window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
@@ -136,8 +35,6 @@ if (typeof exports !== 'undefined') {
     Shape: _dereq_('./shape.coffee'),
     Sprite: _dereq_('./sprite.coffee')
   };
-
-  Sona = _dereq_('sona');
 
   Arcadia.FPS = 60;
 
@@ -213,83 +110,13 @@ if (typeof exports !== 'undefined') {
     }
   };
 
-  /*
-  @description Static variable used to identify currently playing music track
-  */
-
-
-  Arcadia.currentMusic = null;
-
-  /*
-  @description Instantiate a Sona object and load it's assets
-  */
-
-
-  Arcadia.loadSfx = function(assets, callback) {
-    Arcadia.sona = new Sona(assets);
-    return Arcadia.sona.load(callback);
-  };
-
-  /*
-  @description Static method to play sound effects.
-  Assumes you have a static property which is a Sona object
-  Otherwise you can override this method to use whatever sound library you like.
-  */
-
-
-  Arcadia.playSfx = function(id) {
-    if (localStorage.getItem('playSfx') === 'false') {
-      return;
-    }
-    return Arcadia.sona.play(id);
-  };
-
-  /*
-  @description Static method to play music.
-  Assumes you have a static property which is a Sona object
-  Otherwise you can override this method to use whatever sound library you like.
-  */
-
-
-  Arcadia.playMusic = function(id) {
-    if (localStorage.getItem('playMusic') === 'false') {
-      return;
-    }
-    if (Arcadia.currentMusic === id) {
-      return;
-    }
-    if (id === void 0 && Arcadia.currentMusic !== null) {
-      id = Arcadia.currentMusic;
-    }
-    if (Arcadia.currentMusic !== null) {
-      Arcadia.sona.stop(Arcadia.currentMusic);
-    }
-    Arcadia.sona.loop(id);
-    return Arcadia.currentMusic = id;
-  };
-
-  /*
-  @description Static method to stop music.
-  Assumes you have a static property which is a Sona object
-  Otherwise you can override this method to use whatever sound library you like.
-  */
-
-
-  Arcadia.stopMusic = function() {
-    if (Arcadia.currentMusic === null) {
-      return;
-    }
-    Arcadia.sona.stop(Arcadia.currentMusic);
-    return Arcadia.currentMusic = null;
-  };
-
   module.exports = global.Arcadia = Arcadia;
 
 }).call(this);
 
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./button.coffee":3,"./emitter.coffee":4,"./game.coffee":5,"./gameobject.coffee":6,"./label.coffee":7,"./pool.coffee":8,"./scene.coffee":9,"./shape.coffee":10,"./sprite.coffee":11,"sona":1}],3:[function(_dereq_,module,exports){
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(_dereq_,module,exports){
 (function() {
   var Button, Shape,
     __hasProp = {}.hasOwnProperty,
@@ -413,7 +240,7 @@ if (typeof exports !== 'undefined') {
 }).call(this);
 
 
-},{"./arcadia.coffee":2,"./label.coffee":7,"./shape.coffee":10}],4:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(_dereq_,module,exports){
 (function() {
   var Emitter, GameObject, Pool, Shape,
     __hasProp = {}.hasOwnProperty,
@@ -521,7 +348,7 @@ if (typeof exports !== 'undefined') {
 }).call(this);
 
 
-},{"./gameobject.coffee":6,"./pool.coffee":8,"./shape.coffee":10}],5:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(_dereq_,module,exports){
 (function() {
   var Game,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -873,7 +700,7 @@ if (typeof exports !== 'undefined') {
 }).call(this);
 
 
-},{"./arcadia.coffee":2}],6:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1}],5:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Pool;
 
@@ -980,7 +807,7 @@ if (typeof exports !== 'undefined') {
 }).call(this);
 
 
-},{"./pool.coffee":8}],7:[function(_dereq_,module,exports){
+},{"./pool.coffee":7}],6:[function(_dereq_,module,exports){
 (function() {
   var Label, Shape,
     __hasProp = {}.hasOwnProperty,
@@ -1163,7 +990,7 @@ if (typeof exports !== 'undefined') {
 }).call(this);
 
 
-},{"./arcadia.coffee":2,"./shape.coffee":10}],8:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(_dereq_,module,exports){
 /*
 @description One possible way to store common recyclable objects.
 Assumes the objects you add will have an `active` property, and optionally an
@@ -1357,7 +1184,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{}],9:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Scene,
     __hasProp = {}.hasOwnProperty,
@@ -1479,7 +1306,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./arcadia.coffee":2,"./gameobject.coffee":6}],10:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1,"./gameobject.coffee":5}],9:[function(_dereq_,module,exports){
 (function() {
   var Easie, GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
@@ -1897,7 +1724,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"../vendor/easie.coffee":12,"./gameobject.coffee":6}],11:[function(_dereq_,module,exports){
+},{"../vendor/easie.coffee":11,"./gameobject.coffee":5}],10:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Sprite,
     __hasProp = {}.hasOwnProperty,
@@ -1993,7 +1820,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":6}],12:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5}],11:[function(_dereq_,module,exports){
 /*
 Easie.coffee (https://github.com/jimjeffers/Easie)
 Project created by J. Jeffers
@@ -2285,6 +2112,6 @@ Don't do bad things with this :)
 }).call(this);
 
 
-},{}]},{},[2])
-(2)
+},{}]},{},[1])
+(1)
 });
