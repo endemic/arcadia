@@ -1,6 +1,6 @@
 {
   "name": "arcadia",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "Minimalistic Javascript game framework",
   "main": "dist/arcadia.js",
   "directories": {
@@ -22,7 +22,6 @@
   "author": "Nathan Demick",
   "license": "MIT",
   "readmeFilename": "README.md",
-  "gitHead": "517240165baf1261e5adf269caaa5a1fefed8269",
   "bugs": {
     "url": "https://github.com/endemic/arcadia/issues"
   },
