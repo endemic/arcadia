@@ -1,27 +1,25 @@
 GameObject = require './gameobject.coffee'
 
 class Scene extends GameObject
-  constructor: ->
-    super
+  constructor: (options = {}) ->
+    super(options)
 
-    @canvas = document.createElement 'canvas'
-    @context = @canvas.getContext '2d'
-    Arcadia = require './arcadia.coffee'
+    @size = options.size || { width: 1, height: 1 }
 
     # implement a camera view/drawing offset
     @camera =
       target: null
       viewport:
-        width: Arcadia.WIDTH
-        height: Arcadia.HEIGHT
+        width: @size.width
+        height: @size.height
       bounds:
-        top: 0
-        bottom: Arcadia.HEIGHT
-        left: 0
-        right: Arcadia.WIDTH
+        top: -@size.height / 2
+        bottom: @size.height / 2
+        left: -@size.width / 2
+        right: @size.width / 2
       position:
-        x: Arcadia.WIDTH / 2
-        y: Arcadia.HEIGHT / 2
+        x: 0
+        y: 0
 
   ###
    * @description Update the camera if necessary

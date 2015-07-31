@@ -8,7 +8,6 @@ var Title = function () {
     this.color = '#000';
 
     this.label = new Arcadia.Label({
-        position: { x: Arcadia.WIDTH / 2, y: Arcadia.HEIGHT / 2 },
         color: '#f0f',
         font: '40px serif',
         text: 'hello world!',
@@ -20,7 +19,6 @@ var Title = function () {
     this.add(this.label);
     
     this.shape = new Arcadia.Shape({
-        position: { x: Arcadia.WIDTH / 2, y: Arcadia.HEIGHT / 2 },
         color: '#f00',
         size: { width: 100, height: 100 },
         angularVelocity: 1,
@@ -28,10 +26,15 @@ var Title = function () {
     });
     this.add(this.shape);
 
+    this.shape.add(new Arcadia.Shape({
+        size: { width: 25, height: 25 },
+        position: { x: 0, y: -60 }
+    }));
+
     var title = new Arcadia.Label({
         position: {
-            x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT / 4
+            x: 0,
+            y: -100
         },
         color: 'rgba(255, 255, 255, 0.8)',
         font: '70px monospace',

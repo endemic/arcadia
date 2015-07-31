@@ -93,7 +93,10 @@ class Game
       @onResize()
       window.addEventListener('resize', @onResize, false)
 
-    @active = new args.scene()
+    @active = new args.scene
+      size:
+        width: Arcadia.WIDTH
+        height: Arcadia.HEIGHT
     @start()
 
   ###

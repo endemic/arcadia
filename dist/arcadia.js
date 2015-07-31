@@ -435,7 +435,12 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         this.onResize();
         window.addEventListener('resize', this.onResize, false);
       }
-      this.active = new args.scene();
+      this.active = new args.scene({
+        size: {
+          width: Arcadia.WIDTH,
+          height: Arcadia.HEIGHT
+        }
+      });
       this.start();
     }
 
@@ -1192,27 +1197,30 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
   Scene = (function(_super) {
     __extends(Scene, _super);
 
-    function Scene() {
-      var Arcadia;
-      Scene.__super__.constructor.apply(this, arguments);
-      this.canvas = document.createElement('canvas');
-      this.context = this.canvas.getContext('2d');
-      Arcadia = require('./arcadia.coffee');
+    function Scene(options) {
+      if (options == null) {
+        options = {};
+      }
+      Scene.__super__.constructor.call(this, options);
+      this.size = options.size || {
+        width: 0,
+        height: 0
+      };
       this.camera = {
         target: null,
         viewport: {
-          width: Arcadia.WIDTH,
-          height: Arcadia.HEIGHT
+          width: this.size.width,
+          height: this.size.height
         },
         bounds: {
-          top: 0,
-          bottom: Arcadia.HEIGHT,
-          left: 0,
-          right: Arcadia.WIDTH
+          top: -this.size.height / 2,
+          bottom: this.size.height / 2,
+          left: -this.size.width / 2,
+          right: this.size.width / 2
         },
         position: {
-          x: Arcadia.WIDTH / 2,
-          y: Arcadia.HEIGHT / 2
+          x: 0,
+          y: 0
         }
       };
     }
@@ -1303,7 +1311,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./gameobject.coffee":5}],9:[function(require,module,exports){
+},{"./gameobject.coffee":5}],9:[function(require,module,exports){
 (function() {
   var Easie, GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
