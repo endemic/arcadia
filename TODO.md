@@ -2,15 +2,13 @@
 
 * What the hell, made major changes to which objects get returned in Pool and no tests broke,
   write extra tests which assert the object that is returned/rearranged when activated/deactivated
-* [x] Get clues actually displayed
-* [ ] Change to iPhone6 resolution
 * [x] Determine cause of slow button presses on iPhone
-* [ ] Fix sound effects firing too quickly  
 * [ ] Change `tween` object to use a Pool  
+* [ ] Alpha isn't passed down to children
 * [x] Make setters for size & vertices
 * [ ] Inset borders so they don't make shapes actually larger
 * [x] Get `Sona` embedded
-* [ ] Allow buttons to be disabled
+* [x] Allow buttons to be disabled
 * [ ] Maybe change Scene's `color` prop to `clearColor`
 * [x] Allow access to `Arcadia.points` instead of `Arcadia.instance.points`
 * [ ] Maybe make an `Arcadia.random(min,max)` helper method
@@ -34,5 +32,9 @@
 * [ ] Add SAT collision detection
 * [ ] Add "Tween" class to GameObjects
 * [ ] Global effects - flash, shake, etc.
-* [ ] Refactor offset/child drawing? (perhaps a recursive strategy)
+* [x] Refactor offset/child drawing? (perhaps a recursive strategy)
 * [x] Children don't inherit scale/rotation of their parents
+
+# For nonograms
+* [x] Get clues actually displayed
+* [ ] Fix sound effects firing too quickly  

@@ -15,14 +15,19 @@ class Game
     # If game element is not at (0, 0) (upper left), clicks/touches need to be offset
     Arcadia.OFFSET = { x: 0, y: 0 }
 
-    @element = document.createElement('div')
-    @element.id = 'arcadia'
+    # Allow embedding the app in a specified container
+    if args.hasOwnProperty('element')
+      @element = args.element
+    else
+      @element = document.createElement('div')
+      @element.id = 'arcadia'
+      document.body.appendChild(@element)
+
+    Arcadia.FPS_LIMIT = args.fps if args.hasOwnProperty('fps')
 
     @canvas = document.createElement('canvas')
     @context = @canvas.getContext('2d')
-
     @element.appendChild(@canvas)
-    document.body.appendChild(@element)
 
     @setPixelRatio()
 
@@ -88,30 +93,19 @@ class Game
       @onResize()
       window.addEventListener('resize', @onResize, false)
 
-    if args.hasOwnProperty('sounds')
-      Arcadia.loadSfx(args.sounds, =>
-        @active = new args.scene()
-        @start()
-      )
-    else
-      @active = new args.scene()
-      @start()
+    @active = new args.scene()
+    @start()
 
   ###
   @description Pause active scene if it has a pause method
   ###
   pause: ->
-    @pausedMusic = @currentMusic
-    Arcadia.stopMusic()
-
     @active.pause() if typeof @active.pause == "function"
 
   ###
   @description Resume active scene if it has a pause method
   ###
   resume: ->
-    Arcadia.playMusic @pausedMusic
-
     @active.resume() if typeof @active.resume == "function"
 
   ###
@@ -217,19 +211,22 @@ class Game
   ###
   update: (currentDelta) =>
     delta = currentDelta - @previousDelta
-    @previousDelta = currentDelta
-    
-    Arcadia.FPS = Arcadia.FPS * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
+    @updateId = window.requestAnimationFrame(@update)
 
     if window.performance.memory?
       Arcadia.garbageCollected = true if window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
       Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize
 
+    Arcadia.FPS = Arcadia.FPS * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
+
+    # Check against FPS limit; 960 / {n}FPS = ms/frame
+    return if Arcadia.FPS_LIMIT && delta < Math.round(960 / Arcadia.FPS_LIMIT)
+
     @active.draw(@context)
     @active.update(delta / 1000) # call update() using seconds
+    @previousDelta = currentDelta
 
     Arcadia.garbageCollected = false
-    @updateId = window.requestAnimationFrame @update
 
   ###
   @description Change size of canvas based on pixel density
@@ -242,19 +239,14 @@ class Game
       @context.backingStorePixelRatio = @context.webkitBackingStorePixelRatio || 1
 
     Arcadia.PIXEL_RATIO = window.devicePixelRatio / @context.backingStorePixelRatio
-    # Arcadia.PIXEL_RATIO = 1
-    # console.debug("pixel ratio is #{Arcadia.PIXEL_RATIO}")
 
     # Set "real" width/height
     @canvas.width = Arcadia.WIDTH * Arcadia.PIXEL_RATIO
     @canvas.height = Arcadia.HEIGHT * Arcadia.PIXEL_RATIO
 
-    # console.debug("Scaling <canvas> to #{Arcadia.HEIGHT * Arcadia.PIXEL_RATIO}x#{Arcadia.WIDTH * Arcadia.PIXEL_RATIO}")
-
     # Scale (via CSS) to screen size
     @canvas.style.width = "#{Arcadia.WIDTH}px"
     @canvas.style.height = "#{Arcadia.HEIGHT}px"
-    # console.debug("Reducing <canvas> to #{Arcadia.HEIGHT}x#{Arcadia.WIDTH} via CSS")
 
   ###
   @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
