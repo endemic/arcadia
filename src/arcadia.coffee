@@ -8,10 +8,10 @@ if window.cancelAnimationFrame == undefined
 
 # Normalize window.performance
 if window.performance == undefined
-  nowOffset = Date.now();
+  nowOffset = Date.now()
   window.performance =
     now: ->
-      Date.now() - nowOffset;
+      Date.now() - nowOffset
 
 Function::property = (prop, desc) ->
   Object.defineProperty @prototype, prop, desc
@@ -59,5 +59,11 @@ Arcadia.ENV = do ->
 Arcadia.changeScene = (SceneClass, options = {}) ->
   Arcadia.instance.active.destroy() # Clean up previous scene
   Arcadia.instance.active = new SceneClass(options)
+
+Arcadia.distance = (one, two) ->
+  Math.sqrt(Math.pow(two.x - one.x, 2) + Math.pow(two.y - one.y, 2))
+
+Arcadia.random = (min, max) ->
+  throw new Error("Implement a function that gets a random number between #{min} and #{max}!")
 
 module.exports = global.Arcadia = Arcadia

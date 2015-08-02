@@ -76,6 +76,14 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
     return Arcadia.instance.active = new SceneClass(options);
   };
 
+  Arcadia.distance = function(one, two) {
+    return Math.sqrt(Math.pow(two.x - one.x, 2) + Math.pow(two.y - one.y, 2));
+  };
+
+  Arcadia.random = function(min, max) {
+    throw new Error("Implement a function that gets a random number between " + min + " and " + max + "!");
+  };
+
   module.exports = global.Arcadia = Arcadia;
 
 }).call(this);
