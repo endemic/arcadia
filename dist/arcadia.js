@@ -76,39 +76,6 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
     return Arcadia.instance.active = new SceneClass(options);
   };
 
-  /*
-  @description Static method to translate mouse/touch input to coordinates the game will understand
-               Takes the <canvas> offset and scale into account
-  */
-
-
-  Arcadia.getPoints = function(event, touchEnd) {
-    var i, source, _results;
-    if (touchEnd == null) {
-      touchEnd = false;
-    }
-    while (Arcadia.points.length > 0) {
-      Arcadia.points.pop();
-    }
-    if (event.type.indexOf('mouse') !== -1) {
-      return Arcadia.points.unshift({
-        x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
-        y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-      });
-    } else {
-      source = touchEnd ? 'changedTouches' : 'touches';
-      i = event[source].length;
-      _results = [];
-      while (i--) {
-        _results.push(Arcadia.points.unshift({
-          x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
-          y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-        }));
-      }
-      return _results;
-    }
-  };
-
   module.exports = global.Arcadia = Arcadia;
 
 }).call(this);
@@ -365,8 +332,12 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       }
       this.update = __bind(this.update, this);
       Arcadia = require('./arcadia.coffee');
-      Arcadia.WIDTH = parseInt(args.width, 10) || 320;
-      Arcadia.HEIGHT = parseInt(args.height, 10) || 480;
+      this.size = {
+        width: parseInt(args.width, 10) || 320,
+        height: parseInt(args.height, 10) || 480
+      };
+      Arcadia.WIDTH = this.size.width;
+      Arcadia.HEIGHT = this.size.height;
       Arcadia.SCALE = 1;
       Arcadia.OFFSET = {
         x: 0,
@@ -472,7 +443,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
 
     Game.prototype.onPointStart = function(event) {
-      Arcadia.getPoints(event);
+      this.getPoints(event);
       if (event.type.indexOf('mouse') !== -1) {
         this.element.addEventListener('mousemove', this.onPointMove, false);
       }
@@ -487,7 +458,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
 
     Game.prototype.onPointMove = function(event) {
-      Arcadia.getPoints(event);
+      this.getPoints(event);
       if (typeof this.active.onPointMove === "function") {
         return this.active.onPointMove(this.points);
       }
@@ -501,7 +472,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
     Game.prototype.onPointEnd = function(event) {
       var end;
-      Arcadia.getPoints(event, end = true);
+      this.getPoints(event, end = true);
       if (event.type.indexOf('mouse') !== -1) {
         this.element.removeEventListener('mousemove', this.onPointMove, false);
       }
@@ -578,6 +549,39 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
           return 'z';
         case 88:
           return 'x';
+      }
+    };
+
+    /*
+    @description Static method to translate mouse/touch input to coordinates the
+    game will understand. Takes the <canvas> offset and scale into account
+    */
+
+
+    Game.prototype.getPoints = function(event, touchEnd) {
+      var i, source, _results;
+      if (touchEnd == null) {
+        touchEnd = false;
+      }
+      while (this.points.length > 0) {
+        this.points.pop();
+      }
+      if (event.type.indexOf('mouse') !== -1) {
+        return this.points.unshift({
+          x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - this.size.width / 2,
+          y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - this.size.height / 2
+        });
+      } else {
+        source = touchEnd ? 'changedTouches' : 'touches';
+        i = event[source].length;
+        _results = [];
+        while (i--) {
+          _results.push(this.points.unshift({
+            x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
+            y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
+          }));
+        }
+        return _results;
       }
     };
 
@@ -1025,7 +1029,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.add = function(object) {
-      this.children.push(object);
+      this.children.unshift(object);
       if (this.length < this.children.length) {
         this.tmp = this.children[this.children.length - 1];
         this.children[this.children.length - 1] = this.children[this.length];
@@ -1203,8 +1207,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       }
       Scene.__super__.constructor.call(this, options);
       this.size = options.size || {
-        width: 0,
-        height: 0
+        width: 1,
+        height: 1
       };
       this.camera = {
         target: null,

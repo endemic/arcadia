@@ -6,13 +6,17 @@ class Game
   ###
   constructor: (args = {}) ->
     Arcadia = require('./arcadia.coffee')
-    Arcadia.WIDTH = parseInt(args.width, 10) || 320
-    Arcadia.HEIGHT = parseInt(args.height, 10) || 480
+    this.size =
+      width: parseInt(args.width, 10) || 320
+      height: parseInt(args.height, 10) || 480
+
+    Arcadia.WIDTH = this.size.width
+    Arcadia.HEIGHT = this.size.height
 
     # If game is scaled up/down, clicks/touches need to be scaled
     Arcadia.SCALE = 1
 
-    # If game element is not at (0, 0) (upper left), clicks/touches need to be offset
+    # If element is not at (0, 0) (upper left), clicks/touches need to be offset
     Arcadia.OFFSET = { x: 0, y: 0 }
 
     # Allow embedding the app in a specified container
@@ -54,7 +58,7 @@ class Game
 
     # Static reference to current game instance
     Arcadia.instance = @
-    # Static reference to array of point objects
+    # Static reference to mouse/touch coords
     Arcadia.points = @points
     # Static reference to DOM element the game is attached to
     Arcadia.element = @element
@@ -115,7 +119,7 @@ class Game
   @description Mouse/touch event callback
   ###
   onPointStart: (event) ->
-    Arcadia.getPoints(event)
+    @getPoints(event)
 
     if event.type.indexOf('mouse') != -1
       @element.addEventListener('mousemove', @onPointMove, false)
@@ -126,7 +130,7 @@ class Game
   @description Mouse/touch event callback
   ###
   onPointMove: (event) ->
-    Arcadia.getPoints(event)
+    @getPoints(event)
 
     @active.onPointMove(@points) if typeof @active.onPointMove == "function"
 
@@ -135,7 +139,7 @@ class Game
   TODO: Generates garbage
   ###
   onPointEnd: (event) ->
-    Arcadia.getPoints(event, end = true)
+    @getPoints(event, end = true)
 
     if event.type.indexOf('mouse') != -1
       @element.removeEventListener('mousemove', @onPointMove, false)
@@ -147,7 +151,7 @@ class Game
   TODO: Generates garbage
   ###
   onKeyDown: (event) ->
-    key = @getKey event.keyCode
+    key = @getKey(event.keyCode)
 
     # Do nothing if key hasn't been released yet
     return if @input[key]
@@ -162,7 +166,7 @@ class Game
   TODO: Generates garbage
   ###
   onKeyUp: (event) ->
-    key = @getKey event.keyCode
+    key = @getKey(event.keyCode)
 
     @input[key] = false # Allow the keyDown event for this key to be sent again
 
@@ -191,6 +195,31 @@ class Game
       when 17 then return 'control'
       when 90 then return 'z'
       when 88 then return 'x'
+
+  ###
+  @description Static method to translate mouse/touch input to coordinates the
+  game will understand. Takes the <canvas> offset and scale into account
+  ###
+  getPoints: (event, touchEnd = false) ->
+    # http://jsperf.com/empty-javascript-array
+    while @points.length > 0
+      @points.pop()
+
+    # TODO: need some sort of offset by active scene's camera
+    # Arcadia.WIDTH - @active.camera.position.x
+
+    if event.type.indexOf('mouse') != -1
+      @points.unshift
+        x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2
+        y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2
+    else
+      source = if touchEnd then 'changedTouches' else 'touches'
+
+      i = event[source].length
+      while i--
+        @points.unshift
+          x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
+          y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
 
   ###
    * @description Start the event/animation loops

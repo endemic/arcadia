@@ -60,26 +60,4 @@ Arcadia.changeScene = (SceneClass, options = {}) ->
   Arcadia.instance.active.destroy() # Clean up previous scene
   Arcadia.instance.active = new SceneClass(options)
 
-###
-@description Static method to translate mouse/touch input to coordinates the game will understand
-             Takes the <canvas> offset and scale into account
-###
-Arcadia.getPoints = (event, touchEnd = false) ->
-  # http://jsperf.com/empty-javascript-array
-  while Arcadia.points.length > 0
-    Arcadia.points.pop()
-
-  if event.type.indexOf('mouse') != -1
-    Arcadia.points.unshift
-      x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
-      y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-  else
-    source = if touchEnd then 'changedTouches' else 'touches'
-
-    i = event[source].length
-    while i--
-      Arcadia.points.unshift
-        x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
-        y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
-
 module.exports = global.Arcadia = Arcadia

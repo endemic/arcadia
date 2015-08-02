@@ -21,9 +21,13 @@ class Pool
   @description Push an object into the recycle pool
   ###
   add: (object) ->
-    @children.push object
+    # Expectation is that objects "added" last will be drawn on top
+    # of others; since drawing uses a reverse-while loop, "Array.push"
+    # causes newer objects to be drawn first, therefore underneath.
+    @children.unshift(object)
 
     # Swap with inactive object
+    # What's the purpose of this?
     if @length < @children.length
       @tmp = @children[@children.length - 1]
       @children[@children.length - 1] = @children[@length]
