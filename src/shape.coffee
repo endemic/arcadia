@@ -29,7 +29,6 @@ class Shape extends GameObject
     @velocity = { x: 0, y: 0 }
     @angularVelocity = 0
     @acceleration = { x: 0, y: 0 }
-    @fixed = false # By default, moves with camera
     @debug = false
 
     # Pass through any property of the options object
@@ -210,8 +209,6 @@ class Shape extends GameObject
   @param {CanvasRenderingContext2D} context
   ###
   draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0, offsetScale = 1, offsetAlpha = 1) ->
-    offsetX = offsetY = 0 if @fixed
-
     context.save()
 
     context.translate(offsetX * Arcadia.PIXEL_RATIO, offsetY * Arcadia.PIXEL_RATIO)

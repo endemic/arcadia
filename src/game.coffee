@@ -205,21 +205,18 @@ class Game
     while @points.length > 0
       @points.pop()
 
-    # TODO: need some sort of offset by active scene's camera
-    # Arcadia.WIDTH - @active.camera.position.x
-
     if event.type.indexOf('mouse') != -1
       @points.unshift
-        x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2
-        y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2
+        x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2 + @active.camera.position.x
+        y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2 + @active.camera.position.y
     else
       source = if touchEnd then 'changedTouches' else 'touches'
 
       i = event[source].length
       while i--
         @points.unshift
-          x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE
-          y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
+          x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2 + @active.camera.position.x
+          y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2 + @active.camera.position.y
 
   ###
    * @description Start the event/animation loops

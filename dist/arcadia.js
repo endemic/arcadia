@@ -114,7 +114,6 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         };
       }
       this.add(this.label);
-      this.fixed = true;
       if (args.hasOwnProperty('action')) {
         this.action = args.action;
       }
@@ -568,8 +567,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       }
       if (event.type.indexOf('mouse') !== -1) {
         return this.points.unshift({
-          x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - this.size.width / 2,
-          y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - this.size.height / 2
+          x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - this.size.width / 2 + this.active.camera.position.x,
+          y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - this.size.height / 2 + this.active.camera.position.y
         });
       } else {
         source = touchEnd ? 'changedTouches' : 'touches';
@@ -577,8 +576,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         _results = [];
         while (i--) {
           _results.push(this.points.unshift({
-            x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE,
-            y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE
+            x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - this.size.width / 2 + this.active.camera.position.x,
+            y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - this.size.height / 2 + this.active.camera.position.y
           }));
         }
         return _results;
@@ -717,7 +716,6 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (args == null) {
         args = {};
       }
-      this.fixed = args.fixed || false;
       this.scale = args.scale || 1;
       this.rotation = args.rotation || 0;
       this.alpha = args.alpha || 1;
@@ -1369,7 +1367,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         x: 0,
         y: 0
       };
-      this.fixed = false;
       this.debug = false;
       for (property in options) {
         if (options.hasOwnProperty(property)) {
@@ -1608,9 +1605,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       }
       if (offsetAlpha == null) {
         offsetAlpha = 1;
-      }
-      if (this.fixed) {
-        offsetX = offsetY = 0;
       }
       context.save();
       context.translate(offsetX * Arcadia.PIXEL_RATIO, offsetY * Arcadia.PIXEL_RATIO);

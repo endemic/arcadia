@@ -20,7 +20,6 @@ class Button extends Shape
 
     @add(@label)
 
-    @fixed = true # Don't move with camera
     @action = args.action if args.hasOwnProperty('action')
     @disabled = false # Quick prop to allow "turning off" button action
 

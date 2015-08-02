@@ -2,7 +2,6 @@ Pool = require './pool.coffee'
 
 class GameObject
   constructor: (args = {}) ->
-    @fixed = args.fixed       || false     # static positioning for UI elements
     @scale = args.scale       || 1
     @rotation = args.rotation || 0         # In radians
     @alpha = args.alpha       || 1
