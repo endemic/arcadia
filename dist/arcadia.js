@@ -1,5 +1,6 @@
-!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Arcadia=e():"undefined"!=typeof global?global.Arcadia=e():"undefined"!=typeof self&&(self.Arcadia=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};(function() {
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Arcadia=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+(function (global){
+(function() {
   var Arcadia, nowOffset;
 
   if (window.requestAnimationFrame === void 0) {
@@ -24,15 +25,15 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
   };
 
   Arcadia = {
-    Game: require('./game.coffee'),
-    Button: require('./button.coffee'),
-    Emitter: require('./emitter.coffee'),
-    GameObject: require('./gameobject.coffee'),
-    Label: require('./label.coffee'),
-    Pool: require('./pool.coffee'),
-    Scene: require('./scene.coffee'),
-    Shape: require('./shape.coffee'),
-    Sprite: require('./sprite.coffee')
+    Game: _dereq_('./game.coffee'),
+    Button: _dereq_('./button.coffee'),
+    Emitter: _dereq_('./emitter.coffee'),
+    GameObject: _dereq_('./gameobject.coffee'),
+    Label: _dereq_('./label.coffee'),
+    Pool: _dereq_('./pool.coffee'),
+    Scene: _dereq_('./scene.coffee'),
+    Shape: _dereq_('./shape.coffee'),
+    Sprite: _dereq_('./sprite.coffee')
   };
 
   Arcadia.FPS = 60;
@@ -89,13 +90,14 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(_dereq_,module,exports){
 (function() {
   var Button, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Shape = require('./shape.coffee');
+  Shape = _dereq_('./shape.coffee');
 
   Button = (function(_super) {
     __extends(Button, _super);
@@ -105,8 +107,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (args == null) {
         args = {};
       }
-      Arcadia = require('./arcadia.coffee');
-      Label = require('./label.coffee');
+      Arcadia = _dereq_('./arcadia.coffee');
+      Label = _dereq_('./label.coffee');
       this.padding = args.padding || 10;
       this.label = args.label || new Label({
         text: args.text,
@@ -212,17 +214,17 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(require,module,exports){
+},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(_dereq_,module,exports){
 (function() {
   var Emitter, GameObject, Pool, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  GameObject = _dereq_('./gameobject.coffee');
 
-  Pool = require('./pool.coffee');
+  Pool = _dereq_('./pool.coffee');
 
-  Shape = require('./shape.coffee');
+  Shape = _dereq_('./shape.coffee');
 
   Emitter = (function(_super) {
     __extends(Emitter, _super);
@@ -320,7 +322,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
+},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(_dereq_,module,exports){
 (function() {
   var Game,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -338,7 +340,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         args = {};
       }
       this.update = __bind(this.update, this);
-      Arcadia = require('./arcadia.coffee');
+      Arcadia = _dereq_('./arcadia.coffee');
       this.size = {
         width: parseInt(args.width, 10) || 320,
         height: parseInt(args.height, 10) || 480
@@ -713,11 +715,11 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./arcadia.coffee":1}],5:[function(require,module,exports){
+},{"./arcadia.coffee":1}],5:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Pool;
 
-  Pool = require('./pool.coffee');
+  Pool = _dereq_('./pool.coffee');
 
   GameObject = (function() {
     function GameObject(args) {
@@ -819,13 +821,13 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./pool.coffee":7}],6:[function(require,module,exports){
+},{"./pool.coffee":7}],6:[function(_dereq_,module,exports){
 (function() {
   var Label, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Shape = require('./shape.coffee');
+  Shape = _dereq_('./shape.coffee');
 
   Label = (function(_super) {
     __extends(Label, _super);
@@ -871,7 +873,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (this.canvas === void 0) {
         return;
       }
-      Arcadia = require('./arcadia.coffee');
+      Arcadia = _dereq_('./arcadia.coffee');
       context = this.canvas.getContext('2d');
       lineCount = 1;
       newlines = this.text.match(/\n/g);
@@ -1002,7 +1004,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(require,module,exports){
+},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(_dereq_,module,exports){
 /*
 @description One possible way to store common recyclable objects.
 Assumes the objects you add will have an `active` property, and optionally an
@@ -1196,26 +1198,28 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{}],8:[function(require,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Scene,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  GameObject = _dereq_('./gameobject.coffee');
 
   Scene = (function(_super) {
     __extends(Scene, _super);
 
     function Scene(options) {
+      var defaultSize;
       if (options == null) {
         options = {};
       }
       Scene.__super__.constructor.call(this, options);
-      this.size = options.size || {
-        width: 1,
-        height: 1
+      defaultSize = {
+        width: Arcadia.WIDTH,
+        height: Arcadia.HEIGHT
       };
+      this.size = options.size || defaultSize;
       this.camera = {
         target: null,
         viewport: {
@@ -1321,15 +1325,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],9:[function(require,module,exports){
+},{"./gameobject.coffee":5}],9:[function(_dereq_,module,exports){
 (function() {
   var Easie, GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  GameObject = _dereq_('./gameobject.coffee');
 
-  Easie = require('../vendor/easie.coffee');
+  Easie = _dereq_('../vendor/easie.coffee');
 
   Shape = (function(_super) {
     __extends(Shape, _super);
@@ -1735,13 +1739,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"../vendor/easie.coffee":11,"./gameobject.coffee":5}],10:[function(require,module,exports){
+},{"../vendor/easie.coffee":11,"./gameobject.coffee":5}],10:[function(_dereq_,module,exports){
 (function() {
   var GameObject, Sprite,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = require('./gameobject.coffee');
+  GameObject = _dereq_('./gameobject.coffee');
 
   Sprite = (function(_super) {
     __extends(Sprite, _super);
@@ -1831,7 +1835,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],11:[function(require,module,exports){
+},{"./gameobject.coffee":5}],11:[function(_dereq_,module,exports){
 /*
 Easie.coffee (https://github.com/jimjeffers/Easie)
 Project created by J. Jeffers
@@ -2126,4 +2130,3 @@ Don't do bad things with this :)
 },{}]},{},[1])
 (1)
 });
-;

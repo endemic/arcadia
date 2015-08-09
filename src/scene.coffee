@@ -4,7 +4,11 @@ class Scene extends GameObject
   constructor: (options = {}) ->
     super(options)
 
-    @size = options.size || { width: 1, height: 1 }
+    defaultSize =
+      width: Arcadia.WIDTH
+      height: Arcadia.HEIGHT
+
+    @size = options.size || defaultSize
 
     # implement a camera view/drawing offset
     @camera =
