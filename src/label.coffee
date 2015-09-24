@@ -5,11 +5,9 @@ class Label extends Shape
     @_font = { size: 10, family: 'monospace' }
     @_text = 'text goes here'
     @_alignment = 'center'
-    @fixed = true # Does not move with camera/parent objects
     
     super(args)
 
-    @fixed = args.fixed if args.hasOwnProperty('fixed')
     @font = args.font if args.hasOwnProperty('font')
     @text = args.text if args.hasOwnProperty('text')
     @alignment = args.alignment if args.hasOwnProperty('alignment') # allowed values: "left", "right", "center", "start", "end"
@@ -38,6 +36,7 @@ class Label extends Shape
       element['id'] = 'text-dimensions'
       element.style['position'] = 'absolute'
       element.style['top'] = '-9999px'
+      element.style['overflow'] = 'scroll'
       document.body.appendChild(element)
 
     element.style['font'] = @font
