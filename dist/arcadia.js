@@ -1,6 +1,5 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Arcadia=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function (global){
-(function() {
+!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Arcadia=e():"undefined"!=typeof global?global.Arcadia=e():"undefined"!=typeof self&&(self.Arcadia=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};(function() {
   var Arcadia, nowOffset;
 
   if (window.requestAnimationFrame === void 0) {
@@ -25,15 +24,15 @@
   };
 
   Arcadia = {
-    Game: _dereq_('./game.coffee'),
-    Button: _dereq_('./button.coffee'),
-    Emitter: _dereq_('./emitter.coffee'),
-    GameObject: _dereq_('./gameobject.coffee'),
-    Label: _dereq_('./label.coffee'),
-    Pool: _dereq_('./pool.coffee'),
-    Scene: _dereq_('./scene.coffee'),
-    Shape: _dereq_('./shape.coffee'),
-    Sprite: _dereq_('./sprite.coffee')
+    Game: require('./game.coffee'),
+    Button: require('./button.coffee'),
+    Emitter: require('./emitter.coffee'),
+    GameObject: require('./gameobject.coffee'),
+    Label: require('./label.coffee'),
+    Pool: require('./pool.coffee'),
+    Scene: require('./scene.coffee'),
+    Shape: require('./shape.coffee'),
+    Sprite: require('./sprite.coffee')
   };
 
   Arcadia.FPS = 60;
@@ -90,14 +89,13 @@
 }).call(this);
 
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(_dereq_,module,exports){
+},{"./button.coffee":2,"./emitter.coffee":3,"./game.coffee":4,"./gameobject.coffee":5,"./label.coffee":6,"./pool.coffee":7,"./scene.coffee":8,"./shape.coffee":9,"./sprite.coffee":10}],2:[function(require,module,exports){
 (function() {
   var Button, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Shape = _dereq_('./shape.coffee');
+  Shape = require('./shape.coffee');
 
   Button = (function(_super) {
     __extends(Button, _super);
@@ -107,8 +105,8 @@
       if (args == null) {
         args = {};
       }
-      Arcadia = _dereq_('./arcadia.coffee');
-      Label = _dereq_('./label.coffee');
+      Arcadia = require('./arcadia.coffee');
+      Label = require('./label.coffee');
       this.padding = args.padding || 10;
       this.label = args.label || new Label({
         text: args.text,
@@ -214,17 +212,17 @@
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(require,module,exports){
 (function() {
   var Emitter, GameObject, Pool, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
-  Pool = _dereq_('./pool.coffee');
+  Pool = require('./pool.coffee');
 
-  Shape = _dereq_('./shape.coffee');
+  Shape = require('./shape.coffee');
 
   Emitter = (function(_super) {
     __extends(Emitter, _super);
@@ -322,7 +320,7 @@
 }).call(this);
 
 
-},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5,"./pool.coffee":7,"./shape.coffee":9}],4:[function(require,module,exports){
 (function() {
   var Game,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -340,7 +338,7 @@
         args = {};
       }
       this.update = __bind(this.update, this);
-      Arcadia = _dereq_('./arcadia.coffee');
+      Arcadia = require('./arcadia.coffee');
       this.size = {
         width: parseInt(args.width, 10) || 320,
         height: parseInt(args.height, 10) || 480
@@ -715,11 +713,11 @@
 }).call(this);
 
 
-},{"./arcadia.coffee":1}],5:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1}],5:[function(require,module,exports){
 (function() {
   var GameObject, Pool;
 
-  Pool = _dereq_('./pool.coffee');
+  Pool = require('./pool.coffee');
 
   GameObject = (function() {
     function GameObject(args) {
@@ -821,13 +819,13 @@
 }).call(this);
 
 
-},{"./pool.coffee":7}],6:[function(_dereq_,module,exports){
+},{"./pool.coffee":7}],6:[function(require,module,exports){
 (function() {
   var Label, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Shape = _dereq_('./shape.coffee');
+  Shape = require('./shape.coffee');
 
   Label = (function(_super) {
     __extends(Label, _super);
@@ -842,11 +840,7 @@
       };
       this._text = 'text goes here';
       this._alignment = 'center';
-      this.fixed = true;
       Label.__super__.constructor.call(this, args);
-      if (args.hasOwnProperty('fixed')) {
-        this.fixed = args.fixed;
-      }
       if (args.hasOwnProperty('font')) {
         this.font = args.font;
       }
@@ -873,7 +867,7 @@
       if (this.canvas === void 0) {
         return;
       }
-      Arcadia = _dereq_('./arcadia.coffee');
+      Arcadia = require('./arcadia.coffee');
       context = this.canvas.getContext('2d');
       lineCount = 1;
       newlines = this.text.match(/\n/g);
@@ -886,6 +880,7 @@
         element['id'] = 'text-dimensions';
         element.style['position'] = 'absolute';
         element.style['top'] = '-9999px';
+        element.style['overflow'] = 'scroll';
         document.body.appendChild(element);
       }
       element.style['font'] = this.font;
@@ -1004,7 +999,7 @@
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(_dereq_,module,exports){
+},{"./arcadia.coffee":1,"./shape.coffee":9}],7:[function(require,module,exports){
 /*
 @description One possible way to store common recyclable objects.
 Assumes the objects you add will have an `active` property, and optionally an
@@ -1025,24 +1020,25 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     }
 
     Pool.prototype.at = function(index) {
-      if (index >= this.length) {
-        return null;
-      }
       return this.children[index];
     };
 
     /*
-    @description Push an object into the recycle pool
+    @description Add an object into the recycle pool
+                 list is z-sorted from 0 -> n, higher z-indices are drawn first
     */
 
 
     Pool.prototype.add = function(object) {
-      this.children.unshift(object);
-      if (this.length < this.children.length) {
-        this.tmp = this.children[this.children.length - 1];
-        this.children[this.children.length - 1] = this.children[this.length];
-        this.children[this.length] = this.tmp;
+      if (!object.zIndex) {
+        object.zIndex = this.length;
       }
+      this.tmp = this.length;
+      while (this.tmp > 0 && this.children[this.tmp - 1].zIndex > object.zIndex) {
+        this.children[this.tmp] = this.children[this.tmp - 1];
+        this.tmp -= 1;
+      }
+      this.children[this.tmp] = object;
       this.length += 1;
       return this.length;
     };
@@ -1072,36 +1068,48 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
-    @description Get an active object by either reference or index
+    @description Get an active object by reference
     */
 
 
-    Pool.prototype.activate = function(objectOrIndex) {
+    Pool.prototype.activate = function(object) {
       var index;
-      if (objectOrIndex !== void 0) {
-        index = typeof objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
-        if (!((this.children.length > index && index >= this.length))) {
-          return null;
+      if (object !== void 0) {
+        index = this.children.indexOf(object);
+        if ((0 <= index && index < this.length)) {
+          return void 0;
         }
-        this.tmp = this.children[this.length];
-        this.children[this.length] = this.children[index];
-        this.children[index] = this.tmp;
-        this.tmp = null;
+        object = this.children[index];
+        if (typeof object.reset === 'function') {
+          object.reset();
+        }
+        this.tmp = this.length;
+        while (this.tmp > 0 && this.children[this.tmp - 1].zIndex > object.zIndex) {
+          this.children[this.tmp] = this.children[this.tmp - 1];
+          this.tmp -= 1;
+        }
+        this.children[this.tmp] = object;
         this.length += 1;
-        return this.children[this.length - 1];
+        return object;
       }
-      if (objectOrIndex === void 0 && this.length < this.children.length) {
-        this.length += 1;
-        if (typeof this.children[this.length - 1].reset === 'function') {
-          this.children[this.length - 1].reset();
+      if (object === void 0 && this.length < this.children.length) {
+        object = this.children[this.length];
+        if (typeof object.reset === 'function') {
+          object.reset();
         }
-        return this.children[this.length - 1];
+        this.tmp = this.length;
+        while (this.tmp > 0 && this.children[this.tmp - 1].zIndex > object.zIndex) {
+          this.children[this.tmp] = this.children[this.tmp - 1];
+          this.tmp -= 1;
+        }
+        this.children[this.tmp] = object;
+        this.length += 1;
+        return object;
       }
       if (typeof this.factory !== 'function') {
         throw new Error('Pools need a factory function');
       }
-      this.children.push(this.factory());
-      this.length += 1;
+      this.add(this.factory());
       return this.children[this.length - 1];
     };
 
@@ -1111,17 +1119,20 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.deactivate = function(objectOrIndex) {
-      var index;
+      var index, object;
       index = typeof objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
-      if (index >= this.length || index < 0) {
-        return null;
+      if (!((0 <= index && index < this.length))) {
+        return void 0;
       }
-      this.tmp = this.children[index];
-      this.children[index] = this.children[this.length - 1];
-      this.children[this.length - 1] = this.tmp;
-      this.tmp = null;
+      object = this.children[index];
+      this.tmp = index;
+      while (this.tmp < this.length) {
+        this.children[this.tmp] = this.children[this.tmp + 1];
+        this.tmp += 1;
+      }
+      this.children[this.length - 1] = object;
       this.length -= 1;
-      return this.children[this.length];
+      return object;
     };
 
     /*
@@ -1139,14 +1150,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.activateAll = function() {
-      this.length = this.children.length;
-      while (this.length--) {
-        this.tmp = this.children[this.length];
-        if (typeof this.tmp.reset === 'function') {
-          this.tmp.reset();
+      this.length = this.tmp = this.children.length;
+      while (this.tmp--) {
+        if (typeof this.children[this.tmp].reset === 'function') {
+          this.children[this.tmp].reset();
         }
       }
-      return this.length = this.children.length;
+      this.children.sort(function(a, b) {
+        return a.zIndex - b.zIndex;
+      });
     };
 
     /*
@@ -1157,12 +1169,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     Pool.prototype.destroyAll = function() {
       this.length = this.children.length;
       while (this.length--) {
-        this.tmp = this.children[this.length];
-        if (typeof this.tmp.destroy === 'function') {
-          this.tmp.destroy();
+        if (typeof this.children[this.length].destroy === 'function') {
+          this.children[this.length].destroy();
         }
       }
-      return this.length = 0;
     };
 
     /*
@@ -1198,13 +1208,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{}],8:[function(_dereq_,module,exports){
+},{}],8:[function(require,module,exports){
 (function() {
   var GameObject, Scene,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
   Scene = (function(_super) {
     __extends(Scene, _super);
@@ -1325,15 +1335,15 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],9:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5}],9:[function(require,module,exports){
 (function() {
   var Easie, GameObject, Shape,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
-  Easie = _dereq_('../vendor/easie.coffee');
+  Easie = require('../vendor/easie.coffee');
 
   Shape = (function(_super) {
     __extends(Shape, _super);
@@ -1739,13 +1749,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"../vendor/easie.coffee":11,"./gameobject.coffee":5}],10:[function(_dereq_,module,exports){
+},{"../vendor/easie.coffee":11,"./gameobject.coffee":5}],10:[function(require,module,exports){
 (function() {
   var GameObject, Sprite,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  GameObject = _dereq_('./gameobject.coffee');
+  GameObject = require('./gameobject.coffee');
 
   Sprite = (function(_super) {
     __extends(Sprite, _super);
@@ -1783,9 +1793,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
       }
       if (offsetY == null) {
         offsetY = 0;
-      }
-      if (this.fixed) {
-        offsetX = offsetY = 0;
       }
       Sprite.__super__.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY);
       context.save();
@@ -1835,7 +1842,7 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 }).call(this);
 
 
-},{"./gameobject.coffee":5}],11:[function(_dereq_,module,exports){
+},{"./gameobject.coffee":5}],11:[function(require,module,exports){
 /*
 Easie.coffee (https://github.com/jimjeffers/Easie)
 Project created by J. Jeffers
@@ -2130,3 +2137,4 @@ Don't do bad things with this :)
 },{}]},{},[1])
 (1)
 });
+;

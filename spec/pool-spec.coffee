@@ -16,6 +16,16 @@ describe 'Arcadia.Pool', ->
       @pool.add new Arcadia.Shape()
       expect(@pool.length).toBe 1
 
+    it 'inserts in order', ->
+      @pool.add(new Arcadia.Shape({ zIndex: 4 }))
+      @pool.add(new Arcadia.Shape({ zIndex: 3 }))
+      @pool.add(new Arcadia.Shape({ zIndex: 2 }))
+      @pool.add(new Arcadia.Shape({ zIndex: 1 }))
+      expect(@pool.at(0).zIndex).toBe(1)
+      expect(@pool.at(1).zIndex).toBe(2)
+      expect(@pool.at(2).zIndex).toBe(3)
+      expect(@pool.at(3).zIndex).toBe(4)
+
   describe '#remove', ->
     beforeEach ->
       @pool = new Arcadia.Pool()
@@ -56,15 +66,15 @@ describe 'Arcadia.Pool', ->
       shape = new Arcadia.Shape({ vertices: 3 })
       @pool.add shape
       expect(@pool.at(0)).toBe shape
-    
+
     it "can't access what doesn't exist", ->
-      expect(@pool.at(0)).toBe null
+      expect(@pool.at(0)).toBe(undefined)
 
   describe '#deactivateAll', ->
     it 'deactivates all objects', ->
       while @pool.length < 10
         @pool.add new Arcadia.Shape({ vertices: @pool.length })
-      
+
       expect(@pool.length).toBe 10
       @pool.deactivateAll()
       expect(@pool.length).toBe 0
@@ -107,6 +117,21 @@ describe 'Arcadia.Pool', ->
       @pool.activate()
       expect(@pool.at(0)).toBe shape
 
+    it 'keeps sorted order when activating', ->
+      @pool.add(new Arcadia.Shape({ zIndex: 1 }))
+      @pool.add(new Arcadia.Shape({ zIndex: 2 }))
+      @pool.add(new Arcadia.Shape({ zIndex: 3 }))
+      @pool.add(new Arcadia.Shape({ zIndex: 4 }))
+
+      @pool.deactivate(2)
+      @pool.activate()
+
+      expect(@pool.at(0).zIndex).toBe(1)
+      expect(@pool.at(1).zIndex).toBe(2)
+      expect(@pool.at(2).zIndex).toBe(3)
+      expect(@pool.at(3).zIndex).toBe(4)
+
+
   describe '#deactivate', ->
     beforeEach ->
       while @pool.length < 10
@@ -125,6 +150,19 @@ describe 'Arcadia.Pool', ->
       @pool.deactivate 0
       expect(@pool.length).toBe 9
 
+    it 'maintains sort order', ->
+      @pool.deactivate(4)
+      @pool.deactivate(1)
+
+      expect(@pool.at(0).zIndex).toBe(0)
+      expect(@pool.at(1).zIndex).toBe(2)
+      expect(@pool.at(2).zIndex).toBe(3)
+      expect(@pool.at(3).zIndex).toBe(5)
+      expect(@pool.at(4).zIndex).toBe(6)
+      expect(@pool.at(5).zIndex).toBe(7)
+      expect(@pool.at(6).zIndex).toBe(8)
+      expect(@pool.at(7).zIndex).toBe(9)
+
   describe '#update', ->
     it 'updates active objects', ->
       pool = new Arcadia.Pool()
@@ -134,7 +172,7 @@ describe 'Arcadia.Pool', ->
       pool.add shape1
       pool.add shape2
       pool.deactivate shape2
-      
+
       spyOn shape1, 'update'
       spyOn shape2, 'update'
       pool.update(1)

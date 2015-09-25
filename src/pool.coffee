@@ -14,27 +14,24 @@ class Pool
     @factory = null
 
   at: (index) ->
-    return null if index >= @length
-    @children[index]
+    return @children[index]
 
   ###
-  @description Push an object into the recycle pool
+  @description Add an object into the recycle pool
+               list is z-sorted from 0 -> n, higher z-indices are drawn first
   ###
   add: (object) ->
-    # Expectation is that objects "added" last will be drawn on top
-    # of others; since drawing uses a reverse-while loop, "Array.push"
-    # causes newer objects to be drawn first, therefore underneath.
-    @children.unshift(object)
+    object.zIndex = @length unless object.zIndex
 
-    # Swap with inactive object
-    # What's the purpose of this?
-    if @length < @children.length
-      @tmp = @children[@children.length - 1]
-      @children[@children.length - 1] = @children[@length]
-      @children[@length] = @tmp
+    @tmp = @length
+    while @tmp > 0 && @children[@tmp - 1].zIndex > object.zIndex
+      @children[@tmp] = @children[@tmp - 1]
+      @tmp -= 1
 
+    @children[@tmp] = object
     @length += 1
-    @length
+
+    return @length
 
   ###
   @description Remove an object from the recycle pool
@@ -52,31 +49,50 @@ class Pool
     object
 
   ###
-  @description Get an active object by either reference or index
+  @description Get an active object by reference
   ###
-  activate: (objectOrIndex) ->
-    if objectOrIndex != undefined
-      index = if typeof objectOrIndex != 'number' then @children.indexOf(objectOrIndex) else objectOrIndex
+  activate: (object) ->
+    # Move a specific inactive object into active
+    if object != undefined
+      index = @children.indexOf(object)
 
-      # TODO: Spec this behavior
-      return null unless @children.length > index >= @length
+      # Return undefined if object is already active (or not found)
+      return undefined if 0 <= index < @length
 
-      @tmp = @children[@length]
-      @children[@length] = @children[index]
-      @children[index] = @tmp
-      @tmp = null
+      object = @children[index]
+      object.reset() if typeof object.reset == 'function'
+
+      # swap with another inactive object
+      @tmp = @length
+      while @tmp > 0 && @children[@tmp - 1].zIndex > object.zIndex
+        @children[@tmp] = @children[@tmp - 1]
+        @tmp -= 1
+
+      @children[@tmp] = object
       @length += 1
-      return @children[@length - 1]
 
-    if objectOrIndex == undefined && @length < @children.length
+      return object
+
+    # Move a random inactive object into active
+    if object == undefined && @length < @children.length
+      object = @children[@length]
+      object.reset() if typeof object.reset == 'function'
+
+      @tmp = @length
+      while @tmp > 0 && @children[@tmp - 1].zIndex > object.zIndex
+        @children[@tmp] = @children[@tmp - 1]
+        @tmp -= 1
+
+      @children[@tmp] = object
       @length += 1
-      @children[@length - 1].reset() if typeof @children[@length - 1].reset == 'function'
-      return @children[@length - 1]
 
-    throw new Error('Pools need a factory function') if typeof @factory != 'function'
+      return object
 
-    @children.push @factory()
-    @length += 1
+    # Generate a new object and add to active
+    if typeof @factory != 'function'
+      throw new Error('Pools need a factory function')
+
+    @add(@factory())
     return @children[@length - 1]
 
   ###
@@ -86,16 +102,22 @@ class Pool
     index = if typeof objectOrIndex != 'number' then @children.indexOf(objectOrIndex) else objectOrIndex
 
     # TODO: Spec this behavior
-    return null if index >= @length || index < 0
+    return undefined unless 0 <= index < @length
 
-    # Move inactive object to end
-    @tmp = @children[index]
-    @children[index] = @children[@length - 1]
-    @children[@length - 1] = @tmp
-    @tmp = null
+    # Save reference to deactivated object
+    object = @children[index]
 
+    # shift the rest of the contents downwards
+    @tmp = index
+    while @tmp < @length
+      @children[@tmp] = @children[@tmp + 1]
+      @tmp += 1
+
+    # Place deactivated object at the end
+    @children[@length - 1] = object
     @length -= 1
-    @children[@length]
+    
+    return object
 
   ###
   @description Deactivate all child objects
@@ -107,11 +129,14 @@ class Pool
   @description Activate all child objects
   ###
   activateAll: ->
-    @length = @children.length
-    while @length--
-      @tmp = @children[@length]
-      @tmp.reset() if typeof @tmp.reset == 'function'
-    @length = @children.length
+    @length = @tmp = @children.length
+    while @tmp--
+      @children[@tmp].reset() if typeof @children[@tmp].reset == 'function'
+
+    # ensure sort order
+    @children.sort (a, b) ->
+      a.zIndex - b.zIndex
+    return
 
   ###
   @description Destroy all child objects
@@ -119,9 +144,8 @@ class Pool
   destroyAll: ->
     @length = @children.length
     while @length--
-      @tmp = @children[@length]
-      @tmp.destroy() if typeof @tmp.destroy == 'function'
-    @length = 0
+      @children[@length].destroy() if typeof @children[@length].destroy == 'function'
+    return
 
   ###
   @description Passthrough method to update active child objects
