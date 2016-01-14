@@ -110,16 +110,19 @@ Title.prototype.update = function (delta) {
 };
 
 Title.prototype.onPointStart = function (points) {
+    Arcadia.Scene.prototype.onPointStart.call(this, points);
     this.shape.position.x = points[0].x;
     this.shape.position.y = points[0].y;
 };
 
 Title.prototype.onPointMove = function (points) {
+    Arcadia.Scene.prototype.onPointMove.call(this, points);
     this.shape.position.x = points[0].x;
     this.shape.position.y = points[0].y;
 };
 
 Title.prototype.onPointEnd = function (points) {
+    Arcadia.Scene.prototype.onPointEnd.call(this, points);
     if (this.shape.scale >= 2) {
         this.shape.tween('scale', 1, 1000, 'elasticInOut');
     } else {

@@ -27,11 +27,6 @@ Arcadia =
   Shape: require('./shape.coffee')
   Sprite: require('./sprite.coffee')
 
-# Static variables tracking performance
-Arcadia.FPS = 60
-Arcadia.garbageCollected = false
-Arcadia.lastUsedHeap = 0
-
 ###
 @description Get information about the current environment
 ###
@@ -57,12 +52,17 @@ Arcadia.ENV = do ->
 @description Change the active scene being displayed
 ###
 Arcadia.changeScene = (SceneClass, options = {}) ->
-  Arcadia.instance.active.destroy() # Clean up previous scene
-  Arcadia.instance.active = new SceneClass(options)
+  Arcadia.instance.activeScene = new SceneClass(options)
 
+###
+@description Distance method
+###
 Arcadia.distance = (one, two) ->
   Math.sqrt(Math.pow(two.x - one.x, 2) + Math.pow(two.y - one.y, 2))
 
+###
+@description Random number method
+###
 Arcadia.random = (min, max) ->
   throw new Error("Implement a function that gets a random number between #{min} and #{max}!")
 

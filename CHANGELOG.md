@@ -1,6 +1,10 @@
 
-# 1.1.0
+# 2.0.0
 
+* GameObjects have an `enablePointEvents` boolean, which allows them to act on
+  mouse/touch events
+* Buttons no longer create/destroy their own event listeners; they use
+  `enablePointEvents` to act on mouse/touch input
 * Pool lists are now sorted by a `zIndex` property
 * Added `overflow: scroll` to label sizing element
 * Added `Arcadia.distance` method
@@ -9,3 +13,5 @@
 * Click/touch coordinates now offset by camera position
 
 # 1.0.0
+
+* First release

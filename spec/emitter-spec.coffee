@@ -13,7 +13,7 @@ describe 'Arcadia.Emitter', ->
 
   it 'creates particles', ->
     particles = new Arcadia.Emitter @factory, 100
-    expect(particles.children.children.length).toBe 100
+    expect(particles.children.inactive.length).toBe 100
 
   it 'tries to reset particles when activating', ->
     factory = ->
@@ -22,8 +22,9 @@ describe 'Arcadia.Emitter', ->
       shape
 
     particles = new Arcadia.Emitter factory
-    spyOn particles.children.children[0], 'reset'
+    particle = particles.children.inactive[0]
+    spyOn(particle, 'reset')
     particles.startAt 0, 0
 
-    expect(particles.children.at(0).reset).toHaveBeenCalled()
+    expect(particle.reset).toHaveBeenCalled()
 

@@ -1,6 +1,6 @@
 {
   "name": "arcadia",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Minimalistic Javascript game framework",
   "main": "dist/arcadia.js",
   "directories": {
