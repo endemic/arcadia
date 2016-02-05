@@ -19,6 +19,11 @@ class Game
     # If element is not at (0, 0) (upper left), clicks/touches need to be offset
     Arcadia.OFFSET = { x: 0, y: 0 }
 
+    # Static variable tracking performance
+    Arcadia.FPS = 60
+
+    Arcadia.FPS_LIMIT = args.fps if args.hasOwnProperty('fps')
+
     # Allow embedding the app in a specified container
     if args.hasOwnProperty('element')
       @element = args.element
@@ -26,8 +31,6 @@ class Game
       @element = document.createElement('div')
       @element.id = 'arcadia'
       document.body.appendChild(@element)
-
-    Arcadia.FPS_LIMIT = args.fps if args.hasOwnProperty('fps')
 
     @canvas = document.createElement('canvas')
     @context = @canvas.getContext('2d')
@@ -64,40 +67,40 @@ class Game
     Arcadia.element = @element
 
     # Bind event handler callbacks
-    @onResize = @onResize.bind @
-    @onPointStart = @onPointStart.bind @
-    @onPointMove = @onPointMove.bind @
-    @onPointEnd = @onPointEnd.bind @
-    @onKeyDown = @onKeyDown.bind @
-    @onKeyUp = @onKeyUp.bind @
-    @pause = @pause.bind @
-    @resume = @resume.bind @
+    @onResize = @onResize.bind(@)
+    @onPointStart = @onPointStart.bind(@)
+    @onPointMove = @onPointMove.bind(@)
+    @onPointEnd = @onPointEnd.bind(@)
+    @onKeyDown = @onKeyDown.bind(@)
+    @onKeyUp = @onKeyUp.bind(@)
+    @pause = @pause.bind(@)
+    @resume = @resume.bind(@)
 
     # Set up event listeners - mouse and touch use the same ones
     if Arcadia.ENV.mobile
-      @element.addEventListener 'touchstart', @onPointStart, false
-      @element.addEventListener 'touchmove', @onPointMove, false
-      @element.addEventListener 'touchend', @onPointEnd, false
+      @element.addEventListener('touchstart', @onPointStart, false)
+      @element.addEventListener('touchmove', @onPointMove, false)
+      @element.addEventListener('touchend', @onPointEnd, false)
     else
-      document.addEventListener 'keydown', @onKeyDown, false
-      document.addEventListener 'keyup', @onKeyUp, false
-      @element.addEventListener 'mousedown', @onPointStart, false
-      @element.addEventListener 'mouseup', @onPointEnd, false
+      document.addEventListener('keydown', @onKeyDown, false)
+      document.addEventListener('keyup', @onKeyUp, false)
+      @element.addEventListener('mousedown', @onPointStart, false)
+      @element.addEventListener('mouseup', @onPointEnd, false)
 
     # Prevent the page from scrolling when touching game element
-    @element.addEventListener 'touchmove', (e) -> e.preventDefault()
+    @element.addEventListener('touchmove', (e) -> e.preventDefault())
 
     # Add non-standard event listeners for "native" Cordova apps
     if window.cordova != undefined
-      document.addEventListener 'pause', @pause, false
-      document.addEventListener 'resume', @resume, false
+      document.addEventListener('pause', @pause, false)
+      document.addEventListener('resume', @resume, false)
 
     # Fit <canvas> to window
     if args.scaleToFit
       @onResize()
       window.addEventListener('resize', @onResize, false)
 
-    @active = new args.scene
+    @activeScene = new args.scene
       size:
         width: Arcadia.WIDTH
         height: Arcadia.HEIGHT
@@ -107,13 +110,13 @@ class Game
   @description Pause active scene if it has a pause method
   ###
   pause: ->
-    @active.pause() if typeof @active.pause == "function"
+    @activeScene.pause() if typeof @activeScene.pause == "function"
 
   ###
   @description Resume active scene if it has a pause method
   ###
   resume: ->
-    @active.resume() if typeof @active.resume == "function"
+    @activeScene.resume() if typeof @activeScene.resume == "function"
 
   ###
   @description Mouse/touch event callback
@@ -124,15 +127,14 @@ class Game
     if event.type.indexOf('mouse') != -1
       @element.addEventListener('mousemove', @onPointMove, false)
 
-    @active.onPointStart(@points) if typeof @active.onPointStart == "function"
+    @activeScene.onPointStart(@points)
 
   ###
   @description Mouse/touch event callback
   ###
   onPointMove: (event) ->
     @getPoints(event)
-
-    @active.onPointMove(@points) if typeof @active.onPointMove == "function"
+    @activeScene.onPointMove(@points)
 
   ###
   @description Mouse/touch event callback
@@ -144,7 +146,7 @@ class Game
     if event.type.indexOf('mouse') != -1
       @element.removeEventListener('mousemove', @onPointMove, false)
 
-    @active.onPointEnd(@points) if typeof @active.onPointEnd == "function"
+    @activeScene.onPointEnd(@points)
 
   ###
   @description Keyboard event callback
@@ -159,7 +161,7 @@ class Game
     @input[key] = true
 
     # Call current screen's "onKeyUp" method
-    @active.onKeyDown key if typeof @active.onKeyDown == "function"
+    @activeScene.onKeyDown(key) if typeof @activeScene.onKeyDown == "function"
 
   ###
   @description Keyboard event callback
@@ -171,7 +173,7 @@ class Game
     @input[key] = false # Allow the keyDown event for this key to be sent again
 
     # Call current screen's "onKeyUp" method
-    @active.onKeyUp key if typeof @active.onKeyUp == "function"
+    @activeScene.onKeyUp(key) if typeof @activeScene.onKeyUp == "function"
 
   ###
   @description Translate a keyboard event code into a meaningful string
@@ -207,16 +209,16 @@ class Game
 
     if event.type.indexOf('mouse') != -1
       @points.unshift
-        x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2 + @active.camera.position.x
-        y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2 + @active.camera.position.y
+        x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2 + @activeScene.camera.position.x
+        y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2 + @activeScene.camera.position.y
     else
       source = if touchEnd then 'changedTouches' else 'touches'
 
       i = event[source].length
       while i--
         @points.unshift
-          x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2 + @active.camera.position.x
-          y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2 + @active.camera.position.y
+          x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2 + @activeScene.camera.position.x
+          y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2 + @activeScene.camera.position.y
 
   ###
    * @description Start the event/animation loops
@@ -224,16 +226,14 @@ class Game
   start: ->
     @previousDelta = window.performance.now()
 
-    Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize if window.performance.memory?
-
     # Start game loop
-    @updateId = window.requestAnimationFrame @update
+    @updateId = window.requestAnimationFrame(@update)
 
   ###
   @description Cancel draw/update loops
   ###
   stop: ->
-    window.cancelAnimationFrame @updateId
+    window.cancelAnimationFrame(@updateId)
 
   ###
   @description Update callback
@@ -242,20 +242,14 @@ class Game
     delta = currentDelta - @previousDelta
     @updateId = window.requestAnimationFrame(@update)
 
-    if window.performance.memory?
-      Arcadia.garbageCollected = true if window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap
-      Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize
-
     Arcadia.FPS = Arcadia.FPS * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
 
     # Check against FPS limit; 960 / {n}FPS = ms/frame
-    return if Arcadia.FPS_LIMIT && delta < Math.round(960 / Arcadia.FPS_LIMIT)
+    return if Arcadia.FPS_LIMIT && delta < 1000 / Arcadia.FPS_LIMIT
 
-    @active.draw(@context)
-    @active.update(delta / 1000) # call update() using seconds
+    @activeScene.draw(@context)
+    @activeScene.update(delta / 1000) # call update() using seconds
     @previousDelta = currentDelta
-
-    Arcadia.garbageCollected = false
 
   ###
   @description Change size of canvas based on pixel density

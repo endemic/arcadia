@@ -35,12 +35,6 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
     Sprite: require('./sprite.coffee')
   };
 
-  Arcadia.FPS = 60;
-
-  Arcadia.garbageCollected = false;
-
-  Arcadia.lastUsedHeap = 0;
-
   /*
   @description Get information about the current environment
   */
@@ -72,13 +66,22 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
     if (options == null) {
       options = {};
     }
-    Arcadia.instance.active.destroy();
-    return Arcadia.instance.active = new SceneClass(options);
+    return Arcadia.instance.activeScene = new SceneClass(options);
   };
+
+  /*
+  @description Distance method
+  */
+
 
   Arcadia.distance = function(one, two) {
     return Math.sqrt(Math.pow(two.x - one.x, 2) + Math.pow(two.y - one.y, 2));
   };
+
+  /*
+  @description Random number method
+  */
+
 
   Arcadia.random = function(min, max) {
     throw new Error("Implement a function that gets a random number between " + min + " and " + max + "!");
@@ -101,13 +104,12 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
     __extends(Button, _super);
 
     function Button(args) {
-      var Arcadia, Label, height;
+      var Label, height;
       if (args == null) {
         args = {};
       }
-      Arcadia = require('./arcadia.coffee');
       Label = require('./label.coffee');
-      this.padding = args.padding || 10;
+      this.padding = args.padding || 0;
       this.label = args.label || new Label({
         text: args.text,
         font: args.font
@@ -126,12 +128,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         this.action = args.action;
       }
       this.disabled = false;
-      this.onPointEnd = this.onPointEnd.bind(this);
-      if (Arcadia.ENV.mobile) {
-        Arcadia.element.addEventListener('touchend', this.onPointEnd, false);
-      } else {
-        Arcadia.element.addEventListener('mouseup', this.onPointEnd, false);
-      }
+      this.enablePointEvents = true;
     }
 
     /*
@@ -140,14 +137,15 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
     */
 
 
-    Button.prototype.onPointEnd = function(event) {
+    Button.prototype.onPointEnd = function(points) {
       var i;
+      Button.__super__.onPointEnd.call(this, points);
       if (typeof this.action !== 'function' || this.disabled) {
         return;
       }
-      i = Arcadia.points.length;
+      i = points.length;
       while (i--) {
-        if (this.containsPoint(Arcadia.points[i])) {
+        if (this.containsPoint(points[i])) {
           return this.action();
         }
       }
@@ -160,19 +158,6 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
     Button.prototype.containsPoint = function(point) {
       return point.x < this.position.x + this.size.width / 2 + this.padding / 2 && point.x > this.position.x - this.size.width / 2 - this.padding / 2 && point.y < this.position.y + this.size.height / 2 + this.padding / 2 && point.y > this.position.y - this.size.height / 2 - this.padding / 2;
-    };
-
-    /*
-    @description Clean up event listeners
-    */
-
-
-    Button.prototype.destroy = function() {
-      if (Arcadia.ENV.mobile) {
-        return Arcadia.element.removeEventListener('touchend', this.onPointEnd, false);
-      } else {
-        return Arcadia.element.removeEventListener('mouseup', this.onPointEnd, false);
-      }
     };
 
     /*
@@ -212,7 +197,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 }).call(this);
 
 
-},{"./arcadia.coffee":1,"./label.coffee":6,"./shape.coffee":9}],3:[function(require,module,exports){
+},{"./label.coffee":6,"./shape.coffee":9}],3:[function(require,module,exports){
 (function() {
   var Emitter, GameObject, Pool, Shape,
     __hasProp = {}.hasOwnProperty,
@@ -350,15 +335,16 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         x: 0,
         y: 0
       };
+      Arcadia.FPS = 60;
+      if (args.hasOwnProperty('fps')) {
+        Arcadia.FPS_LIMIT = args.fps;
+      }
       if (args.hasOwnProperty('element')) {
         this.element = args.element;
       } else {
         this.element = document.createElement('div');
         this.element.id = 'arcadia';
         document.body.appendChild(this.element);
-      }
-      if (args.hasOwnProperty('fps')) {
-        Arcadia.FPS_LIMIT = args.fps;
       }
       this.canvas = document.createElement('canvas');
       this.context = this.canvas.getContext('2d');
@@ -413,7 +399,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         this.onResize();
         window.addEventListener('resize', this.onResize, false);
       }
-      this.active = new args.scene({
+      this.activeScene = new args.scene({
         size: {
           width: Arcadia.WIDTH,
           height: Arcadia.HEIGHT
@@ -428,8 +414,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
 
     Game.prototype.pause = function() {
-      if (typeof this.active.pause === "function") {
-        return this.active.pause();
+      if (typeof this.activeScene.pause === "function") {
+        return this.activeScene.pause();
       }
     };
 
@@ -439,8 +425,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
 
     Game.prototype.resume = function() {
-      if (typeof this.active.resume === "function") {
-        return this.active.resume();
+      if (typeof this.activeScene.resume === "function") {
+        return this.activeScene.resume();
       }
     };
 
@@ -454,9 +440,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (event.type.indexOf('mouse') !== -1) {
         this.element.addEventListener('mousemove', this.onPointMove, false);
       }
-      if (typeof this.active.onPointStart === "function") {
-        return this.active.onPointStart(this.points);
-      }
+      return this.activeScene.onPointStart(this.points);
     };
 
     /*
@@ -466,9 +450,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
     Game.prototype.onPointMove = function(event) {
       this.getPoints(event);
-      if (typeof this.active.onPointMove === "function") {
-        return this.active.onPointMove(this.points);
-      }
+      return this.activeScene.onPointMove(this.points);
     };
 
     /*
@@ -483,9 +465,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (event.type.indexOf('mouse') !== -1) {
         this.element.removeEventListener('mousemove', this.onPointMove, false);
       }
-      if (typeof this.active.onPointEnd === "function") {
-        return this.active.onPointEnd(this.points);
-      }
+      return this.activeScene.onPointEnd(this.points);
     };
 
     /*
@@ -501,8 +481,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         return;
       }
       this.input[key] = true;
-      if (typeof this.active.onKeyDown === "function") {
-        return this.active.onKeyDown(key);
+      if (typeof this.activeScene.onKeyDown === "function") {
+        return this.activeScene.onKeyDown(key);
       }
     };
 
@@ -516,8 +496,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       var key;
       key = this.getKey(event.keyCode);
       this.input[key] = false;
-      if (typeof this.active.onKeyUp === "function") {
-        return this.active.onKeyUp(key);
+      if (typeof this.activeScene.onKeyUp === "function") {
+        return this.activeScene.onKeyUp(key);
       }
     };
 
@@ -575,8 +555,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       }
       if (event.type.indexOf('mouse') !== -1) {
         return this.points.unshift({
-          x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - this.size.width / 2 + this.active.camera.position.x,
-          y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - this.size.height / 2 + this.active.camera.position.y
+          x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - this.size.width / 2 + this.activeScene.camera.position.x,
+          y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - this.size.height / 2 + this.activeScene.camera.position.y
         });
       } else {
         source = touchEnd ? 'changedTouches' : 'touches';
@@ -584,8 +564,8 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
         _results = [];
         while (i--) {
           _results.push(this.points.unshift({
-            x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - this.size.width / 2 + this.active.camera.position.x,
-            y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - this.size.height / 2 + this.active.camera.position.y
+            x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - this.size.width / 2 + this.activeScene.camera.position.x,
+            y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - this.size.height / 2 + this.activeScene.camera.position.y
           }));
         }
         return _results;
@@ -599,9 +579,6 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
     Game.prototype.start = function() {
       this.previousDelta = window.performance.now();
-      if (window.performance.memory != null) {
-        Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
-      }
       return this.updateId = window.requestAnimationFrame(this.update);
     };
 
@@ -623,20 +600,13 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       var delta;
       delta = currentDelta - this.previousDelta;
       this.updateId = window.requestAnimationFrame(this.update);
-      if (window.performance.memory != null) {
-        if (window.performance.memory.usedJSHeapSize < Arcadia.lastUsedHeap) {
-          Arcadia.garbageCollected = true;
-        }
-        Arcadia.lastUsedHeap = window.performance.memory.usedJSHeapSize;
-      }
       Arcadia.FPS = Arcadia.FPS * 0.9 + 1000 / delta * 0.1;
-      if (Arcadia.FPS_LIMIT && delta < Math.round(960 / Arcadia.FPS_LIMIT)) {
+      if (Arcadia.FPS_LIMIT && delta < 1000 / Arcadia.FPS_LIMIT) {
         return;
       }
-      this.active.draw(this.context);
-      this.active.update(delta / 1000);
-      this.previousDelta = currentDelta;
-      return Arcadia.garbageCollected = false;
+      this.activeScene.draw(this.context);
+      this.activeScene.update(delta / 1000);
+      return this.previousDelta = currentDelta;
     };
 
     /*
@@ -727,6 +697,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       this.scale = args.scale || 1;
       this.rotation = args.rotation || 0;
       this.alpha = args.alpha || 1;
+      this.enablePointEvents = args.enablePointEvents || false;
       if (typeof args.position === 'object') {
         this.position = {
           x: args.position.x,
@@ -808,6 +779,45 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
 
     GameObject.prototype.deactivate = function(objectOrIndex) {
       return this.children.deactivate(objectOrIndex);
+    };
+
+    /*
+    @description Event handler for "start" pointer event
+    @param {Array} points Array of touch/mouse coordinates
+    */
+
+
+    GameObject.prototype.onPointStart = function(points) {
+      if (!this.enablePointEvents) {
+        return;
+      }
+      return this.children.onPointStart(points);
+    };
+
+    /*
+    @description Event handler for "move" pointer event
+    @param {Array} points Array of touch/mouse coordinates
+    */
+
+
+    GameObject.prototype.onPointMove = function(points) {
+      if (!this.enablePointEvents) {
+        return;
+      }
+      return this.children.onPointMove(points);
+    };
+
+    /*
+    @description Event handler for "end" pointer event
+    @param {Array} points Array of touch/mouse coordinates
+    */
+
+
+    GameObject.prototype.onPointEnd = function(points) {
+      if (!this.enablePointEvents) {
+        return;
+      }
+      return this.children.onPointEnd(points);
     };
 
     return GameObject;
@@ -1013,14 +1023,20 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
   Pool = (function() {
     function Pool() {
-      this.children = [];
-      this.length = 0;
-      this.tmp = null;
+      this.active = [];
+      this.inactive = [];
+      this.index = 0;
       this.factory = null;
     }
 
+    Pool.property('length', {
+      get: function() {
+        return this.active.length;
+      }
+    });
+
     Pool.prototype.at = function(index) {
-      return this.children[index];
+      return this.active[index];
     };
 
     /*
@@ -1031,15 +1047,13 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Pool.prototype.add = function(object) {
       if (!object.zIndex) {
-        object.zIndex = this.length;
+        object.zIndex = this.active.length + this.inactive.length;
       }
-      this.tmp = this.length;
-      while (this.tmp > 0 && this.children[this.tmp - 1].zIndex > object.zIndex) {
-        this.children[this.tmp] = this.children[this.tmp - 1];
-        this.tmp -= 1;
+      this.index = 0;
+      while (this.index < this.length && object.zIndex > this.active[this.index].zIndex) {
+        this.index += 1;
       }
-      this.children[this.tmp] = object;
-      this.length += 1;
+      this.active.splice(this.index, 0, object);
       return this.length;
     };
 
@@ -1048,23 +1062,33 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     */
 
 
-    Pool.prototype.remove = function(objectOrIndex) {
-      var index, object;
-      if (objectOrIndex === void 0) {
-        throw new Error('Must specify an object/index to remove');
+    Pool.prototype.remove = function(object) {
+      var index;
+      if (typeof object === 'number') {
+        index = object;
+        object = this.active.splice(index, 1)[0];
+        if (typeof object.destroy === 'function') {
+          object.destroy();
+        }
+        return object;
       }
-      index = typeof objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
-      if (index === -1) {
-        return;
+      if (this.active.indexOf(object) !== -1) {
+        index = this.active.indexOf(object);
+        object = this.active.splice(index, 1)[0];
+        if (typeof object.destroy === 'function') {
+          object.destroy();
+        }
+        return object;
       }
-      object = this.children.splice(index, 1)[0];
-      if (typeof object.destroy === 'function') {
-        object.destroy();
+      if (this.inactive.indexOf(object) !== -1) {
+        index = this.inactive.indexOf(object);
+        object = this.inactive.splice(index, 1)[0];
+        if (typeof object.destroy === 'function') {
+          object.destroy();
+        }
+        return object;
       }
-      if (index < this.length) {
-        this.length -= 1;
-      }
-      return object;
+      return void 0;
     };
 
     /*
@@ -1074,43 +1098,41 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Pool.prototype.activate = function(object) {
       var index;
-      if (object !== void 0) {
-        index = this.children.indexOf(object);
-        if ((0 <= index && index < this.length)) {
+      if (object) {
+        index = this.inactive.indexOf(object);
+        if (index === -1) {
           return void 0;
         }
-        object = this.children[index];
+        object = this.inactive.splice(index, 1)[0];
         if (typeof object.reset === 'function') {
           object.reset();
         }
-        this.tmp = this.length;
-        while (this.tmp > 0 && this.children[this.tmp - 1].zIndex > object.zIndex) {
-          this.children[this.tmp] = this.children[this.tmp - 1];
-          this.tmp -= 1;
+        this.index = this.length;
+        while (this.index > 0 && this.active[this.index - 1].zIndex > object.zIndex) {
+          this.active[this.index] = this.active[this.index - 1];
+          this.index -= 1;
         }
-        this.children[this.tmp] = object;
-        this.length += 1;
+        this.active[this.index] = object;
         return object;
       }
-      if (object === void 0 && this.length < this.children.length) {
-        object = this.children[this.length];
+      if (!object && this.inactive.length) {
+        object = this.inactive.shift();
         if (typeof object.reset === 'function') {
           object.reset();
         }
-        this.tmp = this.length;
-        while (this.tmp > 0 && this.children[this.tmp - 1].zIndex > object.zIndex) {
-          this.children[this.tmp] = this.children[this.tmp - 1];
-          this.tmp -= 1;
+        this.index = this.length;
+        while (this.index > 0 && this.active[this.index - 1].zIndex > object.zIndex) {
+          this.active[this.index] = this.active[this.index - 1];
+          this.index -= 1;
         }
-        this.children[this.tmp] = object;
-        this.length += 1;
+        this.active[this.index] = object;
         return object;
       }
       if (typeof this.factory !== 'function') {
         throw new Error('Pools need a factory function');
       }
       this.add(this.factory());
-      return this.children[this.length - 1];
+      return this.active[this.length - 1];
     };
 
     /*
@@ -1120,18 +1142,12 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Pool.prototype.deactivate = function(objectOrIndex) {
       var index, object;
-      index = typeof objectOrIndex !== 'number' ? this.children.indexOf(objectOrIndex) : objectOrIndex;
-      if (!((0 <= index && index < this.length))) {
-        return void 0;
+      index = typeof objectOrIndex !== 'number' ? this.active.indexOf(objectOrIndex) : objectOrIndex;
+      if (index === -1) {
+        return;
       }
-      object = this.children[index];
-      this.tmp = index;
-      while (this.tmp < this.length) {
-        this.children[this.tmp] = this.children[this.tmp + 1];
-        this.tmp += 1;
-      }
-      this.children[this.length - 1] = object;
-      this.length -= 1;
+      object = this.active.splice(index, 1)[0];
+      this.inactive.push(object);
       return object;
     };
 
@@ -1141,7 +1157,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.deactivateAll = function() {
-      return this.length = 0;
+      this.index = this.length;
+      while (this.index--) {
+        this.deactivate(this.index);
+      }
     };
 
     /*
@@ -1150,28 +1169,8 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.activateAll = function() {
-      this.length = this.tmp = this.children.length;
-      while (this.tmp--) {
-        if (typeof this.children[this.tmp].reset === 'function') {
-          this.children[this.tmp].reset();
-        }
-      }
-      this.children.sort(function(a, b) {
-        return a.zIndex - b.zIndex;
-      });
-    };
-
-    /*
-    @description Destroy all child objects
-    */
-
-
-    Pool.prototype.destroyAll = function() {
-      this.length = this.children.length;
-      while (this.length--) {
-        if (typeof this.children[this.length].destroy === 'function') {
-          this.children[this.length].destroy();
-        }
+      while (this.inactive.length) {
+        this.activate();
       }
     };
 
@@ -1181,9 +1180,9 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.update = function(delta) {
-      this.tmp = this.length;
-      while (this.tmp--) {
-        this.children[this.tmp].update(delta);
+      this.index = this.length;
+      while (this.index--) {
+        this.at(this.index).update(delta);
       }
     };
 
@@ -1193,9 +1192,48 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
 
     Pool.prototype.draw = function() {
-      this.tmp = this.length;
-      while (this.tmp--) {
-        this.children[this.tmp].draw.apply(this.children[this.tmp], arguments);
+      this.index = this.length;
+      while (this.index--) {
+        this.at(this.index).draw.apply(this.at(this.index), arguments);
+      }
+    };
+
+    /*
+    @description Event handler for "start" pointer event
+    @param {Array} points Array of touch/mouse coordinates
+    */
+
+
+    Pool.prototype.onPointStart = function(points) {
+      this.index = this.length;
+      while (this.index--) {
+        this.at(this.index).onPointStart(points);
+      }
+    };
+
+    /*
+    @description Event handler for "move" pointer event
+    @param {Array} points Array of touch/mouse coordinates
+    */
+
+
+    Pool.prototype.onPointMove = function(points) {
+      this.index = this.length;
+      while (this.index--) {
+        this.at(this.index).onPointMove(points);
+      }
+    };
+
+    /*
+    @description Event handler for "end" pointer event
+    @param {Array} points Array of touch/mouse coordinates
+    */
+
+
+    Pool.prototype.onPointEnd = function(points) {
+      this.index = this.length;
+      while (this.index--) {
+        this.at(this.index).onPointEnd(points);
       }
     };
 
@@ -1219,17 +1257,18 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
   Scene = (function(_super) {
     __extends(Scene, _super);
 
-    function Scene(options) {
-      var defaultSize;
-      if (options == null) {
-        options = {};
+    function Scene(args) {
+      var DEFAULT_SIZE;
+      if (args == null) {
+        args = {};
       }
-      Scene.__super__.constructor.call(this, options);
-      defaultSize = {
+      Scene.__super__.constructor.call(this, args);
+      DEFAULT_SIZE = {
         width: Arcadia.WIDTH,
         height: Arcadia.HEIGHT
       };
-      this.size = options.size || defaultSize;
+      this.size = args.size || DEFAULT_SIZE;
+      this.enablePointEvents = true;
       this.camera = {
         target: null,
         viewport: {
@@ -1257,19 +1296,20 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
 
     Scene.prototype.update = function(delta) {
       Scene.__super__.update.call(this, delta);
-      if (this.camera.target !== null) {
-        this.camera.position.x = this.camera.target.position.x;
-        this.camera.position.y = this.camera.target.position.y;
-        if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.width / 2) {
-          this.camera.position.x = this.camera.bounds.left + this.camera.viewport.width / 2;
-        } else if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.width / 2) {
-          this.camera.position.x = this.camera.bounds.right - this.camera.viewport.width / 2;
-        }
-        if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.height / 2) {
-          return this.camera.position.y = this.camera.bounds.top + this.camera.viewport.height / 2;
-        } else if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.height / 2) {
-          return this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.height / 2;
-        }
+      if (!this.camera.target) {
+        return;
+      }
+      this.camera.position.x = this.camera.target.position.x;
+      this.camera.position.y = this.camera.target.position.y;
+      if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.width / 2) {
+        this.camera.position.x = this.camera.bounds.left + this.camera.viewport.width / 2;
+      } else if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.width / 2) {
+        this.camera.position.x = this.camera.bounds.right - this.camera.viewport.width / 2;
+      }
+      if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.height / 2) {
+        return this.camera.position.y = this.camera.bounds.top + this.camera.viewport.height / 2;
+      } else if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.height / 2) {
+        return this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.height / 2;
       }
     };
 
@@ -1290,24 +1330,6 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
     };
 
     /*
-    @description Move scene's <canvas> into place
-    */
-
-
-    Scene.prototype.transition = function() {
-      return console.log('Scene#transition');
-    };
-
-    /*
-    Handle removing event listeners, etc.?
-    */
-
-
-    Scene.prototype.destroy = function() {
-      return this.children.destroyAll();
-    };
-
-    /*
     @description Getter/setter for camera target
     */
 
@@ -1317,12 +1339,10 @@ Linux Games (http://en.wikipedia.org/wiki/Programming_Linux_Games)
         return this.camera.target;
       },
       set: function(shape) {
-        if (!(shape != null ? shape.position : void 0)) {
-          return;
+        if (!shape || !shape.position) {
+          throw new Error('Scene camera target requires a `position` property.');
         }
-        this.camera.target = shape;
-        this.camera.position.x = shape.position.x;
-        return this.camera.position.y = shape.position.y;
+        return this.camera.target = shape;
       }
     });
 

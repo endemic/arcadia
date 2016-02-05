@@ -26,6 +26,16 @@ describe 'Arcadia.Pool', ->
       expect(@pool.at(2).zIndex).toBe(3)
       expect(@pool.at(3).zIndex).toBe(4)
 
+    it 'doesn\'t overwite inactive objects', ->
+      inactiveShape = new Arcadia.Shape()
+      @pool.add(inactiveShape)
+      @pool.deactivate(inactiveShape)
+      @pool.add(new Arcadia.Shape())
+      @pool.add(new Arcadia.Shape())
+
+      expect(=> @pool.activate(inactiveShape)).not.toThrow()
+      expect(@pool.at(0)).toBe(inactiveShape)
+
   describe '#remove', ->
     beforeEach ->
       @pool = new Arcadia.Pool()
@@ -36,16 +46,13 @@ describe 'Arcadia.Pool', ->
       @pool = null
 
     it 'removes objects by index', ->
-      @pool.remove 0
-      expect(@pool.length).toBe 9
+      @pool.remove(0)
+      expect(@pool.length).toBe(9)
 
     it 'removes objects by reference', ->
       shape = @pool.at(0)
-      @pool.remove shape
-      expect(@pool.length).toBe 9
-
-    it 'throws an error without something to remove', ->
-      expect(=> @pool.remove()).toThrow()
+      @pool.remove(shape)
+      expect(@pool.length).toBe(9)
 
     it 'calls #destroy on removed object', ->
       shape = @pool.at(0)
@@ -82,20 +89,22 @@ describe 'Arcadia.Pool', ->
   describe '#activateAll', ->
     it 'activates all objects', ->
       while @pool.length < 10
-        @pool.add new Arcadia.Shape({ vertices: @pool.length })
+        @pool.add(new Arcadia.Shape({ vertices: @pool.length }))
 
       @pool.deactivateAll()
-      expect(@pool.length).toBe 0
+      expect(@pool.length).toBe(0)
 
       @pool.activateAll()
-      expect(@pool.length).toBe 10
+      expect(@pool.length).toBe(10)
 
     it 'resets child objects', ->
-      @pool.add new Arcadia.Shape()
-      shape = @pool.at(0)
+      shape = new Arcadia.Shape()
       shape.reset = ->
         console.log 'pass'
-      spyOn shape, 'reset'
+      spyOn(shape, 'reset')
+
+      @pool.add(shape)
+      @pool.deactivate(shape)
 
       @pool.activateAll()
       expect(shape.reset).toHaveBeenCalled()

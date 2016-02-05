@@ -1,14 +1,15 @@
 GameObject = require './gameobject.coffee'
 
 class Scene extends GameObject
-  constructor: (options = {}) ->
-    super(options)
+  constructor: (args = {}) ->
+    super(args)
 
-    defaultSize =
+    DEFAULT_SIZE =
       width: Arcadia.WIDTH
       height: Arcadia.HEIGHT
 
-    @size = options.size || defaultSize
+    @size = args.size || DEFAULT_SIZE
+    @enablePointEvents = true
 
     # implement a camera view/drawing offset
     @camera =
@@ -32,21 +33,22 @@ class Scene extends GameObject
   update: (delta) ->
     super delta
 
-    if @camera.target != null
-      # Follow the target, keeping it in the center of the screen...
-      @camera.position.x = @camera.target.position.x
-      @camera.position.y = @camera.target.position.y
+    return unless @camera.target
 
-      # Unless it is too close to boundaries, in which case keep the cam steady
-      if @camera.position.x < @camera.bounds.left + @camera.viewport.width / 2
-        @camera.position.x = @camera.bounds.left + @camera.viewport.width / 2
-      else if @camera.position.x > @camera.bounds.right - @camera.viewport.width / 2
-        @camera.position.x = @camera.bounds.right - @camera.viewport.width / 2
+    # Follow the target, keeping it in the center of the screen...
+    @camera.position.x = @camera.target.position.x
+    @camera.position.y = @camera.target.position.y
 
-      if @camera.position.y < @camera.bounds.top + @camera.viewport.height / 2
-        @camera.position.y = @camera.bounds.top + @camera.viewport.height / 2
-      else if @camera.position.y > @camera.bounds.bottom - @camera.viewport.height / 2
-        @camera.position.y = @camera.bounds.bottom - @camera.viewport.height / 2
+    # Unless it is too close to boundaries, in which case keep the cam steady
+    if @camera.position.x < @camera.bounds.left + @camera.viewport.width / 2
+      @camera.position.x = @camera.bounds.left + @camera.viewport.width / 2
+    else if @camera.position.x > @camera.bounds.right - @camera.viewport.width / 2
+      @camera.position.x = @camera.bounds.right - @camera.viewport.width / 2
+
+    if @camera.position.y < @camera.bounds.top + @camera.viewport.height / 2
+      @camera.position.y = @camera.bounds.top + @camera.viewport.height / 2
+    else if @camera.position.y > @camera.bounds.bottom - @camera.viewport.height / 2
+      @camera.position.y = @camera.bounds.bottom - @camera.viewport.height / 2
 
   ###
    * @description Clear context, then re-draw all child objects
@@ -63,28 +65,14 @@ class Scene extends GameObject
     super(context, @camera.viewport.width / 2 - @camera.position.x, @camera.viewport.height / 2 - @camera.position.y)
 
   ###
-  @description Move scene's <canvas> into place
-  ###
-  transition: ->
-    console.log 'Scene#transition'
-
-  ###
-  Handle removing event listeners, etc.?
-  ###
-  destroy: ->
-    @children.destroyAll()
-
-  ###
   @description Getter/setter for camera target
   ###
   @property 'target',
     get: ->
       return @camera.target
     set: (shape) ->
-      return if not shape?.position
-
+      if !shape || !shape.position
+        throw new Error('Scene camera target requires a `position` property.')
       @camera.target = shape
-      @camera.position.x = shape.position.x
-      @camera.position.y = shape.position.y
 
 module.exports = Scene

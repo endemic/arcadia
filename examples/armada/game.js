@@ -246,6 +246,8 @@ Game.prototype.update = function (delta) {
  * @description Mouse/touch movement
  */
 Game.prototype.onPointStart = function (points) {
+    Arcadia.Scene.prototype.onPointStart.call(this, points);
+
     if (this.gameOver === true) {
         return;
     }
@@ -259,6 +261,8 @@ Game.prototype.onPointStart = function (points) {
 };
 
 Game.prototype.onPointMove = function (points) {
+    Arcadia.Scene.prototype.onPointMove.call(this, points);
+
     if (this.gameOver === true) {
         return;
     }
@@ -272,6 +276,8 @@ Game.prototype.onPointMove = function (points) {
 };
 
 Game.prototype.onPointEnd = function (points) {
+    Arcadia.Scene.prototype.onPointEnd.call(this, points);
+
     if (this.gameOver === true) {
         return;
     }

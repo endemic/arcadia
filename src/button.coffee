@@ -2,17 +2,19 @@ Shape = require './shape.coffee'
 
 class Button extends Shape
   constructor: (args = {}) ->
-    Arcadia = require './arcadia.coffee'
     Label = require './label.coffee'
 
-    @padding = args.padding || 10
+    @padding = args.padding || 0
     @label = args.label || new Label(text: args.text, font: args.font)
     @label.drawCanvasCache() # Draw cache to determine size of text
 
     super(args)
 
     unless args.hasOwnProperty('size')
-      height = if @vertices == 0 then @label.size.width else @label.size.height
+      height = if @vertices == 0
+          @label.size.width
+        else
+          @label.size.height
 
       @size =
         width: @label.size.width + @padding
@@ -22,26 +24,23 @@ class Button extends Shape
 
     @action = args.action if args.hasOwnProperty('action')
     @disabled = false # Quick prop to allow "turning off" button action
+    @enablePointEvents = true
 
-    # Attach event listeners
-    @onPointEnd = @onPointEnd.bind(@)
-
-    if Arcadia.ENV.mobile
-      Arcadia.element.addEventListener('touchend', @onPointEnd, false)
-    else
-      Arcadia.element.addEventListener('mouseup', @onPointEnd, false)
+    # Bind context for "press" callback
+    #@onPointEnd = @onPointEnd.bind(@)
 
   ###
   @description If touch/mouse end is inside button, execute the user-supplied callback
   this method will get fired for each different button object on the screen
   ###
-  onPointEnd: (event) ->
+  onPointEnd: (points) ->
+    super(points)
+
     return if typeof @action != 'function' || @disabled
 
-    i = Arcadia.points.length
+    i = points.length
     while i--
-      if @containsPoint(Arcadia.points[i])
-        return @action()
+      return @action() if @containsPoint(points[i])
 
   ###
   @description Helper method to determine if mouse/touch is inside button graphic
@@ -53,30 +52,17 @@ class Button extends Shape
       point.y > @position.y - @size.height / 2 - @padding / 2
 
   ###
-  @description Clean up event listeners
-  ###
-  destroy: ->
-    if Arcadia.ENV.mobile
-      Arcadia.element.removeEventListener('touchend', @onPointEnd, false)
-    else
-      Arcadia.element.removeEventListener('mouseup', @onPointEnd, false)
-
-  ###
   @description Getter/setter for text value
   ###
   @property 'text',
-    get: ->
-      @label.text
-    set: (text) ->
-      @label.text = text
+    get: -> @label.text
+    set: (text) -> @label.text = text
 
   ###
   @description Getter/setter for font value
   ###
   @property 'font',
-    get: ->
-      @label.font
-    set: (font) ->
-      @label.font = font
+    get: -> @label.font
+    set: (font) -> @label.font = font
 
 module.exports = Button
