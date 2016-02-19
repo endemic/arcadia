@@ -4,11 +4,7 @@ class Scene extends GameObject
   constructor: (args = {}) ->
     super(args)
 
-    DEFAULT_SIZE =
-      width: Arcadia.WIDTH
-      height: Arcadia.HEIGHT
-
-    @size = args.size || DEFAULT_SIZE
+    @size = args.size
     @enablePointEvents = true
 
     # implement a camera view/drawing offset
