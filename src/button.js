@@ -6,8 +6,7 @@
 
     var Arcadia = root.Arcadia || {};
 
-    Arcadia.Button = function (options) {
-
+    var Button = function (options) {
         options = options || {};
 
         if (!options.label) {
@@ -47,13 +46,13 @@
         }
     };
 
-    Arcadia.Button.prototype = new Arcadia.Shape();
+    Button.prototype = new Arcadia.Shape();
 
     /**
      * @description If touch/mouse end is inside button, execute the user-supplied
      * callback this method will get fired for each different button object on the screen
      */
-    Arcadia.Button.prototype.onPointEnd = function (points) {
+    Button.prototype.onPointEnd = function (points) {
         Arcadia.Shape.apply(this, arguments);
 
         if (!this.action || this.disabled) {
@@ -74,7 +73,7 @@
     /**
      * @description Helper method to determine if mouse/touch point is inside button
      */
-    Arcadia.Button.prototype.containsPoint = function (point) {
+    Button.prototype.containsPoint = function (point) {
         return point.x < this.position.x + this.size.width / 2 + this.padding / 2 &&
                 point.x > this.position.x - this.size.width / 2 - this.padding / 2 &&
                 point.y < this.position.y + this.size.height / 2 + this.padding / 2 &&
@@ -84,7 +83,7 @@
     /**
      * @description Getter/setter for text value
      */
-    Object.defineProperty(Arcadia.Button, 'text', {
+    Object.defineProperty(Button.prototype, 'text', {
         enumerable: true,
         get: function () {
             return this.label.text;
@@ -97,7 +96,7 @@
     /**
      * @description Getter/setter for font value
      */
-    Object.defineProperty(Arcadia.Button, 'font', {
+    Object.defineProperty(Button.prototype, 'font', {
         enumerable: true,
         get: function () {
             return this.label.font;
@@ -106,4 +105,8 @@
             this.label.font = font;
         }
     });
+
+    Arcadia.Button = Button;
+
+    root.Arcadia = Arcadia;
 }(window));

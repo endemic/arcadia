@@ -1,74 +1,110 @@
-GameObject = require './gameobject.coffee'
+/*jslint browser, this */
+/*global window */
 
-class Scene extends GameObject
-  constructor: (args = {}) ->
-    super(args)
+(function (root) {
+    'use strict';
 
-    @size = args.size
-    @enablePointEvents = true
+    var Arcadia = root.Arcadia || {};
 
-    # implement a camera view/drawing offset
-    @camera =
-      target: null
-      viewport:
-        width: @size.width
-        height: @size.height
-      bounds:
-        top: -@size.height / 2
-        bottom: @size.height / 2
-        left: -@size.width / 2
-        right: @size.width / 2
-      position:
-        x: 0
-        y: 0
+    /**
+     * @constructor
+     */
+    var Scene = function (options) {
+        options = options || {};
 
-  ###
-   * @description Update the camera if necessary
-   * @param {Number} delta
-  ###
-  update: (delta) ->
-    super delta
+        Arcadia.GameObject.apply(this, arguments);
 
-    return unless @camera.target
+        this.size = options.size;   // TODO: can remove this?
+        this.enablePointEvents = true;
 
-    # Follow the target, keeping it in the center of the screen...
-    @camera.position.x = @camera.target.position.x
-    @camera.position.y = @camera.target.position.y
+        // implement a camera view/drawing offset
+        // TODO: need to be able to specify the size of a scene which is larger
+        // than the viewport; otherwise, what's the point of a tracking camera?
+        this.camera = {
+            target: null,
+            viewport: {
+                width: this.size.width,
+                height: this.size.height
+            },
+            bounds: {
+                top: -this.size.height / 2,
+                bottom: this.size.height / 2,
+                left: -this.size.width / 2,
+                right: this.size.width / 2
+            },
+            position: {
+                x: 0,
+                y: 0
+            }
+        };
+    };
 
-    # Unless it is too close to boundaries, in which case keep the cam steady
-    if @camera.position.x < @camera.bounds.left + @camera.viewport.width / 2
-      @camera.position.x = @camera.bounds.left + @camera.viewport.width / 2
-    else if @camera.position.x > @camera.bounds.right - @camera.viewport.width / 2
-      @camera.position.x = @camera.bounds.right - @camera.viewport.width / 2
+    Scene.prototype = new Arcadia.GameObject();
 
-    if @camera.position.y < @camera.bounds.top + @camera.viewport.height / 2
-      @camera.position.y = @camera.bounds.top + @camera.viewport.height / 2
-    else if @camera.position.y > @camera.bounds.bottom - @camera.viewport.height / 2
-      @camera.position.y = @camera.bounds.bottom - @camera.viewport.height / 2
+    /**
+     * @description Update the camera if necessary
+     * @param {Number} delta
+     */
+    Scene.prototype.update = function (delta) {
+        Arcadia.GameObject.prototype.update.call(this, delta);
 
-  ###
-   * @description Clear context, then re-draw all child objects
-   * @param {CanvasRenderingContext2D} context
-  ###
-  draw: (context) ->
-    if @color
-      context.fillStyle = @color
-      context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-    else
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+        if (!this.camera.target) {
+            return;
+        }
 
-    # Draw child objects
-    super(context, @camera.viewport.width / 2 - @camera.position.x, @camera.viewport.height / 2 - @camera.position.y)
+        // Follow the target, keeping it in the center of the screen...
+        this.camera.position.x = this.camera.target.position.x;
+        this.camera.position.y = this.camera.target.position.y;
 
-  ###
-  @description Getter/setter for camera target
-  ###
-  @property 'target',
-    get: ->
-      return @camera.target
-    set: (shape) ->
-      if !shape || !shape.position
-        throw new Error('Scene camera target requires a `position` property.')
-      @camera.target = shape
+        // Unless it is too close to boundaries, in which case keep the cam steady
+        if (this.camera.position.x < this.camera.bounds.left + this.camera.viewport.width / 2) {
+            this.camera.position.x = this.camera.bounds.left + this.camera.viewport.width / 2;
+        } else if (this.camera.position.x > this.camera.bounds.right - this.camera.viewport.width / 2) {
+            this.camera.position.x = this.camera.bounds.right - this.camera.viewport.width / 2;
+        }
 
-module.exports = Scene
+        if (this.camera.position.y < this.camera.bounds.top + this.camera.viewport.height / 2) {
+            this.camera.position.y = this.camera.bounds.top + this.camera.viewport.height / 2;
+        } else if (this.camera.position.y > this.camera.bounds.bottom - this.camera.viewport.height / 2) {
+            this.camera.position.y = this.camera.bounds.bottom - this.camera.viewport.height / 2;
+        }
+    };
+
+    /**
+     * @description Clear context, then re-draw all child objects
+     * @param {CanvasRenderingContext2D} context
+     */
+    Scene.prototype.draw = function (context) {
+        // TODO: change this to `clearColor` or something
+        if (this.color) {
+            context.fillStyle = this.color;
+            context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+        } else {
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+        }
+
+        // Draw child objects
+        Arcadia.GameObject.prototype.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
+    };
+
+    /**
+     * @description Getter/setter for camera target
+     */
+    Object.defineProperty(Scene.prototype, 'target', {
+        enumerable: true,
+        get: function () {
+            return this.camera.target;
+        },
+        set: function (shape) {
+            if (!shape || !shape.position) {
+                throw new Error('Scene camera target requires a `position` property.');
+            }
+
+            this.camera.target = shape;
+        }
+    });
+
+    Arcadia.Scene = Scene;
+
+    root.Arcadia = Arcadia;
+}(window));

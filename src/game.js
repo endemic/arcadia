@@ -1,316 +1,385 @@
-class Game
-  ###
-   * @constructor
-   * @description Main "game" object; sets up screens, input, etc.
-   * @param {Object} args Config object. Allowed keys: width, height, scene, scaleToFit
-  ###
-  constructor: (args = {}) ->
-    Arcadia = require('./arcadia.coffee')
-    this.size =
-      width: parseInt(args.width, 10) || 320
-      height: parseInt(args.height, 10) || 480
+/*jslint browser, this */
+/*global window */
 
-    Arcadia.WIDTH = this.size.width
-    Arcadia.HEIGHT = this.size.height
+(function (root) {
+    'use strict';
 
-    # If game is scaled up/down, clicks/touches need to be scaled
-    Arcadia.SCALE = 1
+    var Arcadia = root.Arcadia || {};
 
-    # If element is not at (0, 0) (upper left), clicks/touches need to be offset
-    Arcadia.OFFSET = { x: 0, y: 0 }
+    /**
+     * @constructor
+     * @description Main "game" object; sets up screens, input, etc.
+     * @param {Object} args Config object. Allowed keys: width, height, scene, scaleToFit
+     */
+    var Game = function (options) {
+        this.size = {
+            width: options.width,
+            height: options.height
+        };
 
-    # Static variable tracking performance
-    Arcadia.FPS = 60
+        // If game is scaled up/down, clicks/touches need to be scaled
+        this.scale = 1;
 
-    Arcadia.FPS_LIMIT = args.fps if args.hasOwnProperty('fps')
+        // If element is not at (0, 0) (upper left), clicks/touches need to be offset
+        this.offset = {x: 0, y: 0};
 
-    # Allow embedding the app in a specified container
-    if args.hasOwnProperty('element')
-      @element = args.element
-    else
-      @element = document.createElement('div')
-      @element.id = 'arcadia'
-      document.body.appendChild(@element)
+        // Static variable tracking performance
+        this.fps = 60;
 
-    @canvas = document.createElement('canvas')
-    @context = @canvas.getContext('2d')
-    @element.appendChild(@canvas)
+        if (options.hasOwnProperty('fps')) {
+            this.fps_limit = options.fps;
+        }
 
-    @setPixelRatio()
+        // Allow embedding the app in a specified container
+        if (options.hasOwnProperty('element')) {
+            this.element = options.element;
+        } else {
+            this.element = document.createElement('div');
+            this.element.id = 'arcadia';
+            document.body.appendChild(this.element);
+        }
 
-    # Map of current input, used to prevent duplicate events being sent to handlers
-    # ("keydown" events fire continuously while a key is held)
-    @input =
-      'left': false
-      'up': false
-      'right': false
-      'down': false
-      'w': false
-      'a': false
-      's': false
-      'd': false
-      'enter': false
-      'escape': false
-      'space': false
-      'control': false
-      'z': false
-      'x': false
+        this.canvas = document.createElement('canvas');
+        this.context = this.canvas.getContext('2d');
+        this.element.appendChild(this.canvas);
 
-    # Stores objects representing mouse/touch input
-    @points = []
+        this.setPixelRatio();
 
-    # Static reference to current game instance
-    Arcadia.instance = @
-    # Static reference to mouse/touch coords
-    Arcadia.points = @points
-    # Static reference to DOM element the game is attached to
-    Arcadia.element = @element
+        // Map of current input, used to prevent duplicate events being sent to handlers
+        // ("keydown" events fire continuously while a key is held)
+        this.input = {
+            left: false,
+            up: false,
+            right: false,
+            down: false,
+            w: false,
+            a: false,
+            s: false,
+            d: false,
+            enter: false,
+            escape: false,
+            space: false,
+            control: false,
+            z: false,
+            x: false
+        };
 
-    # Bind event handler callbacks
-    @onResize = @onResize.bind(@)
-    @onPointStart = @onPointStart.bind(@)
-    @onPointMove = @onPointMove.bind(@)
-    @onPointEnd = @onPointEnd.bind(@)
-    @onKeyDown = @onKeyDown.bind(@)
-    @onKeyUp = @onKeyUp.bind(@)
-    @pause = @pause.bind(@)
-    @resume = @resume.bind(@)
+        // Stores objects representing mouse/touch input
+        this.points = [];
 
-    # Set up event listeners - mouse and touch use the same ones
-    if Arcadia.ENV.mobile
-      @element.addEventListener('touchstart', @onPointStart, false)
-      @element.addEventListener('touchmove', @onPointMove, false)
-      @element.addEventListener('touchend', @onPointEnd, false)
-    else
-      document.addEventListener('keydown', @onKeyDown, false)
-      document.addEventListener('keyup', @onKeyUp, false)
-      @element.addEventListener('mousedown', @onPointStart, false)
-      @element.addEventListener('mouseup', @onPointEnd, false)
+        // Static reference to current game instance
+        // Used in Arcadia.changeScene
+        Arcadia.instance = this;
 
-    # Prevent the page from scrolling when touching game element
-    @element.addEventListener('touchmove', (e) -> e.preventDefault())
+        // Bind event handler callbacks
+        this.onResize = this.onResize.bind(this);
+        this.onPointStart = this.onPointStart.bind(this);
+        this.onPointMove = this.onPointMove.bind(this);
+        this.onPointEnd = this.onPointEnd.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+        this.onKeyUp = this.onKeyUp.bind(this);
+        this.pause = this.pause.bind(this);
+        this.resume = this.resume.bind(this);
+        // this.update = this.update.bind(this);
 
-    # Add non-standard event listeners for "native" Cordova apps
-    if window.cordova != undefined
-      document.addEventListener('pause', @pause, false)
-      document.addEventListener('resume', @resume, false)
+        // Set up event listeners - mouse and touch use the same ones
+        if (Arcadia.ENV.mobile) {
+            this.element.addEventListener('touchstart', this.onPointStart, false);
+            this.element.addEventListener('touchmove', this.onPointMove, false);
+            this.element.addEventListener('touchend', this.onPointEnd, false);
+            // Prevent the page from scrolling when touching game element
+            this.element.addEventListener('touchmove', function (e) {
+                e.preventDefault();
+            });
+        } else {
+            document.addEventListener('keydown', this.onKeyDown, false);
+            document.addEventListener('keyup', this.onKeyUp, false);
+            this.element.addEventListener('mousedown', this.onPointStart, false);
+            this.element.addEventListener('mouseup', this.onPointEnd, false);
+        }
 
-    # Fit <canvas> to window
-    if args.scaleToFit
-      @onResize()
-      window.addEventListener('resize', @onResize, false)
+        // Add non-standard event listeners for "native" Cordova apps
+        if (window.cordova !== undefined) {
+            document.addEventListener('pause', this.pause, false);
+            document.addEventListener('resume', this.resume, false);
+        }
 
-    @activeScene = new args.scene
-      size:
-        width: Arcadia.WIDTH
-        height: Arcadia.HEIGHT
-    @start()
+        // Fit <canvas> to window
+        if (options.scaleToFit) {
+            this.onResize();
+            window.addEventListener('resize', this.onResize, false);
+        }
 
-  ###
-  @description Pause active scene if it has a pause method
-  ###
-  pause: ->
-    @activeScene.pause() if typeof @activeScene.pause == "function"
+        this.activeScene = new options.scene({
+            size: {
+                width: this.size.width,
+                height: this.size.height
+            }
+        });
 
-  ###
-  @description Resume active scene if it has a pause method
-  ###
-  resume: ->
-    @activeScene.resume() if typeof @activeScene.resume == "function"
+        this.start();
+    };
 
-  ###
-  @description Mouse/touch event callback
-  ###
-  onPointStart: (event) ->
-    @getPoints(event)
+    /**
+     * @description Pause active scene if it has a pause method
+     */
+    Game.prototype.pause = function () {
+        if (typeof this.activeScene.pause === 'function') {
+            this.activeScene.pause();
+        }
+    };
 
-    if event.type.indexOf('mouse') != -1
-      @element.addEventListener('mousemove', @onPointMove, false)
+    /**
+     * @description Resume active scene if it has a pause method
+     */
+    Game.prototype.resume = function () {
+        if (typeof this.activeScene.resume === 'function') {
+            this.activeScene.resume();
+        }
+    };
 
-    @activeScene.onPointStart(@points)
+    /**
+     * @description Mouse/touch event callback
+     */
+    Game.prototype.onPointStart = function (event) {
+        // TODO: get rid of the this.points instance variable
+        this.getPoints(event);
 
-  ###
-  @description Mouse/touch event callback
-  ###
-  onPointMove: (event) ->
-    @getPoints(event)
-    @activeScene.onPointMove(@points)
+        if (event.type.indexOf('mouse') !== -1) {
+            // TODO: keep this listener permanent, turn it on and off with an ivar
+            this.element.addEventListener('mousemove', this.onPointMove, false);
+        }
 
-  ###
-  @description Mouse/touch event callback
-  TODO: Generates garbage
-  ###
-  onPointEnd: (event) ->
-    @getPoints(event, end = true)
+        this.activeScene.onPointStart(this.points);
+    };
 
-    if event.type.indexOf('mouse') != -1
-      @element.removeEventListener('mousemove', @onPointMove, false)
+    /**
+     * @description Mouse/touch event callback
+     */
+    Game.prototype.onPointMove = function (event) {
+        this.getPoints(event);
+        this.activeScene.onPointMove(this.points);
+    };
 
-    @activeScene.onPointEnd(@points)
+    /**
+     * @description Mouse/touch event callback
+     */
+    Game.prototype.onPointEnd = function (event) {
+        var end = true;
+        this.getPoints(event, end);
 
-  ###
-  @description Keyboard event callback
-  TODO: Generates garbage
-  ###
-  onKeyDown: (event) ->
-    key = @getKey(event.keyCode)
+        if (event.type.indexOf('mouse') !== -1) {
+            this.element.removeEventListener('mousemove', this.onPointMove, false);
+        }
 
-    # Do nothing if key hasn't been released yet
-    return if @input[key]
+        this.activeScene.onPointEnd(this.points);
+    };
 
-    @input[key] = true
+    /**
+     * @description Keyboard event callback
+     */
+    Game.prototype.onKeyDown = function (event) {
+        var key = this.getKey(event.keyCode);
 
-    # Call current screen's "onKeyUp" method
-    @activeScene.onKeyDown(key) if typeof @activeScene.onKeyDown == "function"
+        // Do nothing if key hasn't been released yet
+        if (this.input[key]) {
+            return;
+        }
 
-  ###
-  @description Keyboard event callback
-  TODO: Generates garbage
-  ###
-  onKeyUp: (event) ->
-    key = @getKey(event.keyCode)
+        this.input[key] = true;
 
-    @input[key] = false # Allow the keyDown event for this key to be sent again
+        // Call current screen's "onKeyUp" method
+        if (typeof this.activeScene.onKeyDown === 'function') {
+            this.activeScene.onKeyDown(key);
+        }
+    };
 
-    # Call current screen's "onKeyUp" method
-    @activeScene.onKeyUp(key) if typeof @activeScene.onKeyUp == "function"
+    /**
+     * @description Keyboard event callback
+     */
+    Game.prototype.onKeyUp = function (event) {
+        var key = this.getKey(event.keyCode);
 
-  ###
-  @description Translate a keyboard event code into a meaningful string
-  ###
-  getKey: (keyCode) ->
-    switch keyCode
-      # TODO: Make an implemention something like this
-      # when 37 then @input['left'] = true
-      # when 38 then @input['up'] = true
-      when 37 then return 'left'
-      when 38 then return 'up'
-      when 39 then return 'right'
-      when 40 then return 'down'
-      when 87 then return 'w'
-      when 65 then return 'a'
-      when 83 then return 's'
-      when 68 then return 'd'
-      when 13 then return 'enter'
-      when 27 then return 'escape'
-      when 32 then return 'space'
-      when 17 then return 'control'
-      when 90 then return 'z'
-      when 88 then return 'x'
+        this.input[key] = false; // Allow the keyDown event for this key to be sent again
 
-  ###
-  @description Static method to translate mouse/touch input to coordinates the
-  game will understand. Takes the <canvas> offset and scale into account
-  ###
-  getPoints: (event, touchEnd = false) ->
-    # http://jsperf.com/empty-javascript-array
-    while @points.length > 0
-      @points.pop()
+        if (typeof this.activeScene.onKeyUp === 'function') {
+            this.activeScene.onKeyUp(key);
+        }
+    };
 
-    if event.type.indexOf('mouse') != -1
-      @points.unshift
-        x: (event.pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2 + @activeScene.camera.position.x
-        y: (event.pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2 + @activeScene.camera.position.y
-    else
-      source = if touchEnd then 'changedTouches' else 'touches'
+    /**
+     * @description Translate a keyboard event code into a meaningful string
+     */
+    Game.prototype.getKey = function (keyCode) {
+        // TODO: Make an implemention something like this
+        // when 37 then @input['left'] = true
+        // when 38 then @input['up'] = true
+        return {
+            37: 'left',
+            38: 'up',
+            39: 'right',
+            40: 'down',
+            87: 'w',
+            65: 'a',
+            83: 's',
+            68: 'd',
+            13: 'enter',
+            27: 'escape',
+            32: 'space',
+            17: 'control',
+            90: 'z',
+            88: 'x'
+        }[keyCode] || '';
+    };
 
-      i = event[source].length
-      while i--
-        @points.unshift
-          x: (event[source][i].pageX - Arcadia.OFFSET.x) / Arcadia.SCALE - @size.width / 2 + @activeScene.camera.position.x
-          y: (event[source][i].pageY - Arcadia.OFFSET.y) / Arcadia.SCALE - @size.height / 2 + @activeScene.camera.position.y
+    /**
+     * @description Static method to translate mouse/touch input to coordinates the
+     * game will understand. Takes the <canvas> offset and scale into account
+     */
+    Game.prototype.getPoints = function (event, touchEnd) {
+        var source,
+            i;
 
-  ###
-   * @description Start the event/animation loops
-  ###
-  start: ->
-    @previousDelta = window.performance.now()
+        source = 'touches';
 
-    # Start game loop
-    @updateId = window.requestAnimationFrame(@update)
+        if (touchEnd) {
+            source = 'changedTouches';
+        }
 
-  ###
-  @description Cancel draw/update loops
-  ###
-  stop: ->
-    window.cancelAnimationFrame(@updateId)
+        touchEnd = touchEnd || false;
 
-  ###
-  @description Update callback
-  ###
-  update: (currentDelta) =>
-    delta = currentDelta - @previousDelta
-    @updateId = window.requestAnimationFrame(@update)
+        // http://jsperf.com/empty-javascript-array
+        while (this.points.length > 0) {
+            this.points.pop();
+        }
 
-    Arcadia.FPS = Arcadia.FPS * 0.9 + 1000 / delta * 0.1 # delta == milliseconds
+        if (event.type.indexOf('mouse') !== -1) {
+            this.points.unshift({
+                x: (event.pageX - this.offset.x) / this.scale - this.size.width / 2 + this.activeScene.camera.position.x,
+                y: (event.pageY - this.offset.y) / this.scale - this.size.height / 2 + this.activeScene.camera.position.y
+            });
+        } else {
+            i = event[source].length;
+            while (i--) {
+                this.points.unshift({
+                    x: (event[source][i].pageX - this.offset.x) / this.scale - this.size.width / 2 + this.activeScene.camera.position.x,
+                    y: (event[source][i].pageY - this.offset.y) / this.scale - this.size.height / 2 + this.activeScene.camera.position.y
+                });
+            }
+        }
+    };
 
-    # Check against FPS limit; 960 / {n}FPS = ms/frame
-    return if Arcadia.FPS_LIMIT && delta < 1000 / Arcadia.FPS_LIMIT
+    /**
+      * * @description Start the event/animation loops
+     */
+    Game.prototype.start = function () {
+        this.previousDelta = window.performance.now();
 
-    @activeScene.draw(@context)
-    @activeScene.update(delta / 1000) # call update() using seconds
-    @previousDelta = currentDelta
+        // Start game loop
+        this.updateId = window.requestAnimationFrame(this.update);
+    };
 
-  ###
-  @description Change size of canvas based on pixel density
-  ###
-  setPixelRatio: ->
-    if window.devicePixelRatio == undefined
-      window.devicePixelRatio = 1
+    /**
+     * @description Cancel draw/update loops
+     */
+    Game.prototype.stop = function () {
+        window.cancelAnimationFrame(this.updateId);
+    };
 
-    if @context.backingStorePixelRatio == undefined
-      @context.backingStorePixelRatio = @context.webkitBackingStorePixelRatio || 1
+    /**
+     * @description Update callback
+     */
+    Game.prototype.update = function (currentDelta) {
+        var delta = currentDelta - this.previousDelta;
+        this.updateId = window.requestAnimationFrame(this.update);
 
-    Arcadia.PIXEL_RATIO = window.devicePixelRatio / @context.backingStorePixelRatio
+        this.fps = this.fps * 0.9 + 1000 / delta * 0.1; // delta == milliseconds
 
-    # Set "real" width/height
-    @canvas.width = Arcadia.WIDTH * Arcadia.PIXEL_RATIO
-    @canvas.height = Arcadia.HEIGHT * Arcadia.PIXEL_RATIO
+        // Check against FPS limit; 1000ms / {n}FPS = ms/frame
+        if (this.fps_limit && delta < 1000 / this.fps_limit) {
+            return;
+        }
 
-    # Scale (via CSS) to screen size
-    @canvas.style.width = "#{Arcadia.WIDTH}px"
-    @canvas.style.height = "#{Arcadia.HEIGHT}px"
+        this.activeScene.draw(this.context);
+        this.activeScene.update(delta / 1000); // call update() using seconds
+        this.previousDelta = currentDelta;
+    };
 
-  ###
-  @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
-  ###
-  onResize: ->
-    width = window.innerWidth
-    height = window.innerHeight
+    /**
+     * @description Change size of canvas based on pixel density
+     */
+    Game.prototype.setPixelRatio = function () {
+        if (!window.devicePixelRatio) {
+            window.devicePixelRatio = 1;
+        }
 
-    if width > height
-      orientation = 'landscape'
-      aspectRatio = Arcadia.WIDTH / Arcadia.HEIGHT
-    else
-      orientation = 'portrait'
-      aspectRatio = Arcadia.HEIGHT / Arcadia.WIDTH
+        if (this.context.backingStorePixelRatio === undefined) {
+            this.context.backingStorePixelRatio = this.context.webkitBackingStorePixelRatio || 1;
+        }
 
-    if orientation == 'landscape'
-      if width / aspectRatio > height  # Too wide
-        width = height * aspectRatio
-        margin = '0 ' + ((window.innerWidth - width) / 2) + 'px'
-      else if width / aspectRatio < height  # Too high
-        height = width / aspectRatio
-        margin = ((window.innerHeight - height) / 2) + 'px 0'
-    else if orientation == 'portrait'
-      if height / aspectRatio > width   # Too high
-        height = width * aspectRatio
-        margin = ((window.innerHeight - height) / 2) + 'px 0'
-      else if height / aspectRatio < width  # Too wide
-        width = height / aspectRatio
-        margin = '0 ' + ((window.innerWidth - width) / 2) + 'px'
+        Arcadia.PIXEL_RATIO = window.devicePixelRatio / this.context.backingStorePixelRatio;
 
-    Arcadia.SCALE = height / Arcadia.HEIGHT
-    Arcadia.OFFSET.x = (window.innerWidth - width) / 2
-    Arcadia.OFFSET.y = (window.innerHeight - height) / 2
+        // Set "real" width/height
+        // TODO: Can replace this.size.width with this.size.width, etc.
+        this.canvas.width = this.size.width * Arcadia.PIXEL_RATIO;
+        this.canvas.height = this.size.height * Arcadia.PIXEL_RATIO;
 
-    @element.setAttribute 'style', "position: relative; width: #{width}px; height: #{height}px; margin: #{margin};"
-    @canvas.style['position'] = 'absolute'
-    @canvas.style['left'] = '0'
-    @canvas.style['top'] = '0'
-    @canvas.style['-webkit-transform'] = "scale(#{Arcadia.SCALE})" # Safari sux
-    @canvas.style['-webkit-transform-origin'] = '0 0'
-    @canvas.style['transform'] = "scale(#{Arcadia.SCALE})"
-    @canvas.style['transform-origin'] = '0 0'
+        // Scale (via CSS) to screen size
+        this.canvas.style.width = this.size.width + 'px';
+        this.canvas.style.height = this.size.height + 'px';
+    };
 
-module.exports = Game
+    /**
+     * @description Handle window resize events. Scale the canvas element to max out the size of the current window, keep aspect ratio
+     */
+    Game.prototype.onResize = function () {
+        var height = window.innerHeight,
+            width = window.innerWidth,
+            margin,
+            orientation,
+            aspectRatio;
+
+        if (width > height) {
+            orientation = 'landscape';
+            aspectRatio = this.size.width / this.size.height;
+        } else {
+            orientation = 'portrait';
+            aspectRatio = this.size.height / this.size.width;
+        }
+
+        if (orientation === 'landscape') {
+            if (width / aspectRatio > height) {  // Too wide
+                width = height * aspectRatio;
+                margin = '0 ' + ((window.innerWidth - width) / 2) + 'px';
+            } else if (width / aspectRatio < height) {  // Too high
+                height = width / aspectRatio;
+                margin = ((window.innerHeight - height) / 2) + 'px 0';
+            }
+        } else if (orientation === 'portrait') {
+            if (height / aspectRatio > width) {   // Too high
+                height = width * aspectRatio;
+                margin = ((window.innerHeight - height) / 2) + 'px 0';
+            } else if (height / aspectRatio < width) {  // Too wide
+                width = height / aspectRatio;
+                margin = '0 ' + ((window.innerWidth - width) / 2) + 'px';
+            }
+        }
+
+        this.scale = height / this.size.height;
+        this.offset.x = (window.innerWidth - width) / 2;
+        this.offset.y = (window.innerHeight - height) / 2;
+
+        this.element.setAttribute('style', 'position: relative; width: ' + width + 'px; height: ' + height + 'px; margin: ' + margin + ';');
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.left = '0';
+        this.canvas.style.top = '0';
+        this.canvas.style['-webkit-transform'] = 'scale(' + this.scale + ')'; // Safari sux
+        this.canvas.style['-webkit-transform-origin'] = '0 0';
+        this.canvas.style.transform = 'scale(' + this.scale + ')';
+        this.canvas.style['transform-origin'] = '0 0';
+    };
+
+    Arcadia.Game = Game;
+
+    root.Arcadia = Arcadia;
+}(window));

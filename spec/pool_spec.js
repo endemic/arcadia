@@ -9,10 +9,7 @@ describe('Arcadia.Pool', function () {
 
     describe('#add', function () {
         it('adds objects', function () {
-            var shape;
-            shape = new Arcadia.Shape({
-                vertices: 3
-            });
+            var shape = new Arcadia.Shape({ vertices: 3 });
             this.pool.add(shape);
             expect(this.pool.at(0)).toBe(shape);
         });
@@ -23,18 +20,10 @@ describe('Arcadia.Pool', function () {
         });
 
         it('inserts in order', function () {
-            this.pool.add(new Arcadia.Shape({
-                zIndex: 4
-            }));
-            this.pool.add(new Arcadia.Shape({
-                zIndex: 3
-            }));
-            this.pool.add(new Arcadia.Shape({
-                zIndex: 2
-            }));
-            this.pool.add(new Arcadia.Shape({
-                zIndex: 1
-            }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 4 }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 3 }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 2 }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 1 }));
             expect(this.pool.at(0).zIndex).toBe(1);
             expect(this.pool.at(1).zIndex).toBe(2);
             expect(this.pool.at(2).zIndex).toBe(3);
@@ -42,10 +31,9 @@ describe('Arcadia.Pool', function () {
         });
 
         it('doesn\'t overwite inactive objects', function () {
-            var inactiveShape,
-                self = this;
+            var self = this;
+            var inactiveShape = new Arcadia.Shape();
 
-            inactiveShape = new Arcadia.Shape();
             this.pool.add(inactiveShape);
             this.pool.deactivate(inactiveShape);
             this.pool.add(new Arcadia.Shape());
@@ -166,27 +154,20 @@ describe('Arcadia.Pool', function () {
             expect(this.pool.length).toBe(1);
         });
         it('can use inactive objects', function () {
-            var shape;
             this.pool.add(new Arcadia.Shape());
-            shape = this.pool.deactivate(0);
+            var shape = this.pool.deactivate(0);
             this.pool.activate();
             expect(this.pool.at(0)).toBe(shape);
         });
         it('keeps sorted order when activating', function () {
-            this.pool.add(new Arcadia.Shape({
-                zIndex: 1
-            }));
-            this.pool.add(new Arcadia.Shape({
-                zIndex: 2
-            }));
-            this.pool.add(new Arcadia.Shape({
-                zIndex: 3
-            }));
-            this.pool.add(new Arcadia.Shape({
-                zIndex: 4
-            }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 1 }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 2 }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 3 }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 4 }));
+
             this.pool.deactivate(2);
             this.pool.activate();
+
             expect(this.pool.at(0).zIndex).toBe(1);
             expect(this.pool.at(1).zIndex).toBe(2);
             expect(this.pool.at(2).zIndex).toBe(3);
@@ -195,18 +176,14 @@ describe('Arcadia.Pool', function () {
     });
     describe('#deactivate', function () {
         beforeEach(function () {
-            var results;
-            results = [];
             while (this.pool.length < 10) {
-                results.push(this.pool.add(new Arcadia.Shape({
+                this.pool.add(new Arcadia.Shape({
                     vertices: this.pool.length
-                })));
+                }));
             }
-            results;
         });
         it('removes access to object', function () {
-            var shape;
-            shape = this.pool.deactivate(0);
+            var shape = this.pool.deactivate(0);
             expect(this.pool.at(0)).not.toBe(shape);
         });
         it('can remove by reference', function () {
@@ -234,10 +211,9 @@ describe('Arcadia.Pool', function () {
     });
     describe('#update', function () {
         it('updates active objects', function () {
-            var pool, shape1, shape2;
-            pool = new Arcadia.Pool();
-            shape1 = new Arcadia.Shape();
-            shape2 = new Arcadia.Shape();
+            var pool = new Arcadia.Pool();
+            var shape1 = new Arcadia.Shape();
+            var shape2 = new Arcadia.Shape();
             pool.add(shape1);
             pool.add(shape2);
             pool.deactivate(shape2);
@@ -250,10 +226,9 @@ describe('Arcadia.Pool', function () {
     });
     describe('#draw', function () {
         it('draws active objects', function () {
-            var pool, shape1, shape2;
-            pool = new Arcadia.Pool();
-            shape1 = new Arcadia.Shape();
-            shape2 = new Arcadia.Shape();
+            var pool = new Arcadia.Pool();
+            var shape1 = new Arcadia.Shape();
+            var shape2 = new Arcadia.Shape();
             pool.add(shape1);
             pool.add(shape2);
             pool.deactivate(shape1);
@@ -265,6 +240,3 @@ describe('Arcadia.Pool', function () {
         });
     });
 });
-
-// ---
-// generated by coffee-script 1.9.2

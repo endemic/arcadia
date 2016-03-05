@@ -11,8 +11,19 @@ describe('Arcadia.GameObject', function () {
     });
 
     describe('constructor', function () {
-        xit('assigns options props to instance', function () {
+        it('assigns options props to instance', function () {
+            var obj = new Arcadia.GameObject({
+                scale: 3,
+                rotation: Math.PI,
+                alpha: 0.5,
+                arbitrary: 'whatever u want, bro'
+            });
 
+            expect(obj.scale).toBe(3);
+            expect(obj.rotation).toBe(Math.PI);
+            expect(obj.alpha).toBe(0.5);
+            // This is actually expected behavior on Shape
+            //expect(obj.arbitrary).toBe('whatever u want, bro');
         });
     });
 

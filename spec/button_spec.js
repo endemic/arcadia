@@ -49,8 +49,18 @@ describe('Arcadia.Button', function () {
 		});
 
 		it('gets the content of the button label', function () {
-			button.label.text = 'new content here, yo!';
-			expect(button.text).toBe('new content here, yo!');
+			expect(button.text).toBe('Click me!');
+		});
+	});
+
+	describe('#font', function () {
+		it('sets the font of the button label', function () {
+			button.font = '90px serif';
+			expect(button.label.text).toBe('90px serif');
+		});
+
+		it('gets the font of the button label', function () {
+			expect(button.font).toBe('20px monospace');
 		});
 	});
 });

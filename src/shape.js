@@ -1,5 +1,5 @@
 /*jslint browser, this */
-/*global window */
+/*global window, Easie */
 
 (function (root) {
     'use strict';
@@ -10,7 +10,7 @@
      * @description Shape constructor
      * @param {Object} options Object representing shape options
      */
-    Arcadia.Shape = function (options) {
+    var Shape = function (options) {
         Arcadia.GameObject.apply(this, arguments);
 
         // Internal cached drawing
@@ -37,9 +37,11 @@
         this.debug = false;
 
         // Assign any props passed in through options
-        for (property of Object.keys(options)) {
-            this[property] = options[property];
-        }
+        var self = this;
+        options = options || {};
+        Object.keys(options).forEach(function (property) {
+            self[property] = options[property];
+        });
 
         this.anchor = {
             x: this.size.width / 2,
@@ -47,12 +49,12 @@
         };
     };
 
-    Arcadia.Shape.prototype = new Arcadia.GameObject();
+    Shape.prototype = new Arcadia.GameObject();
 
     /**
-     * @description Getter/setter for color
+     * @description Getters/setters for display properties
      */
-    Object.defineProperty(Arcadia.Button, 'color', {
+    Object.defineProperty(Shape.prototype, 'color', {
         enumerable: true,
         get: function () {
             return this._color;
@@ -63,260 +65,343 @@
         }
     });
 
-}(window));
+    Object.defineProperty(Shape.prototype, 'border', {
+        enumerable: true,
+        get: function () {
+            return this._border.width + 'px ' + this._border.color;
+        },
+        set: function (border) {
+            var values = border.match(/^(\d+)(?:px)?\ (.+)$/);
 
-/*=============================*/
+            if (!values || values.length !== 3) {
+                throw new Error('Use format "(width)px (color)" when setting borders');
+            }
 
+            this._border.width = parseInt(values[1], 10);
+            this._border.color = values[2];
+            this.dirty = true;
+        }
+    });
 
-    ###
-    @description Getter/setter for border
-    ###
-    @property 'border',
-        get: -> "#{@_border.width}px #{@_border.color}"
-        set: (border) ->
-            values = border.match(/^(\d+)(?:px)? (.+)$/)
+    Object.defineProperty(Shape.prototype, 'shadow', {
+        enumerable: true,
+        get: function () {
+            return "#{this._shadow.x}px #{this._shadow.y}px #{this._shadow.blur}px #{this._shadow.color}";
+        },
+        set: function (shadow) {
+            var values = shadow.match(/^(\d+)(?:px)?\ (\d+)(?:px)?\ (\d+)(?:px)?\ (.+)$/);
 
-            if values?.length == 3
-                @_border.width = parseInt values[1], 10
-                @_border.color = values[2]
-                @dirty = true
-            else
-                console.warn('Use format "(width)px (color)" when setting borders')
+            if (!values || values.length !== 5) {
+                throw new Error('Use format "(x)px (y)px (blur)px (color)" when setting shadows');
+            }
 
-    ###
-    @description Getter/setter for shadow
-    ###
-    @property 'shadow',
-        get: -> "#{@_shadow.x}px #{@_shadow.y}px #{@_shadow.blur}px #{@_shadow.color}"
-        set: (shadow) ->
-            values = shadow.match(/^(\d+)(?:px)? (\d+)(?:px)? (\d+)(?:px)? (.+)$/)
+            this._shadow.x = parseInt(values[1], 10);
+            this._shadow.y = parseInt(values[2], 10);
+            this._shadow.blur = parseInt(values[3], 10);
+            this._shadow.color = values[4];
+            this.dirty = true;
+        }
+    });
 
-            if values?.length == 5
-                @_shadow.x = parseInt values[1], 10
-                @_shadow.y = parseInt values[2], 10
-                @_shadow.blur = parseInt values[3], 10
-                @_shadow.color = values[4]
-                @dirty = true
-            else
-                console.warn('Use format "(x)px (y)px (blur)px (color)" when setting shadows')
+    Object.defineProperty(Shape.prototype, 'vertices', {
+        enumerable: true,
+        get: function () {
+            return this._vertices;
+        },
+        set: function (verticies) {
+            this._vertices = verticies;
+            this.dirty = true;
+        }
+    });
 
-    @property 'vertices',
-        get: -> @_vertices
-        set: (verticies) ->
-            @_vertices = verticies
-            @dirty = true
+    Object.defineProperty(Shape.prototype, 'size', {
+        enumerable: true,
+        get: function () {
+            return this._size;
+        },
+        set: function (size) {
+            // Bad things happen if you try to draw a 0x0 canvas
+            if (size.width < 1 || size.height < 1) {
+                throw new Error('Bad things happen when you make a canvas smaller than 1x1');
+            }
 
-    @property 'size',
-        get: -> @_size
-        set: (size) ->
-            # Enforce minimum size of 1x1
-            # Bad things happen if you try to draw a 0x0 canvas
-            size.width = 1 if size.width < 1
-            size.height = 1 if size.height < 1
+            this._size = {width: size.width, height: size.height};
+            this.dirty = true;
+        }
+    });
 
-            @_size = { width: size.width, height: size.height }
-            @dirty = true
+    Object.defineProperty(Shape.prototype, 'path', {
+        enumerable: true,
+        get: function () {
+            return this._path;
+        },
+        set: function (path) {
+            this._path = path;
+            this.dirty = true;
+        }
+    });
 
-    ###
-    @description Getter/setter for path
-    ###
-    @property 'path',
-        get: -> return @_path
-        set: (path) ->
-            @_path = path
-            @dirty = true
+    /**
+     * @description Draw object onto internal <canvas> cache
+     */
+    Shape.prototype.drawCanvasCache = function () {
+        if (!this.canvas) {
+            return;
+        }
 
-    ###
-    @description Draw object onto internal <canvas> cache
-    ###
-    drawCanvasCache: ->
-        return if @canvas is undefined
+        // Canvas cache needs to be large enough to handle shape size, border, and shadow
+        this.canvas.width = this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
+        this.canvas.height = this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
 
-        # Canvas cache needs to be large enough to handle shape size, border, and shadow
-        @canvas.width = @size.width + @_border.width + Math.abs(@_shadow.x) + @_shadow.blur
-        @canvas.height = @size.height + @_border.width + Math.abs(@_shadow.y) + @_shadow.blur
+        if (Arcadia.PIXEL_RATIO > 1) {
+            this.canvas.width *= Arcadia.PIXEL_RATIO;
+            this.canvas.height *= Arcadia.PIXEL_RATIO;
+        }
 
-        if Arcadia.PIXEL_RATIO > 1
-            @canvas.width *= Arcadia.PIXEL_RATIO
-            @canvas.height *= Arcadia.PIXEL_RATIO
+        this.setAnchorPoint();
 
-        @setAnchorPoint()
+        var context = this.canvas.getContext('2d');
+        context.lineJoin = 'miter';
 
-        context = @canvas.getContext('2d')
-        context.lineJoin = 'miter'
+        context.beginPath();
 
-        context.beginPath()
+        // Draw anchor point and border in red
+        if (this.debug) {
+            context.lineWidth = 1 * Arcadia.PIXEL_RATIO;
+            context.strokeStyle = '#f00';
+            context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+            context.arc(this.anchor.x, this.anchor.y, 3, 0, 2 * Math.PI, false);
+            context.stroke();
+        }
 
-        # Draw anchor point and border in red
-        if @debug
-            context.lineWidth = 1 * Arcadia.PIXEL_RATIO
-            context.strokeStyle = '#f00'
-            context.strokeRect(0, 0, @canvas.width, @canvas.height)
-            context.arc(@anchor.x, @anchor.y, 3, 0, 2 * Math.PI, false)
-            context.stroke()
+        context.translate(this.anchor.x, this.anchor.y);
 
-        context.translate(@anchor.x, @anchor.y)
+        if (this.path) {
+            this.path(context);
+        } else {
+            switch (this.vertices) {
+            case 2:
+                context.moveTo(-this.size.width / 2, -this.size.height / 2);
+                context.lineTo(this.size.width / 2, this.size.height / 2);
+                break;
+            case 3:
+                context.moveTo(0, -this.size.height / 2);
+                context.lineTo(this.size.width / 2, this.size.height / 2);
+                context.lineTo(-this.size.width / 2, this.size.height / 2);
+                context.lineTo(0, -this.size.height / 2);
+                break;
+            case 4:
+                context.moveTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                context.lineTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                context.lineTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                break;
+            default:
+                context.arc(0, 0, this.size.width / 2 * Arcadia.PIXEL_RATIO, 0, 2 * Math.PI); // x, y, radius, startAngle, endAngle
+                break;
+            }
+        }
 
-        if @path
-            @_path(context)
-        else
-            switch @vertices
-                when 2
-                    context.moveTo(-@size.width / 2, -@size.height / 2)
-                    context.lineTo(@size.width / 2, @size.height / 2)
-                when 3
-                    context.moveTo(0, -@size.height / 2)
-                    context.lineTo(@size.width / 2, @size.height / 2)
-                    context.lineTo(-@size.width / 2, @size.height / 2)
-                    context.lineTo(0, -@size.height / 2)
-                when 4
-                    context.moveTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
-                    context.lineTo(@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
-                    context.lineTo(@size.width / 2 * Arcadia.PIXEL_RATIO, @size.height / 2 * Arcadia.PIXEL_RATIO)
-                    context.lineTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, @size.height / 2 * Arcadia.PIXEL_RATIO)
-                    context.lineTo(-@size.width / 2 * Arcadia.PIXEL_RATIO, -@size.height / 2 * Arcadia.PIXEL_RATIO)
-                else
-                    context.arc(0, 0, @size.width / 2 * Arcadia.PIXEL_RATIO, 0, 2 * Math.PI) # x, y, radius, startAngle, endAngle
+        context.closePath();
 
-        context.closePath()
+        // Draw shadow
+        if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+            context.shadowOffsetX = this._shadow.x * Arcadia.PIXEL_RATIO;
+            context.shadowOffsetY = this._shadow.y * Arcadia.PIXEL_RATIO;
+            context.shadowBlur = this._shadow.blur * Arcadia.PIXEL_RATIO;
+            context.shadowColor = this._shadow.color;
+        }
 
-        # Draw shadow
-        if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
-            context.shadowOffsetX = @_shadow.x * Arcadia.PIXEL_RATIO
-            context.shadowOffsetY = @_shadow.y * Arcadia.PIXEL_RATIO
-            context.shadowBlur = @_shadow.blur * Arcadia.PIXEL_RATIO
-            context.shadowColor = @_shadow.color
+        // Fill with color
+        if (this._color) {
+            context.fillStyle = this._color;
+            context.fill();
+        }
 
-        # Fill with color
-        if @_color
-            context.fillStyle = @_color
-            context.fill()
+        // Don't allow border to cast a shadow
+        if (this._shadow.x !== 0 || this._shadow.y !== 0 || this._shadow.blur !== 0) {
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+            context.shadowBlur = 0;
+        }
 
-        # Don't allow border to cast a shadow
-        if @_shadow.x != 0 or @_shadow.y != 0 or @_shadow.blur != 0
-            context.shadowOffsetX = 0
-            context.shadowOffsetY = 0
-            context.shadowBlur = 0
+        // Draw border
+        if (this._border.width && this._border.color) {
+            context.lineWidth = this._border.width * Arcadia.PIXEL_RATIO;
+            context.strokeStyle = this._border.color;
+            context.stroke();
+        }
 
-        # Draw border
-        if @_border.width && @_border.color
-            context.lineWidth = @_border.width * Arcadia.PIXEL_RATIO
-            context.strokeStyle = @_border.color
-            context.stroke()
+        this.dirty = false;
+    };
 
-        @dirty = false
+    /**
+     * @description Find the midpoint of the shape
+     */
+    Shape.prototype.setAnchorPoint = function () {
+        // TODO: ensure correctness of this
+        var x = this._size.width / 2 + this._border.width / 2;
+        var y = this._size.height / 2 + this._border.width / 2;
 
-    ###
-    @description Find the midpoint of the shape
-    ###
-    setAnchorPoint: ->
-        # TODO: ensure correctness of this
-        x = @size.width / 2 + @_border.width / 2
-        y = @size.height / 2 + @_border.width / 2
+        if (this._shadow.blur > 0) {
+            x += this._shadow.blur / 2;
+            y += this._shadow.blur / 2;
+        }
 
-        if @_shadow.blur > 0
-            x += @_shadow.blur / 2
-            y += @_shadow.blur / 2
+        // Move negatively if shadow is also negative
+        if (this._shadow.x < 0) {
+            x -= this._shadow.x;
+        }
+        if (this._shadow.y < 0) {
+            y -= this._shadow.y;
+        }
 
-        # Move negatively if shadow is also negative
-        x -= @_shadow.x if @_shadow.x < 0
-        y -= @_shadow.y if @_shadow.y < 0
+        // Set anchor point (midpoint of shape)
+        this.anchor.x = x * Arcadia.PIXEL_RATIO;
+        this.anchor.y = y * Arcadia.PIXEL_RATIO;
+    };
 
-        # Set anchor point (midpoint of shape)
-        @anchor.x = x * Arcadia.PIXEL_RATIO
-        @anchor.y = y * Arcadia.PIXEL_RATIO
+    /**
+     * @description Draw object
+     * @param {CanvasRenderingContext2D} context
+     */
+    Shape.prototype.draw = function (context, offsetX, offsetY, offsetRotation, offsetScale, offsetAlpha) {
+        offsetX = offsetX || 0;
+        offsetY = offsetY || 0;
+        offsetRotation = offsetRotation || 0;
+        offsetScale = offsetScale || 1;
+        offsetAlpha = offsetAlpha || 1;
 
-    ###
-    @description Draw object
-    @param {CanvasRenderingContext2D} context
-    ###
-    draw: (context, offsetX = 0, offsetY = 0, offsetRotation = 0, offsetScale = 1, offsetAlpha = 1) ->
-        context.save()
+        context.save();
 
-        context.translate(offsetX * Arcadia.PIXEL_RATIO, offsetY * Arcadia.PIXEL_RATIO)
-        context.rotate(offsetRotation) if offsetRotation != 0
+        context.translate(offsetX * Arcadia.PIXEL_RATIO, offsetY * Arcadia.PIXEL_RATIO);
 
-        context.translate(@position.x * Arcadia.PIXEL_RATIO, @position.y * Arcadia.PIXEL_RATIO)
-        context.rotate(@rotation) if @rotation != 0
+        if (offsetRotation !== 0) {
+            context.rotate(offsetRotation);
+        }
 
-        context.scale(@scale * offsetScale, @scale * offsetScale) if @scale * offsetScale != 1
-        context.globalAlpha = @alpha * offsetAlpha if @alpha * offsetAlpha < 1
+        context.translate(this.position.x * Arcadia.PIXEL_RATIO, this.position.y * Arcadia.PIXEL_RATIO);
 
-        # Update internal <canvas> cache if necessary
-        @drawCanvasCache() if @dirty
+        if (this.rotation !== 0) {
+            context.rotate(this.rotation);
+        }
 
-        # Draw from cache
-        context.drawImage(@canvas, -@anchor.x, -@anchor.y)
+        if (this.scale * offsetScale !== 1) {
+            context.scale(this.scale * offsetScale, this.scale * offsetScale);
+        }
 
-        # Reset scale/rotation/alpha
-        context.restore()
+        if (this.alpha * offsetAlpha < 1) {
+            context.globalAlpha = this.alpha * offsetAlpha;
+        }
 
-        # Draw child objects last, so they will be on the "top"
-        super(context, @position.x + offsetX, @position.y + offsetY, @rotation + offsetRotation, @scale * offsetScale, @alpha * offsetAlpha)
+        // Update internal <canvas> cache if necessary
+        if (this.dirty) {
+            this.drawCanvasCache();
+        }
 
-    ###
-    @description Update object
-    @param {Number} delta Time since last update (in seconds)
-    ###
-    update: (delta) ->
-        super(delta)
+        // Draw from cache
+        context.drawImage(this.canvas, -this.anchor.x, -this.anchor.y);
 
-        i = @tweens.length
-        while (i--)
-            tween = @tweens[i]
-            tween.time += delta * 1000 # (delta is in seconds)
-            tween.time = tween.duration if tween.time > tween.duration
+        // Reset scale/rotation/alpha
+        context.restore();
 
-            if typeof @[tween.property] == 'object'
-                obj = {}
-                for property of @[tween.property]
-                    obj[property] = tween.easingFunc(tween.time, tween.start[property], tween.change[property], tween.duration) if @[tween.property].hasOwnProperty(property)
+        // Draw child objects last, so they will be on the "top"
+        Arcadia.GameObject.prototype.draw.call(this, context, this.position.x + offsetX, this.position.y + offsetY, this.rotation + offsetRotation, this.scale * offsetScale, this.alpha * offsetAlpha);
+    };
 
-                @[tween.property] = obj
-            else
-                @[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration) # time,begin,change,duration
+    /**
+     * @description Update object
+     * @param {Number} delta Time since last update (in seconds)
+     */
+    Shape.prototype.update = function (delta) {
+        Arcadia.GameObject.prototype.update.call(this, delta);
 
-            if tween.time == tween.duration
-                @tweens.splice(i, 1)
-                tween.callback() if typeof tween.callback == 'function'
+        var i = this.tweens.length;
+        var obj;
+        var tween;
 
-        @velocity.x += @acceleration.x
-        @velocity.y += @acceleration.y
+        while (i--) {
+            tween = this.tweens[i];
+            tween.time += delta * 1000; // (delta is in seconds)
 
-        @position.x += @velocity.x * @speed * delta
-        @position.y += @velocity.y * @speed * delta
+            if (tween.time > tween.duration) {
+                tween.time = tween.duration;
+            }
 
-        @rotation += @angularVelocity * delta
+            if (typeof this[tween.property] === 'object') {
+                obj = {};
 
-    ###
+                Object.keys(this[tween.property]).forEach(function (prop) {
+                    obj[prop] = tween.easingFunc(tween.time, tween.start[prop], tween.change[prop], tween.duration);
+                });
+
+                this[tween.property] = obj;
+            } else {
+                this[tween.property] = tween.easingFunc(tween.time, tween.start, tween.change, tween.duration); // time,begin,change,duration
+            }
+
+            if (tween.time === tween.duration) {
+                this.tweens.splice(i, 1);
+                if (typeof tween.callback === 'function') {
+                    tween.callback();
+                }
+            }
+        }
+
+        this.velocity.x += this.acceleration.x;
+        this.velocity.y += this.acceleration.y;
+
+        this.position.x += this.velocity.x * this.speed * delta;
+        this.position.y += this.velocity.y * this.speed * delta;
+
+        this.rotation += this.angularVelocity * delta;
+    };
+
+    /**
      * @description Basic AABB collision detection
      * @param {Shape} other Shape object to test collision with
-    ###
-    collidesWith: (other) ->
-        return false if @ == other
-        Math.abs(@position.x - other.position.x) < @size.width / 2 + other.size.width / 2 && Math.abs(@position.y - other.position.y) < @size.height / 2 + other.size.height / 2
+     */
+    Shape.prototype.collidesWith = function (other) {
+        if (this === other) {
+            return false;
+        }
 
-    ###
-    @description Add a transition to the `tween` stack
-    ###
-    tween: (property, target, duration = 500, easing = 'linearNone', callback) ->
-        # Handle "compound" properties that have objects as values
-        # e.g. Shape.size = { width: 100, height: 100 }
-        change = if typeof target == 'object'
-            obj = {}
-            for key of @[property]
-                obj[key] = target[key] - @[property][key]
-            obj
-        else
-            target - @[property]
+        return Math.abs(this.position.x - other.position.x) < (this.size.width / 2) + (other.size.width / 2) &&
+                Math.abs(this.position.y - other.position.y) < (this.size.height / 2) + (other.size.height / 2);
+    };
 
-        @tweens.push
-            time: 0
-            property: property
-            start: @[property]
-            change: change
-            duration: duration
-            easingFunc: Easie[easing]
+    /**
+     * @description Add a transition to the `tween` stack
+     */
+    Shape.prototype.tween = function (property, target, duration, easing, callback) {
+        duration = duration || 500;
+
+        // Handle "compound" properties that have objects as values
+        // e.g. Shape.size = { width: 100, height: 100 }
+        var change = {};
+        var self = this;
+
+        if (typeof target === 'object') {
+            Object.keys(this[property]).forEach(function (key) {
+                change[key] = target[key] - self[property][key];
+            });
+        } else {
+            change = target - this[property];
+        }
+
+        this.tweens.push({
+            time: 0,
+            property: property,
+            start: this[property],
+            change: change,
+            duration: duration,
+            easingFunc: Easie[easing] || Easie['linearNone'],
             callback: callback
+        });
+    };
 
-module.exports = Shape
+    Arcadia.Shape = Shape;
+
+    root.Arcadia = Arcadia;
+}(window));

@@ -1,75 +1,105 @@
-GameObject  = require './gameobject.coffee'
-Pool        = require './pool.coffee'
-Shape       = require './shape.coffee'
+/*jslint browser, this */
+/*global window */
 
-class Emitter extends GameObject
-  ###
-   * @constructor
-   * @description Basic particle emitter
-   * @param {string} [shape='square'] Shape of the particles. Accepts strings that are valid for Shapes (e.g. "circle", "triangle")
-   * @param {number} [size=10] Size of the particles
-   * @param {number} [count=25] The number of particles created for the system
-  ###
-  constructor: (factory, count = 25) ->
-    throw new Error('Emitter requires a factory function') if typeof factory != 'function'
+(function (root) {
+    'use strict';
 
-    super
+    var Arcadia = root.Arcadia || {};
 
-    @duration = 1
-    @fade = false
-    @scale = 1.0
-    @speed = 200
-    @i = @particle = null
+    /**
+     * @constructor
+     * @param {Function} factory Factory function that returns a Shape object, to use as a particle
+     * @param {Number} [count=25] The number of particles created for the system
+     */
+    var Emitter = function (factory, count) {
+        count = count || 25;
+        if (typeof factory !== 'function') {
+            throw new Error('Emitter requires a factory function');
+        }
 
-    while count--
-      @children.add factory()
+        Arcadia.GameObject.apply(this, arguments);
 
-    @children.deactivateAll()
+        this.duration = 1;
+        this.fade = false;
+        this.scale = 1;
+        this.speed = 200;
+        this.i = null;
+        this.particle = null;
 
-  ###
-   * @description Activate a particle emitter
-   * @param {number} x Position of emitter on x-axis
-   * @param {number} y Position of emitter on y-axis
-  ###
-  startAt: (x, y) ->
-    @children.activateAll()
-    @reset()
+        while (count--) {
+            this.children.add(factory());
+        }
 
-    @i = @children.length
-    while @i--
-      @particle = @children.at @i
+        this.children.deactivateAll();
+    };
 
-      @particle.position.x = x
-      @particle.position.y = y
+    Emitter.prototype = new Arcadia.GameObject();
 
-      # Set random velocity/speed
-      direction = Math.random() * 2 * Math.PI
-      @particle.velocity.x = Math.cos direction
-      @particle.velocity.y = Math.sin direction
-      @particle.speed = Math.random() * @speed
+    /**
+     * @description Activate a particle emitter
+     * @param {number} x Position of emitter on x-axis
+     * @param {number} y Position of emitter on y-axis
+     */
+    Emitter.prototype.startAt = function (x, y) {
+        this.timer = 0;
+        this.position.x = x;
+        this.position.y = y;
 
-    @timer = 0
-    @position.x = x
-    @position.y = y
+        this.children.activateAll();
+        this.reset();
 
-  update: (delta) ->
-    super delta
+        var index = this.children.length;
+        var particle;
+        var direction;
 
-    @timer += delta
+        while (index--) {
+            particle = this.children.at(index);
 
-    @i = @children.length
-    while @i--
-      @particle = @children.at @i
-      @children.deactivate @i if @timer >= @duration
-      #@particle.colors.alpha -= delta / @duration if @fade
-      @particle.scale += @scale * delta / @duration if @scale != 1.0
+            particle.position.x = x;
+            particle.position.y = y;
 
-    return # CoffeeScript idiosyncrasy; don't return the results of the while loop
+            direction = Math.random() * 2 * Math.PI;
+            particle.velocity.x = Math.cos(direction);
+            particle.velocity.y = Math.sin(direction);
 
-  reset: ->
-    @i = @children.length
-    while @i--
-      @particle = @children.at @i
-      @particle.reset() if typeof @particle.reset == 'function'
+            particle.speed = Math.random() * this.speed;
+        }
+    };
 
-module.exports = Emitter
+    Emitter.prototype.update = function (delta) {
+        Arcadia.GameObject.prototype.update.call(this, delta);
+
+        this.timer += delta;
+
+        var index = this.children.length;
+        var particle;
+
+        while (index--) {
+            particle = this.children.at(index);
+
+            //particle.colors.alpha -= delta / this.duration if this.fade
+
+            if (this.scale !== 1) {
+                particle.scale += this.scale * delta / this.duration;
+            }
+
+            if (this.timer >= this.duration) {
+                this.children.deactivate(index);
+            }
+        }
+    };
+
+    Emitter.prototype.reset = function () {
+        var index = this.children.length;
+
+        while (index--) {
+            if (this.children.at(index).reset) {
+                this.children.at(index).reset();
+            }
+        }
+    };
+
+    Arcadia.Emitter = Emitter;
+
+    root.Arcadia = Arcadia;
+}(window));
