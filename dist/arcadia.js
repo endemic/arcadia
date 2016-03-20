@@ -791,7 +791,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (!this.enablePointEvents) {
         return;
       }
-      return this.children.onPointStart(points);
+      return this.children.onPointStart(this.offsetPoints(points));
     };
 
     /*
@@ -804,7 +804,7 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (!this.enablePointEvents) {
         return;
       }
-      return this.children.onPointMove(points);
+      return this.children.onPointMove(this.offsetPoints(points));
     };
 
     /*
@@ -817,7 +817,22 @@ var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? 
       if (!this.enablePointEvents) {
         return;
       }
-      return this.children.onPointEnd(points);
+      return this.children.onPointEnd(this.offsetPoints(points));
+    };
+
+    /*
+    @description Takes an array of x/y coordinates, and offsets them by own position
+    */
+
+
+    GameObject.prototype.offsetPoints = function(points) {
+      var _this = this;
+      return points.map(function(point) {
+        return {
+          x: point.x - _this.position.x,
+          y: point.y - _this.position.y
+        };
+      });
     };
 
     return GameObject;

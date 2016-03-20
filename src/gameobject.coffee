@@ -72,7 +72,7 @@ class GameObject
   ###
   onPointStart: (points) ->
     return unless @enablePointEvents
-    @children.onPointStart(points)
+    @children.onPointStart(@offsetPoints(points))
 
   ###
   @description Event handler for "move" pointer event
@@ -80,7 +80,7 @@ class GameObject
   ###
   onPointMove: (points) ->
     return unless @enablePointEvents
-    @children.onPointMove(points)
+    @children.onPointMove(@offsetPoints(points))
 
   ###
   @description Event handler for "end" pointer event
@@ -88,6 +88,14 @@ class GameObject
   ###
   onPointEnd: (points) ->
     return unless @enablePointEvents
-    @children.onPointEnd(points)
+    @children.onPointEnd(@offsetPoints(points))
+
+  ###
+  @description Takes an array of x/y coordinates, and offsets them by own position
+  ###
+  offsetPoints: (points) ->
+    points.map (point) =>
+      x: point.x - @position.x,
+      y: point.y - @position.y
 
 module.exports = GameObject
