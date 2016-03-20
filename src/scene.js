@@ -11,8 +11,17 @@
      */
     var Scene = function (options) {
         Arcadia.GameObject.apply(this, arguments);
-
+        options = options || {};
         this.enablePointEvents = true;
+        
+        var DEFAULT_SIZE = {
+            width: 100,
+            height: 100
+        };
+
+        this.size = options.size || DEFAULT_SIZE;
+
+        var viewportSize = this.parent ? this.parent.size : this.size;
 
         // implement a camera view/drawing offset
         // TODO: need to be able to specify the size of a scene which is larger
@@ -20,8 +29,8 @@
         this.camera = {
             target: null,
             viewport: {
-                width: this.parent.size.width,
-                height: this.parent.size.height
+                width: viewportSize.width,
+                height: viewportSize.height
             },
             bounds: {
                 top: -this.size.height / 2,

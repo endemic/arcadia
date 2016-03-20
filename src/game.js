@@ -97,7 +97,7 @@
         this.onKeyUp = this.onKeyUp.bind(this);
         this.pause = this.pause.bind(this);
         this.resume = this.resume.bind(this);
-        // this.update = this.update.bind(this);
+        this.update = this.update.bind(this);
 
         // Set up event listeners - mouse and touch use the same ones
         if (Arcadia.ENV.mobile) {
