@@ -64,6 +64,23 @@
             x: false
         };
 
+        this.keyCodeMap = {
+            37: 'left',
+            38: 'up',
+            39: 'right',
+            40: 'down',
+            87: 'w',
+            65: 'a',
+            83: 's',
+            68: 'd',
+            13: 'enter',
+            27: 'escape',
+            32: 'space',
+            17: 'control',
+            90: 'z',
+            88: 'x'
+        };
+
         // Stores objects representing mouse/touch input
         this.points = [];
 
@@ -95,6 +112,7 @@
             document.addEventListener('keydown', this.onKeyDown, false);
             document.addEventListener('keyup', this.onKeyUp, false);
             this.element.addEventListener('mousedown', this.onPointStart, false);
+            this.element.addEventListener('mousemove', this.onPointMove, false);
             this.element.addEventListener('mouseup', this.onPointEnd, false);
         }
 
@@ -110,12 +128,7 @@
             window.addEventListener('resize', this.onResize, false);
         }
 
-        this.activeScene = new options.scene({
-            size: {
-                width: this.size.width,
-                height: this.size.height
-            }
-        });
+        this.activeScene = new options.scene({ parent: this });
 
         this.start();
     };
@@ -124,6 +137,7 @@
      * @description Pause active scene if it has a pause method
      */
     Game.prototype.pause = function () {
+        this.stop();
         if (typeof this.activeScene.pause === 'function') {
             this.activeScene.pause();
         }
@@ -133,6 +147,7 @@
      * @description Resume active scene if it has a pause method
      */
     Game.prototype.resume = function () {
+        this.start();
         if (typeof this.activeScene.resume === 'function') {
             this.activeScene.resume();
         }
@@ -146,8 +161,7 @@
         this.getPoints(event);
 
         if (event.type.indexOf('mouse') !== -1) {
-            // TODO: keep this listener permanent, turn it on and off with an ivar
-            this.element.addEventListener('mousemove', this.onPointMove, false);
+            this.mouseMove = true;
         }
 
         this.activeScene.onPointStart(this.points);
@@ -157,6 +171,9 @@
      * @description Mouse/touch event callback
      */
     Game.prototype.onPointMove = function (event) {
+        if (!this.mouseMove) {
+            return;
+        }
         this.getPoints(event);
         this.activeScene.onPointMove(this.points);
     };
@@ -169,7 +186,7 @@
         this.getPoints(event, end);
 
         if (event.type.indexOf('mouse') !== -1) {
-            this.element.removeEventListener('mousemove', this.onPointMove, false);
+            this.mouseMove = false;
         }
 
         this.activeScene.onPointEnd(this.points);
@@ -212,24 +229,11 @@
      */
     Game.prototype.getKey = function (keyCode) {
         // TODO: Make an implemention something like this
-        // when 37 then @input['left'] = true
-        // when 38 then @input['up'] = true
-        return {
-            37: 'left',
-            38: 'up',
-            39: 'right',
-            40: 'down',
-            87: 'w',
-            65: 'a',
-            83: 's',
-            68: 'd',
-            13: 'enter',
-            27: 'escape',
-            32: 'space',
-            17: 'control',
-            90: 'z',
-            88: 'x'
-        }[keyCode] || '';
+        // if (keyCode === 37 ) { this.input['left'] = true; }
+        // then send this.input to Scene key handlers
+        // they will compare against keys['left'] === true instead of key === 'left'
+        // This implementation will allow detecting multiple keys pressed simultaneously, if that matters
+        return this.keyCodeMap[keyCode] || '';
     };
 
     /**
@@ -237,16 +241,13 @@
      * game will understand. Takes the <canvas> offset and scale into account
      */
     Game.prototype.getPoints = function (event, touchEnd) {
-        var source,
-            i;
+        var source = 'touches';
 
-        source = 'touches';
+        touchEnd = touchEnd || false;
 
         if (touchEnd) {
             source = 'changedTouches';
         }
-
-        touchEnd = touchEnd || false;
 
         // http://jsperf.com/empty-javascript-array
         while (this.points.length > 0) {
@@ -259,7 +260,7 @@
                 y: (event.pageY - this.offset.y) / this.scale - this.size.height / 2 + this.activeScene.camera.position.y
             });
         } else {
-            i = event[source].length;
+            var i = event[source].length;
             while (i--) {
                 this.points.unshift({
                     x: (event[source][i].pageX - this.offset.x) / this.scale - this.size.width / 2 + this.activeScene.camera.position.x,
@@ -270,7 +271,7 @@
     };
 
     /**
-      * * @description Start the event/animation loops
+     * @description Start the event/animation loops
      */
     Game.prototype.start = function () {
         this.previousDelta = window.performance.now();
@@ -320,7 +321,6 @@
         Arcadia.PIXEL_RATIO = window.devicePixelRatio / this.context.backingStorePixelRatio;
 
         // Set "real" width/height
-        // TODO: Can replace this.size.width with this.size.width, etc.
         this.canvas.width = this.size.width * Arcadia.PIXEL_RATIO;
         this.canvas.height = this.size.height * Arcadia.PIXEL_RATIO;
 

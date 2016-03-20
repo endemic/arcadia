@@ -3,14 +3,17 @@
 afterEach: false, spyOn: false, jasmine: false */
 
 describe('Arcadia.Scene', function () {
-    var scene,
-        context,
-        WIDTH = 600,
-        HEIGHT = 400;
+    var scene;
+    var context;
+    var SCENE_WIDTH = 1200;
+    var SCENE_HEIGHT = 1200;
+    var GAME_WIDTH = 640;
+    var GAME_HEIGHT = 480;
 
     beforeEach(function () {
         scene = new Arcadia.Scene({
-            size: {width: WIDTH, height: HEIGHT}
+            size: {width: SCENE_WIDTH, height: SCENE_HEIGHT},
+            parent: {size: {width: GAME_WIDTH, height: GAME_HEIGHT}}
         });
         context = jasmine.createSpyObj('context', [ 'canvas', 'clearRect', 'translate', 'save' ]);
     });
@@ -20,7 +23,7 @@ describe('Arcadia.Scene', function () {
     });
 
     describe('#update', function () {
-        it('updates camera position based on target position');
+        xit('updates camera position based on target position');
         xit('won\'t go beyond top bounds');
         xit('won\'t go beyond bottom bounds');
         xit('won\'t go beyond left bounds');
@@ -30,8 +33,8 @@ describe('Arcadia.Scene', function () {
     describe('#draw', function () {
         var dummyContext = {
             canvas: {
-                width: WIDTH,
-                height: HEIGHT
+                width: GAME_WIDTH,
+                height: GAME_HEIGHT
             },
             fillRect: function dummy() {},
             clearRect: function dummy() {}
@@ -45,7 +48,7 @@ describe('Arcadia.Scene', function () {
             scene.add(shape);
             scene.draw(dummyContext);
 
-            expect(shape.draw).toHaveBeenCalledWith(dummyContext, 300, 200);
+            expect(shape.draw).toHaveBeenCalledWith(dummyContext, GAME_WIDTH / 2, GAME_HEIGHT / 2);
         });
 
         xit('draws child shapes offset by camera target', function () {
@@ -61,33 +64,45 @@ describe('Arcadia.Scene', function () {
 
             scene.target = shape1;
 
+            scene.update(0.16);
+
             spyOn(shape1, 'draw');
             spyOn(shape2, 'draw');
 
             scene.draw(dummyContext);
 
-            expect(shape1.draw).toHaveBeenCalledWith(dummyContext, 200, 100);
-            expect(shape2.draw).toHaveBeenCalledWith(dummyContext, 200, 100);
+            expect(shape1.draw).toHaveBeenCalledWith(dummyContext, 220, 140);
+            expect(shape2.draw).toHaveBeenCalledWith(dummyContext, 220, 140);
         });
 
         it('clears previously drawn content', function () {
             spyOn(dummyContext, 'clearRect');
             scene.draw(dummyContext);
-            expect(dummyContext.clearRect).toHaveBeenCalledWith(0, 0, 600, 400);
+            expect(dummyContext.clearRect).toHaveBeenCalledWith(0, 0, GAME_WIDTH, GAME_HEIGHT);
         });
 
         it('fills over previously drawn content', function () {
             spyOn(dummyContext, 'fillRect');
             scene.color = 'green';
             scene.draw(dummyContext);
-            expect(dummyContext.fillRect).toHaveBeenCalledWith(0, 0, 600, 400);
+            expect(dummyContext.fillRect).toHaveBeenCalledWith(0, 0, GAME_WIDTH, GAME_HEIGHT);
             expect(dummyContext.fillStyle).toBe('green');
         });
     });
 
     describe('#target', function () {
-        it('gets camera target shape');
-        it('can set camera target shape');
-        it('throws if target doesn\'t have a position');
+        it('gets camera target shape', function () {
+            expect(scene.target).toBe(null);
+        });
+        it('can set camera target shape', function () {
+            var shape = new Arcadia.Shape();
+            scene.target = shape;
+            expect(scene.target).toBe(shape);
+        });
+        it('throws if target does not have a position prop', function () {
+            expect(function () {
+                scene.target = {garbage: true};
+            }).toThrowError('Scene camera target requires a `position` property.');
+        });
     });
 });

@@ -12,16 +12,16 @@ describe('Arcadia.Label', function () {
     });
 
     describe('#drawCanvasCache', function () {
-        it('creates an offscreen div to calculate text dimensions', function () {
+        xit('creates an offscreen div to calculate text dimensions', function () {
 
         });
-        it('draws solid text', function () {
+        xit('draws solid text', function () {
 
         });
-        it('draws outlined text', function () {
+        xit('draws outlined text', function () {
 
         });
-        it('resets the `dirty` flag', function () {
+        xit('resets the `dirty` flag', function () {
 
         });
     });

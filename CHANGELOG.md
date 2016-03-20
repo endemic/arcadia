@@ -1,3 +1,8 @@
+# 2.0.1
+
+* Stop rAF in the 'pause' event listener; restart rAF in the `resume` event listener
+* Fix drawing of lines & triangles on HiDPI screens
+* Use boolean variable to toggle "mousemove" events
 
 # 2.0.0
 

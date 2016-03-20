@@ -10,11 +10,8 @@
      * @constructor
      */
     var Scene = function (options) {
-        options = options || {};
-
         Arcadia.GameObject.apply(this, arguments);
 
-        this.size = options.size;   // TODO: can remove this?
         this.enablePointEvents = true;
 
         // implement a camera view/drawing offset
@@ -23,8 +20,8 @@
         this.camera = {
             target: null,
             viewport: {
-                width: this.size.width,
-                height: this.size.height
+                width: this.parent.size.width,
+                height: this.parent.size.height
             },
             bounds: {
                 top: -this.size.height / 2,
@@ -32,10 +29,7 @@
                 left: -this.size.width / 2,
                 right: this.size.width / 2
             },
-            position: {
-                x: 0,
-                y: 0
-            }
+            position: {x: 0, y: 0}
         };
     };
 

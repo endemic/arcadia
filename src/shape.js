@@ -150,13 +150,8 @@
         }
 
         // Canvas cache needs to be large enough to handle shape size, border, and shadow
-        this.canvas.width = this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur;
-        this.canvas.height = this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur;
-
-        if (Arcadia.PIXEL_RATIO > 1) {
-            this.canvas.width *= Arcadia.PIXEL_RATIO;
-            this.canvas.height *= Arcadia.PIXEL_RATIO;
-        }
+        this.canvas.width = (this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur) * Arcadia.PIXEL_RATIO;
+        this.canvas.height = (this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur) * Arcadia.PIXEL_RATIO;
 
         this.setAnchorPoint();
 
@@ -181,14 +176,14 @@
         } else {
             switch (this.vertices) {
             case 2:
-                context.moveTo(-this.size.width / 2, -this.size.height / 2);
-                context.lineTo(this.size.width / 2, this.size.height / 2);
+                context.moveTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
                 break;
             case 3:
-                context.moveTo(0, -this.size.height / 2);
-                context.lineTo(this.size.width / 2, this.size.height / 2);
-                context.lineTo(-this.size.width / 2, this.size.height / 2);
-                context.lineTo(0, -this.size.height / 2);
+                context.moveTo(0, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                context.lineTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+                context.lineTo(0, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
                 break;
             case 4:
                 context.moveTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, -this.size.height / 2 * Arcadia.PIXEL_RATIO);

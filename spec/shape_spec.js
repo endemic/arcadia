@@ -2,9 +2,16 @@ describe('Arcadia.Shape', function () {
     var shape;
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
+    var SHAPE_WIDTH = 30;
+    var SHAPE_HEIGHT = 20;
 
     beforeEach(function () {
-        shape = new Arcadia.Shape();
+        shape = new Arcadia.Shape({
+            size: {
+                width: SHAPE_WIDTH,
+                height: SHAPE_HEIGHT
+            }
+        });
     });
 
     afterEach(function () {
@@ -118,106 +125,139 @@ describe('Arcadia.Shape', function () {
 
     describe('#drawCanvasCache', function () {
         it('draws custom path', function () {
-
+            var context = shape.canvas.getContext('2d');
+            shape.path = function (context) { console.info('drawrin'); };;
+            spyOn(shape, 'path');
+            shape.drawCanvasCache();
+            expect(shape.path).toHaveBeenCalledWith(context);
         });
         it('draws a line', function () {
-
+            var context = shape.canvas.getContext('2d');
+            spyOn(context, 'moveTo');
+            spyOn(context, 'lineTo');
+            shape.vertices = 2;
+            shape.drawCanvasCache();
+            expect(context.moveTo).toHaveBeenCalledWith(-SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, -SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
+            expect(context.lineTo).toHaveBeenCalledWith(SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
         });
         it('draws a triangle', function () {
-
+            var context = shape.canvas.getContext('2d');
+            spyOn(context, 'moveTo');
+            spyOn(context, 'lineTo');
+            shape.vertices = 3;
+            shape.drawCanvasCache();
+            expect(context.moveTo).toHaveBeenCalledWith(0, -SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
+            expect(context.lineTo).toHaveBeenCalledWith(SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
+            expect(context.lineTo).toHaveBeenCalledWith(-SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
+            expect(context.lineTo).toHaveBeenCalledWith(0, -SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
         });
         it('draws a square', function () {
-
+            var context = shape.canvas.getContext('2d');
+            spyOn(context, 'moveTo');
+            spyOn(context, 'lineTo');
+            shape.vertices = 4;
+            shape.drawCanvasCache();
+            expect(context.moveTo).toHaveBeenCalledWith(-SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, -SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
+            expect(context.lineTo).toHaveBeenCalledWith(SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, -SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
+            expect(context.lineTo).toHaveBeenCalledWith(SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
+            expect(context.lineTo).toHaveBeenCalledWith(-SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
+            expect(context.lineTo).toHaveBeenCalledWith(-SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, -SHAPE_HEIGHT / 2 * Arcadia.PIXEL_RATIO);
         });
         it('draws a circle', function () {
+            var context = shape.canvas.getContext('2d');
+            spyOn(context, 'arc');
+            shape.vertices = 0;
+            shape.drawCanvasCache();
+            expect(context.arc).toHaveBeenCalledWith(0, 0, SHAPE_WIDTH / 2 * Arcadia.PIXEL_RATIO, 0, 2 * Math.PI);
+        });
+        xit('draws a solid shape', function () {
 
         });
-        it('draws a solid shape', function () {
-
-        });
-        it('draws a border', function () {
+        xit('draws a border', function () {
 
         });
         it('resets the `dirty` flag', function () {
-
+            shape.dirty = true;
+            shape.drawCanvasCache();
+            expect(shape.dirty).toBeFalsy();
         });
     });
 
     describe('#setAnchorPoint', function () {
-        it('sets midpoint of object', function () {
+        xit('sets midpoint of object', function () {
 
         });
-        it('sets midpoint of object with a border', function () {
+        xit('sets midpoint of object with a border', function () {
 
         });
-        it('sets midpoint of object with a shadow', function () {
+        xit('sets midpoint of object with a shadow', function () {
 
         });
-        it('sets midpoint of object with a negatively placed shadow', function () {
+        xit('sets midpoint of object with a negatively placed shadow', function () {
 
         });
-        it('sets midpoint of object with a blurred shadow', function () {
+        xit('sets midpoint of object with a blurred shadow', function () {
 
         });
-        it('sets midpoint of object with a negatively placed, blurred shadow', function () {
+        xit('sets midpoint of object with a negatively placed, blurred shadow', function () {
 
         });
     });
 
     describe('#draw', function () {
-        it('draws the shape to the main canvas', function () {
+        xit('draws the shape to the main canvas', function () {
 
         });
-        it('saves/restores the original canvas state', function () {
+        xit('saves/restores the original canvas state', function () {
 
         });
-        it('draws the shape relative to x/y offsets', function () {
+        xit('draws the shape relative to x/y offsets', function () {
 
         });
-        it('draws the shape at its x/y position', function () {
+        xit('draws the shape at its x/y position', function () {
 
         });
-        it('draws the shape with appropriate rotation', function () {
+        xit('draws the shape with appropriate rotation', function () {
 
         });
-        it('draws the shape with appropriate scale', function () {
+        xit('draws the shape with appropriate scale', function () {
 
         });
     });
 
     describe('#update', function () {
         describe('tweened properties', function () {
-            it('updates simple properties', function () {
+            xit('updates simple properties', function () {
 
             });
 
-            it('updates complex properties', function () {
+            xit('updates complex properties', function () {
 
             });
         });
 
-        it('updates shape velocity based on acceleration', function () {
+        xit('updates shape velocity based on acceleration', function () {
 
         });
-        it('updates shape position based on velocity/speed/delta', function () {
+        xit('updates shape position based on velocity/speed/delta', function () {
 
         });
-        it('updates shape rotation based on angularVelocity/delta', function () {
+        xit('updates shape rotation based on angularVelocity/delta', function () {
 
         });
     });
 
     describe('#collidesWith', function () {
-        it('handles AABB collisions', function () {
+        xit('handles AABB collisions', function () {
 
         });
     });
 
     describe('#tween', function () {
-        it('adds a simple property tween to the shape', function () {
+        xit('adds a simple property tween to the shape', function () {
 
         });
-        it('adds a complex property tween to the shape', function () {
+        xit('adds a complex property tween to the shape', function () {
 
         });
     });
