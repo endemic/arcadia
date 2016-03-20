@@ -1,17 +1,5 @@
 # TODO
 
-Order in which source files should be referenced:
-* Pool
-* Game
-* GameObject
-* Scene
-* Easie
-* Shape
-* Emitter
-* Label
-* Button
-* Arcadia (rename to "extensions" or "helpers" or something)
-
 * What the hell, made major changes to which objects get returned in Pool and no tests broke,
   write extra tests which assert the object that is returned/rearranged when activated/deactivated
 * [x] Determine cause of slow button presses on iPhone

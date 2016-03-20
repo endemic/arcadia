@@ -95,7 +95,7 @@ describe('Arcadia.Game', function () {
         });
 
         describe('#onPointStart', function () {
-            it('sends the mouse event into the active scene', function () {
+            xit('sends the mouse event into the active scene', function () {
                 var sceneSpy = {
                     onPointStart: function () {},
                     camera: {

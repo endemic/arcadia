@@ -85,7 +85,7 @@
             return;
         }
 
-        this.children.onPointStart(points);
+        this.children.onPointStart(this.offsetPoints(points));
     };
 
     /**
@@ -97,7 +97,7 @@
             return;
         }
 
-        this.children.onPointMove(points);
+        this.children.onPointMove(this.offsetPoints(points));
     };
 
     /**
@@ -109,7 +109,20 @@
             return;
         }
 
-        this.children.onPointEnd(points);
+        this.children.onPointEnd(this.offsetPoints(points));
+    };
+
+    /**
+     * @description Takes an array of x/y coordinates, and offsets them by own position
+     */
+    GameObject.prototype.offsetPoints = function (points) {
+        var self = this;
+        return points.map(function (point) {
+            return {
+                x: point.x - self.position.x,
+                y: point.y - self.position.y
+            };
+        });
     };
 
     Arcadia.GameObject = GameObject;

@@ -56,7 +56,7 @@ describe('Arcadia.Button', function () {
 	describe('#font', function () {
 		it('sets the font of the button label', function () {
 			button.font = '90px serif';
-			expect(button.label.text).toBe('90px serif');
+			expect(button.label.font).toBe('90px serif');
 		});
 
 		it('gets the font of the button label', function () {

@@ -1,7 +1,7 @@
 describe('Arcadia.Label', function () {
     var label;
     var canvas = document.createElement('canvas');
-    var context = this.canvas.getContext('2d');
+    var context = canvas.getContext('2d');
 
     beforeEach(function () {
         label = new Arcadia.Label({ text: 'Hey you guys!' });
@@ -32,7 +32,7 @@ describe('Arcadia.Label', function () {
         });
         it('sets the internal font value', function () {
             label.font = '33px serif';
-            expect(label._font).toEqual({ size: 33, family: 'serif' });
+            expect(label._font).toEqual({ size: '33', family: 'serif' });
         });
         it('throws if bad value', function () {
             expect(function () {
@@ -65,7 +65,7 @@ describe('Arcadia.Label', function () {
         });
         it('sets the internal alignment value', function () {
             label.alignment = 'left';
-            expect(label._alignment).toBe('this is new alignment');
+            expect(label._alignment).toBe('left');
         });
         it('throws if bad value', function () {
             expect(function () {

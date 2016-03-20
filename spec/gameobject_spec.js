@@ -101,6 +101,13 @@ describe('Arcadia.GameObject', function () {
                     gameObj.onPointStart(points);
                     expect(gameObj.children.onPointStart).toHaveBeenCalledWith([{x: 0, y: 0}]);
                 });
+
+                it('offsets coordinates based on parent position', function () {
+                    gameObj.position = {x: 100, y: 100};
+                    spyOn(gameObj.children, 'onPointStart');
+                    gameObj.onPointStart(points);
+                    expect(gameObj.children.onPointStart).toHaveBeenCalledWith([{x: -100, y: -100}]);
+                });
             });
 
             describe('point events disabled', function () {
@@ -123,6 +130,13 @@ describe('Arcadia.GameObject', function () {
                     gameObj.onPointMove(points);
                     expect(gameObj.children.onPointMove).toHaveBeenCalledWith([{x: 0, y: 0}]);
                 });
+
+                it('offsets coordinates based on parent position', function () {
+                    gameObj.position = {x: 200, y: 200};
+                    spyOn(gameObj.children, 'onPointMove');
+                    gameObj.onPointMove(points);
+                    expect(gameObj.children.onPointMove).toHaveBeenCalledWith([{x: -200, y: -200}]);
+                });
             });
 
             describe('point events disabled', function () {
@@ -144,6 +158,13 @@ describe('Arcadia.GameObject', function () {
                     spyOn(gameObj.children, 'onPointEnd');
                     gameObj.onPointEnd(points);
                     expect(gameObj.children.onPointEnd).toHaveBeenCalledWith([{x: 0, y: 0}]);
+                });
+
+                it('offsets coordinates based on parent position', function () {
+                    gameObj.position = {x: 150, y: 150};
+                    spyOn(gameObj.children, 'onPointEnd');
+                    gameObj.onPointEnd(points);
+                    expect(gameObj.children.onPointEnd).toHaveBeenCalledWith([{x: -150, y: -150}]);
                 });
             });
 
