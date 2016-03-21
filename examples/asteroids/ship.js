@@ -9,7 +9,7 @@ var Ship = function () {
 
     // Standard `Shape` properties
     this.speed = 5;
-    this.size = { width: 20, height: 25 };
+    this.size = {width: 20, height: 25};
     this.border = '2px #fff';
     this.color = null;
     this.shadow = '0 0 10px #fff';
@@ -19,22 +19,22 @@ var Ship = function () {
     this.MAX_VELOCITY = 0.50;
 
     this.path = function (context) {
-        context.moveTo(0, -this.size.height / 2);
-        context.lineTo(this.size.width / 2, this.size.height);
-        context.moveTo(0, -this.size.height / 2);
-        context.lineTo(-this.size.width / 2, this.size.height);
-        context.moveTo(-this.size.width / 3, this.size.height / 2);
-        context.lineTo(this.size.width / 3, this.size.height / 2);
+        context.moveTo(0, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+        context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height * Arcadia.PIXEL_RATIO);
+        context.moveTo(0, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+        context.lineTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height * Arcadia.PIXEL_RATIO);
+        context.moveTo(-this.size.width / 3 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+        context.lineTo(this.size.width / 3 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
     };
 
     this.jet = new Arcadia.Shape({
         vertices: 3,
         border: '1px #fff',
         rotation: Math.PI,
-        size: { width: 8, height: 8 },
-        position: { x: 0, y: 22 }
+        size: {width: 8, height: 8},
+        position: {x: 0, y: 22},
+        color: null
     });
-    this.jet.color = null;
     this.add(this.jet);
     this.deactivate(this.jet);
 };
@@ -64,23 +64,6 @@ Ship.prototype.update = function (delta) {
     // Finally, update the ship's position
     this.position.x += this.velocity.x * this.speed;
     this.position.y += this.velocity.y * this.speed;
-
-    // Automatically have ship wrap around the screen
-    if (this.position.x + this.size.width / 2 > Arcadia.WIDTH) {
-        this.position.x = this.size.width / 2;
-    }
-
-    if (this.position.x - this.size.width / 2 < 0) {
-        this.position.x = Arcadia.WIDTH - this.size.width / 2;
-    }
-
-    if (this.position.y + this.size.height / 2 > Arcadia.HEIGHT) {
-        this.position.y = this.size.height / 2;
-    }
-
-    if (this.position.y - this.size.height / 2 < 0) {
-        this.position.y = Arcadia.HEIGHT - this.size.height / 2;
-    }
 };
 
 Ship.prototype.move = function () {
@@ -91,4 +74,16 @@ Ship.prototype.move = function () {
 Ship.prototype.stop = function () {
     this.thrust = 0;
     this.deactivate(this.jet);
+};
+
+Ship.prototype.turnLeft = function () {
+    this.angularVelocity = -3;
+};
+
+Ship.prototype.turnRight = function () {
+    this.angularVelocity = 3;
+};
+
+Ship.prototype.stopTurning = function () {
+    this.angularVelocity = 0;
 };

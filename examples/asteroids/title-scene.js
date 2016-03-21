@@ -6,13 +6,14 @@ var AsteroidsTitleScene = function () {
     // Background color
     this.color = '#000';
 
+    this.size = {width: 640, height: 480};
+
     // Basic text label
     var title = new Arcadia.Label({
         position: {
-            x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT / 4
+            x: 0,
+            y: -this.size.height / 2 + 100
         },
-        color: '#fff',
         font: '70px monospace',
         shadow: '0 0 20px #fff',
         text: "'Roids"
@@ -21,10 +22,7 @@ var AsteroidsTitleScene = function () {
 
     // "Start game" button
     var button = new Arcadia.Button({
-        position: {
-            x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT - 100
-        },
+        position: {x: 0, y: this.size.height / 2 - 100},
         color: '#000',
         border: '2px #fff',
         padding: 15,

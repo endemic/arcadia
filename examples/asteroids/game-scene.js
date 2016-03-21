@@ -5,6 +5,7 @@ var AsteroidsGameScene = function () {
     Arcadia.Scene.apply(this, arguments);
 
     this.color = 'rgba(0, 0, 0, 0.25)';
+    this.size = {width: 640, height: 480};
 
     // Player's ship
     this.ship = new Ship();
@@ -39,16 +40,13 @@ var AsteroidsGameScene = function () {
     // Particle emitters
     this.particles = new Arcadia.Pool();
     this.particles.factory = function () {
-        var emitter,
-            factory;
-
-        factory = function () {
+        var factory = function () {
             return new Arcadia.Shape({
                 color: '#fff',
-                size: { width: 3, height: 3 }
+                size: {width: 3, height: 3}
             });
         };
-        emitter = new Arcadia.Emitter(factory);
+        var emitter = new Arcadia.Emitter(factory);
         emitter.duration = 0.5;
         return emitter;
     };
@@ -61,8 +59,8 @@ var AsteroidsGameScene = function () {
     // Text/button that lets player try again
     this.gameOverLabel = new Arcadia.Label({
         position: {
-            x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT / 4
+            x: 0,
+            y: -this.size.height - 200
         },
         text: 'GAME OVER',
         font: '40px monospace',
@@ -73,10 +71,7 @@ var AsteroidsGameScene = function () {
     this.deactivate(this.gameOverLabel);
 
     this.tryAgainButton = new Arcadia.Button({
-        position: {
-            x: Arcadia.WIDTH / 2, 
-            y: Arcadia.HEIGHT / 2
-        },
+        position: {x: 0, y: 0},
         border: '2px #fff',
         color: '#000',
         font: '20px monospace',
@@ -91,19 +86,26 @@ var AsteroidsGameScene = function () {
 
     // Score label
     this.scoreLabel = new Arcadia.Label({
-        position: { x: 50, y: 15 },
+        position: {x: 50, y: 15},
         text: 'Score: 0',
-        font: 'bold 16px monospace'
+        font: '16px monospace'
     });
+    this.scoreLabel.position = {
+        x: -this.size.width / 2 + 50,
+        y: -this.size.height / 2 + this.scoreLabel.size.height
+    };
     this.add(this.scoreLabel);
     this.score = 0;
 
     // Show FPS
     this.fpsLabel = new Arcadia.Label({
-        position: { x: Arcadia.WIDTH - 50, y: 15 },
-        text: 'FPS: 0',
-        font: 'bold 16px monospace'
+        text: 'FPS: 1000',
+        font: '16px monospace'
     });
+    this.fpsLabel.position = {
+        x: this.size.width / 2 - 50,
+        y: -this.size.height / 2 + this.fpsLabel.size.height
+    };
     this.add(this.fpsLabel);
 
     this.level = 1;
@@ -114,43 +116,43 @@ var AsteroidsGameScene = function () {
 AsteroidsGameScene.prototype = new Arcadia.Scene();
 
 AsteroidsGameScene.prototype.init = function () {
-    var i, asteroid;
+    var i,
+        asteroid;
 
     for (i = 0; i < this.level; i += 1) {
         asteroid = this.asteroids.activate();
         asteroid.position = {
-            x: Math.random() * Arcadia.WIDTH,
-            y: Math.random() * Arcadia.HEIGHT
+            x: Math.random() * this.size.width - (this.size.width / 2),
+            y: Math.random() * this.size.height - (this.size.height / 2)
         };
     }
 
     this.bullets.deactivateAll();
 
-    this.ship.position =  {
-        x: Arcadia.WIDTH / 2,
-        y: Arcadia.HEIGHT / 2
-    };
+    this.ship.position = {x: 0, y: 0};
 };
 
 AsteroidsGameScene.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
 
-    this.fpsLabel.text = 'FPS: ' + Math.round(Arcadia.FPS);
-
-    var bullet, asteroid, a, i, j, k;
+    this.fpsLabel.text = 'FPS: ' + Math.round(this.parent.fps);
 
     if (this.asteroids.length === 0) {
         this.nextLevel();
     }
 
-    // Check for player bullet collisions
-    j = this.asteroids.length;
-    while (j--) {
-        asteroid = this.asteroids.at(j);
+    this.wrapAroundScreen(this.ship);
 
-        i = this.bullets.length;
+    // Check for player bullet collisions
+    var j = this.asteroids.length;
+    while (j--) {
+        var asteroid = this.asteroids.at(j);
+        this.wrapAroundScreen(asteroid);
+
+        var i = this.bullets.length;
         while (i--) {
-            bullet = this.bullets.at(i);
+            var bullet = this.bullets.at(i);
+            this.wrapAroundScreen(bullet);
 
             if (bullet.lifespan > bullet.MAX_LIFESPAN) {
                 // Remove bullets once they get too old
@@ -184,25 +186,23 @@ AsteroidsGameScene.prototype.onKeyDown = function (key) {
         return;
     }
 
-    var b;
-
-    if (key === "z" || key === "space") {
-        b = this.bullets.activate();
+    if (key === 'z' || key === 'space') {
+        var b = this.bullets.activate();
         b.velocity.x = Math.cos(this.ship.rotation - Math.PI / 2);
         b.velocity.y = Math.sin(this.ship.rotation - Math.PI / 2);
         b.position.x = this.ship.position.x + this.ship.velocity.x + b.velocity.x;
         b.position.y = this.ship.position.y + this.ship.velocity.y + b.velocity.y;
     }
 
-    if (key === "left") {
-        this.ship.angularVelocity = -3;
+    if (key === 'left') {
+        this.ship.turnLeft();
     }
 
-    if (key === "right") {
-        this.ship.angularVelocity = 3;
+    if (key === 'right') {
+        this.ship.turnRight();
     }
 
-    if (key === "up") {
+    if (key === 'up') {
         this.ship.move();
     }
 };
@@ -215,15 +215,11 @@ AsteroidsGameScene.prototype.onKeyUp = function (key) {
         return;
     }
 
-    if (key === "left") {
-        this.ship.angularVelocity = 0;
+    if (key === 'left' || key === 'right') {
+        this.ship.stopTurning();
     }
 
-    if (key === "right") {
-        this.ship.angularVelocity = 0;
-    }
-
-    if (key === "up") {
+    if (key === 'up') {
         this.ship.stop();
     }
 };
@@ -244,4 +240,25 @@ AsteroidsGameScene.prototype.showGameOver = function () {
 
     this.activate(this.gameOverLabel);
     this.activate(this.tryAgainButton);
+};
+
+/**
+ * @description Call on a Shape object to have it wrap around the screen, Asteroids-style
+ */
+AsteroidsGameScene.prototype.wrapAroundScreen = function (object) {
+    if (object.position.x - object.size.width / 2 > this.size.width / 2) {
+        object.position.x = -this.size.width / 2;
+    }
+
+    if (object.position.x + object.size.width / 2 < -this.size.width / 2) {
+        object.position.x = this.size.width / 2;
+    }
+
+    if (object.position.y - object.size.height / 2 > this.size.height / 2) {
+        object.position.y = -this.size.height / 2;
+    }
+
+    if (object.position.y + object.size.height / 2 < -this.size.height / 2) {
+        object.position.y = this.size.height / 2;
+    }
 };
