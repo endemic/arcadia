@@ -9,7 +9,8 @@
   "scripts": {
     "test": "node_modules/.bin/mocha --ui tdd --reporter spec spec/*.js",
     "concat": "cat src/pool.js src/game.js src/gameobject.js src/scene.js vendor/easie.js src/shape.js src/emitter.js src/label.js src/button.js src/arcadia.js > dist/arcadia.js",
-    "compress": "node_modules/.bin/uglifyjs --compress --mangle --output dist/arcadia.min.js -- src/pool.js src/game.js src/gameobject.js src/scene.js vendor/easie.js src/shape.js src/emitter.js src/label.js src/button.js src/arcadia.js"
+    "compress": "node_modules/.bin/uglifyjs --compress --mangle --output dist/arcadia.min.js -- src/pool.js src/game.js src/gameobject.js src/scene.js vendor/easie.js src/shape.js src/emitter.js src/label.js src/button.js src/arcadia.js",
+    "build": "npm run-script concat && npm run-script compress"
   },
   "repository": {
     "type": "git",
