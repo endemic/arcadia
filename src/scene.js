@@ -11,35 +11,9 @@
      */
     var Scene = function (options) {
         Arcadia.GameObject.apply(this, arguments);
-        options = options || {};
         this.enablePointEvents = true;
-        
-        var DEFAULT_SIZE = {
-            width: 100,
-            height: 100
-        };
-
-        this.size = options.size || DEFAULT_SIZE;
-
-        var viewportSize = this.parent ? this.parent.size : this.size;
-
-        // implement a camera view/drawing offset
-        // TODO: need to be able to specify the size of a scene which is larger
-        // than the viewport; otherwise, what's the point of a tracking camera?
-        this.camera = {
-            target: null,
-            viewport: {
-                width: viewportSize.width,
-                height: viewportSize.height
-            },
-            bounds: {
-                top: -this.size.height / 2,
-                bottom: this.size.height / 2,
-                left: -this.size.width / 2,
-                right: this.size.width / 2
-            },
-            position: {x: 0, y: 0}
-        };
+        options = options || {};
+        this.parent = options.parent;
     };
 
     Scene.prototype = new Arcadia.GameObject();
@@ -51,7 +25,7 @@
     Scene.prototype.update = function (delta) {
         Arcadia.GameObject.prototype.update.call(this, delta);
 
-        if (!this.camera.target) {
+        if (!this.camera) {
             return;
         }
 
@@ -86,8 +60,15 @@
             context.clearRect(0, 0, context.canvas.width, context.canvas.height);
         }
 
+        var origin = {x: this.size.width / 2, y: this.size.height / 2};
+
+        if (this.camera) {
+            origin.x = this.camera.viewport.width / 2 - this.camera.position.x;
+            origin.y = this.camera.viewport.height / 2 - this.camera.position.y;
+        }
+
         // Draw child objects
-        Arcadia.GameObject.prototype.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
+        Arcadia.GameObject.prototype.draw.call(this, context, origin.x, origin.y);
     };
 
     /**
@@ -96,14 +77,33 @@
     Object.defineProperty(Scene.prototype, 'target', {
         enumerable: true,
         get: function () {
-            return this.camera.target;
+            return this.camera && this.camera.target;
         },
         set: function (shape) {
-            if (!shape || !shape.position) {
+            if (!shape.position) {
                 throw new Error('Scene camera target requires a `position` property.');
             }
 
-            this.camera.target = shape;
+            var viewportSize = this.parent ? this.parent.size : this.size;
+
+            // implement a camera view/drawing offset
+            this.camera = {
+                target: shape,
+                viewport: {
+                    width: viewportSize.width,
+                    height: viewportSize.height
+                },
+                bounds: {
+                    top: -this.size.height / 2,
+                    bottom: this.size.height / 2,
+                    left: -this.size.width / 2,
+                    right: this.size.width / 2
+                },
+                position: {
+                    x: shape.position.x,
+                    y: shape.position.y
+                }
+            };
         }
     });
 

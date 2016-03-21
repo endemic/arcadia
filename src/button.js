@@ -53,7 +53,7 @@
      * callback this method will get fired for each different button object on the screen
      */
     Button.prototype.onPointEnd = function (points) {
-        Arcadia.Shape.apply(this, arguments);
+        Arcadia.Shape.prototype.onPointEnd.call(this, points);
 
         if (!this.action || this.disabled) {
             return;

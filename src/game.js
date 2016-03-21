@@ -254,17 +254,24 @@
             this.points.pop();
         }
 
+        var cameraOffset = {x: 0, y: 0};
+
+        if (this.activeScene.camera) {
+            cameraOffset.x = this.activeScene.camera.position.x;
+            cameraOffset.y = this.activeScene.camera.position.y;
+        }
+
         if (event.type.indexOf('mouse') !== -1) {
             this.points.unshift({
-                x: (event.pageX - this.offset.x) / this.scale - this.size.width / 2 + this.activeScene.camera.position.x,
-                y: (event.pageY - this.offset.y) / this.scale - this.size.height / 2 + this.activeScene.camera.position.y
+                x: (event.pageX - this.offset.x) / this.scale - this.size.width / 2 + cameraOffset.x,
+                y: (event.pageY - this.offset.y) / this.scale - this.size.height / 2 + cameraOffset.y
             });
         } else {
             var i = event[source].length;
             while (i--) {
                 this.points.unshift({
-                    x: (event[source][i].pageX - this.offset.x) / this.scale - this.size.width / 2 + this.activeScene.camera.position.x,
-                    y: (event[source][i].pageY - this.offset.y) / this.scale - this.size.height / 2 + this.activeScene.camera.position.y
+                    x: (event[source][i].pageX - this.offset.x) / this.scale - this.size.width / 2 + cameraOffset.x,
+                    y: (event[source][i].pageY - this.offset.y) / this.scale - this.size.height / 2 + cameraOffset.y
                 });
             }
         }

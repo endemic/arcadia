@@ -11,19 +11,12 @@
      */
     var GameObject = function (options) {
         options = options || {};
-        this.scale = 1;
-        this.rotation = 0; // in radians
-        this.alpha = 1;
-        this.enablePointEvents = false;
-        this.position = {x: 0, y: 0};
 
-        // Assign any props passed in through options
-        // TODO: determine if there are reference problems here when setting position
-        // previous implementation was `@position = { x: args.position.x, y: args.position.y }`
-        var self = this;
-        Object.keys(options).forEach(function (property) {
-            self[property] = options[property];
-        });
+        this.scale = options.scale || 1;
+        this.rotation = options.rotation || 0; // in radians
+        this.alpha = options.alpha || 1;
+        this.enablePointEvents = options.enablePointEvents || false;
+        this.position = options.position || {x: 0, y: 0};
 
         this.children = new Arcadia.Pool();
     };
