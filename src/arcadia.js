@@ -52,6 +52,13 @@
         return Math.random() * diff + min;
     };
 
+    /**
+     * @description Random sign value; returns 1 or -1
+     */
+    Arcadia.randomSign = function () {
+        return Math.random() < 0.5 ? 1 : -1;
+    };
+
     // Normalize requestAnimationFrame
     if (!root.requestAnimationFrame) {
         root.requestAnimationFrame = root.mozRequestAnimationFrame || root.webkitRequestAnimationFrame || root.msRequestAnimationFrame;

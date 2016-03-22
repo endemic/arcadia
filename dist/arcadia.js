@@ -509,17 +509,24 @@
             this.points.pop();
         }
 
+        var cameraOffset = {x: 0, y: 0};
+
+        if (this.activeScene.camera) {
+            cameraOffset.x = this.activeScene.camera.position.x;
+            cameraOffset.y = this.activeScene.camera.position.y;
+        }
+
         if (event.type.indexOf('mouse') !== -1) {
             this.points.unshift({
-                x: (event.pageX - this.offset.x) / this.scale - this.size.width / 2 + this.activeScene.camera.position.x,
-                y: (event.pageY - this.offset.y) / this.scale - this.size.height / 2 + this.activeScene.camera.position.y
+                x: (event.pageX - this.offset.x) / this.scale - this.size.width / 2 + cameraOffset.x,
+                y: (event.pageY - this.offset.y) / this.scale - this.size.height / 2 + cameraOffset.y
             });
         } else {
             var i = event[source].length;
             while (i--) {
                 this.points.unshift({
-                    x: (event[source][i].pageX - this.offset.x) / this.scale - this.size.width / 2 + this.activeScene.camera.position.x,
-                    y: (event[source][i].pageY - this.offset.y) / this.scale - this.size.height / 2 + this.activeScene.camera.position.y
+                    x: (event[source][i].pageX - this.offset.x) / this.scale - this.size.width / 2 + cameraOffset.x,
+                    y: (event[source][i].pageY - this.offset.y) / this.scale - this.size.height / 2 + cameraOffset.y
                 });
             }
         }
@@ -651,19 +658,12 @@
      */
     var GameObject = function (options) {
         options = options || {};
-        this.scale = 1;
-        this.rotation = 0; // in radians
-        this.alpha = 1;
-        this.enablePointEvents = false;
-        this.position = {x: 0, y: 0};
 
-        // Assign any props passed in through options
-        // TODO: determine if there are reference problems here when setting position
-        // previous implementation was `@position = { x: args.position.x, y: args.position.y }`
-        var self = this;
-        Object.keys(options).forEach(function (property) {
-            self[property] = options[property];
-        });
+        this.scale = options.scale || 1;
+        this.rotation = options.rotation || 0; // in radians
+        this.alpha = options.alpha || 1;
+        this.enablePointEvents = options.enablePointEvents || false;
+        this.position = options.position || {x: 0, y: 0};
 
         this.children = new Arcadia.Pool();
     };
@@ -782,35 +782,9 @@
      */
     var Scene = function (options) {
         Arcadia.GameObject.apply(this, arguments);
-        options = options || {};
         this.enablePointEvents = true;
-        
-        var DEFAULT_SIZE = {
-            width: 100,
-            height: 100
-        };
-
-        this.size = options.size || DEFAULT_SIZE;
-
-        var viewportSize = this.parent ? this.parent.size : this.size;
-
-        // implement a camera view/drawing offset
-        // TODO: need to be able to specify the size of a scene which is larger
-        // than the viewport; otherwise, what's the point of a tracking camera?
-        this.camera = {
-            target: null,
-            viewport: {
-                width: viewportSize.width,
-                height: viewportSize.height
-            },
-            bounds: {
-                top: -this.size.height / 2,
-                bottom: this.size.height / 2,
-                left: -this.size.width / 2,
-                right: this.size.width / 2
-            },
-            position: {x: 0, y: 0}
-        };
+        options = options || {};
+        this.parent = options.parent;
     };
 
     Scene.prototype = new Arcadia.GameObject();
@@ -822,7 +796,7 @@
     Scene.prototype.update = function (delta) {
         Arcadia.GameObject.prototype.update.call(this, delta);
 
-        if (!this.camera.target) {
+        if (!this.camera) {
             return;
         }
 
@@ -857,8 +831,15 @@
             context.clearRect(0, 0, context.canvas.width, context.canvas.height);
         }
 
+        var origin = {x: this.size.width / 2, y: this.size.height / 2};
+
+        if (this.camera) {
+            origin.x = this.camera.viewport.width / 2 - this.camera.position.x;
+            origin.y = this.camera.viewport.height / 2 - this.camera.position.y;
+        }
+
         // Draw child objects
-        Arcadia.GameObject.prototype.draw.call(this, context, this.camera.viewport.width / 2 - this.camera.position.x, this.camera.viewport.height / 2 - this.camera.position.y);
+        Arcadia.GameObject.prototype.draw.call(this, context, origin.x, origin.y);
     };
 
     /**
@@ -867,14 +848,33 @@
     Object.defineProperty(Scene.prototype, 'target', {
         enumerable: true,
         get: function () {
-            return this.camera.target;
+            return this.camera && this.camera.target;
         },
         set: function (shape) {
-            if (!shape || !shape.position) {
+            if (!shape.position) {
                 throw new Error('Scene camera target requires a `position` property.');
             }
 
-            this.camera.target = shape;
+            var viewportSize = this.parent ? this.parent.size : this.size;
+
+            // implement a camera view/drawing offset
+            this.camera = {
+                target: shape,
+                viewport: {
+                    width: viewportSize.width,
+                    height: viewportSize.height
+                },
+                bounds: {
+                    top: -this.size.height / 2,
+                    bottom: this.size.height / 2,
+                    left: -this.size.width / 2,
+                    right: this.size.width / 2
+                },
+                position: {
+                    x: shape.position.x,
+                    y: shape.position.y
+                }
+            };
         }
     });
 
@@ -1931,7 +1931,7 @@ if (typeof module !== 'undefined') {
      * callback this method will get fired for each different button object on the screen
      */
     Button.prototype.onPointEnd = function (points) {
-        Arcadia.Shape.apply(this, arguments);
+        Arcadia.Shape.prototype.onPointEnd.call(this, points);
 
         if (!this.action || this.disabled) {
             return;
@@ -2040,6 +2040,13 @@ if (typeof module !== 'undefined') {
     Arcadia.random = function (min, max) {
         var diff = max - min;
         return Math.random() * diff + min;
+    };
+
+    /**
+     * @description Random sign value; returns 1 or -1
+     */
+    Arcadia.randomSign = function () {
+        return Math.random() < 0.5 ? 1 : -1;
     };
 
     // Normalize requestAnimationFrame
