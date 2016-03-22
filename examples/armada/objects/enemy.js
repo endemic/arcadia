@@ -5,7 +5,7 @@ var Enemy = function () {
     Arcadia.Shape.apply(this, arguments);
 
     this.vertices = 3;
-    this.width = this.height = this.size = 20;
+    this.size = {width: 20, height: 20};
     this.color = '#f00';
     this.shadow = '0 0 10px ' + this.color;
 

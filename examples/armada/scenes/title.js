@@ -1,8 +1,10 @@
 /*jslint sloppy: true, plusplus: true */
 /*globals Arcadia, Player, PlayerBullet, Enemy, Game */
 
-var Title = function () {
+var TitleScene = function () {
     Arcadia.Scene.apply(this, arguments);
+
+    this.size = {width: 320, height: 568};
 
     var self = this;
 
@@ -73,17 +75,12 @@ var Title = function () {
         font: '40px serif',
         text: 'hello world!',
         border: '1px yellow',
-        shadow: '0 10px 5px #0ff',
-        // angularVelocity: 1
-        // debug: true
+        shadow: '0 10px 5px #0ff'
     });
     this.add(this.label);
 
     this.button = new Arcadia.Button({
-        position: {
-            x: 0,
-            y: 150
-        },
+        position: {x: 0, y: 150},
         border: '1px #fff',
         shadow: '0 0 20px #fff',
         color: 'red',
@@ -95,34 +92,37 @@ var Title = function () {
             shadow: '0 0 10px #fff'
         }),
         action: function () {
-            Arcadia.changeScene(Game);
+            Arcadia.changeScene(GameScene);
         }
     });
     this.add(this.button);
 };
 
-Title.prototype = new Arcadia.Scene();
+TitleScene.prototype = new Arcadia.Scene();
 
-Title.prototype.update = function (delta) {
+TitleScene.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
 
-    this.label.text = Math.round(Arcadia.FPS);
+    this.label.text = 'FPS: ' + Math.round(this.parent.fps);
 };
 
-Title.prototype.onPointStart = function (points) {
+TitleScene.prototype.onPointStart = function (points) {
     Arcadia.Scene.prototype.onPointStart.call(this, points);
+
     this.shape.position.x = points[0].x;
     this.shape.position.y = points[0].y;
 };
 
-Title.prototype.onPointMove = function (points) {
+TitleScene.prototype.onPointMove = function (points) {
     Arcadia.Scene.prototype.onPointMove.call(this, points);
+
     this.shape.position.x = points[0].x;
     this.shape.position.y = points[0].y;
 };
 
-Title.prototype.onPointEnd = function (points) {
+TitleScene.prototype.onPointEnd = function (points) {
     Arcadia.Scene.prototype.onPointEnd.call(this, points);
+
     if (this.shape.scale >= 2) {
         this.shape.tween('scale', 1, 1000, 'elasticInOut');
     } else {

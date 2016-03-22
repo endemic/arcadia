@@ -1,19 +1,20 @@
 /*jslint sloppy: true, plusplus: true, continue: true */
 /*globals Arcadia, Player, PlayerBullet, Enemy, EnemyBullet */
 
-var Game = function () {
+var GameScene = function () {
     Arcadia.Scene.apply(this, arguments);
+
+    this.size = {width: 320, height: 568};
     this.color = 'rgba(0, 0, 0, 0.15)';
+
+    var self = this;
 
     // Player
     this.player = new Player({
-        position: {
-            x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT / 1.5
-        }
+        position: {x: 0, y: this.size.height / 3}
     });
     this.add(this.player);
-    this.target = this.player;
+    // this.target = this.player;
 
     // Other game objects
     this.playerBullets = new Arcadia.Pool();
@@ -51,17 +52,14 @@ var Game = function () {
     // Particle emitters
     this.particles = new Arcadia.Pool();
     this.particles.factory = function () {
-        var emitter,
-            factory;
-
-        factory = function () {
+        var factory = function () {
             return new Arcadia.Shape({
-                position: { x: 0, y: 0 },
-                color: 'rgb(255, 0, 0)',
-                size: 5
+                position: {x: 0, y: 0},
+                color: 'red',
+                size: {width: Arcadia.random(2, 5), height: Arcadia.random(2, 5)}
             });
         };
-        emitter = new Arcadia.Emitter(factory);
+        var emitter = new Arcadia.Emitter(factory);
         emitter.duration = 0.5;
         return emitter;
     };
@@ -76,21 +74,25 @@ var Game = function () {
     this.stars.factory = function () {
         var star = new Arcadia.Shape({
             position: {
-                x: Math.random() * Arcadia.WIDTH,
-                y: Math.random() * Arcadia.HEIGHT
+                x: Arcadia.random(-self.size.width / 2, self.size.width / 2),
+                y: Arcadia.random(-self.size.height / 2, self.size.height / 2)
             },
             vertices: 4,
-            size: Math.random() * 5 + 5,
+            size: {
+                width: Arcadia.random(1, 5),
+                height: Arcadia.random(1, 5)
+            },
             color: '#fff',
-            angularVelocity: 4 * Math.random() * (Math.random() > 0.5 ? 1 : -1)
+            angularVelocity: Arcadia.random(1, 4) * Arcadia.randomSign()
         });
-        star.velocity.y = 200 / star.size;
+
+        star.velocity.y = 100 / star.size.width * star.size.height;
         star.update = function (delta) {
             Arcadia.Shape.prototype.update.call(this, delta);   // "super"
 
             // Reset star position if it goes off the bottom of the screen
-            if (this.position.y > Arcadia.HEIGHT) {
-                this.position.y = 0;
+            if (this.position.y > self.size.height / 2) {
+                this.position.y = -self.size.height / 2;
             }
         };
 
@@ -106,8 +108,8 @@ var Game = function () {
     // Text/button that lets player try again
     this.gameOverLabel = new Arcadia.Label({
         position: {
-            x: Arcadia.WIDTH / 2,
-            y: Arcadia.HEIGHT / 4
+            x: 0,
+            y: -this.size.height / 3
         },
         text: 'GAME OVER',
         font: '40px monospace',
@@ -119,39 +121,42 @@ var Game = function () {
     this.deactivate(this.gameOverLabel);
 
     this.tryAgainButton = new Arcadia.Button({
-        position: {
-            x: Arcadia.WIDTH / 2, 
-            y: Arcadia.HEIGHT / 2
-        },
-        border: '1px rgba(255, 255, 255, 0.8)',
-        color: 'rgba(0, 0, 0, 0)',
-        font: '20px monospace',
-        shadow: '0 0 10px #fff',
-        text: "TRY AGAIN",
-        padding: 15
+        position: {x: 0, y: 0},
+        color: 'white',
+        shadow: '0 0 10px white',
+        label: new Arcadia.Label({
+            font: '20px monospace',
+            color: 'black',
+            shadow: '0 0 10px black',
+            text: 'TRY AGAIN',
+        }),
+        padding: 15,
+        action: function () {
+            // Just reload this scene
+            Arcadia.changeScene(GameScene);
+        }
     });
-    this.tryAgainButton.onUp = function () {
-        Arcadia.changeScene(Game);
-    };
 
     this.add(this.tryAgainButton);
     this.deactivate(this.tryAgainButton);
 
     // Score label
     this.label = new Arcadia.Label({
-        position: { x: 0, y: 10 },
         text: 'Score: 0',
         font: '16px monospace',
-        shadow: '0 0 10px rgba(255, 255, 255, 0.8)'
+        shadow: '0 0 10px rgba(255, 255, 255, 0.8)',
+        position: {
+            x: -this.size.width / 2 + 45,
+            y: -this.size.height / 2 + 10
+        }
     });
-    this.label.position.x = this.label.width / 2;
     this.add(this.label);
     this.score = 0;
 };
 
-Game.prototype = new Arcadia.Scene();
+GameScene.prototype = new Arcadia.Scene();
 
-Game.prototype.update = function (delta) {
+GameScene.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
 
     var angle,
@@ -161,26 +166,26 @@ Game.prototype.update = function (delta) {
         j;
 
     // Check for player bullet collisions
-    i = this.playerBullets.length;
+    var i = this.playerBullets.length;
     while (i--) {
-        bullet = this.playerBullets.at(i);
+        var bullet = this.playerBullets.at(i);
 
-        if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
+        if (bullet.position.y > this.size.height / 2 || bullet.position.y < -this.size.height / 2) {
             // Remove bullets if they go offscreen
             this.playerBullets.deactivate(i);
             continue;
         } else {
-            j = this.enemies.length;
+            var j = this.enemies.length;
             while (j--) {
-                enemy = this.enemies.at(j);
+                var enemy = this.enemies.at(j);
 
                 // Remove both enemy and bullet if they collide
                 if (enemy.collidesWith(bullet) === true) {
                     this.particles.activate().startAt(bullet.position.x, bullet.position.y);
 
                     // Move enemy back to top
-                    enemy.position.y = 0;
-                    enemy.position.x = Math.random() * Arcadia.WIDTH;
+                    enemy.position.y = -this.size.height / 2;
+                    enemy.position.x = Arcadia.random(-this.size.width / 2, this.size.width / 2);
 
                     this.playerBullets.deactivate(i);
                     this.score += 10;
@@ -191,7 +196,7 @@ Game.prototype.update = function (delta) {
         }
     }
 
-    if (this.gameOver === true) {
+    if (this.gameOver) {
         return;
     }
 
@@ -201,8 +206,8 @@ Game.prototype.update = function (delta) {
         this.spawnTimer = 0;
 
         enemy = this.enemies.activate();
-        enemy.position.y = 0;
-        enemy.position.x = Math.random() * Arcadia.WIDTH;
+        enemy.position.y = -this.size.height / 2;
+        enemy.position.x = Arcadia.random(-this.size.width / 2, this.size.width / 2);
     }
 
     // Update enemy velocity
@@ -216,7 +221,7 @@ Game.prototype.update = function (delta) {
         enemy.bulletTimer += delta;
 
         // Have enemies shoot in a somewhat erratic fashion
-        if (enemy.bulletTimer > Math.random() * 2 + 1) {
+        if (enemy.bulletTimer > Arcadia.random(1, 3)) {
             enemy.bulletTimer = 0;
 
             bullet = this.enemyBullets.activate();
@@ -232,11 +237,11 @@ Game.prototype.update = function (delta) {
     while (i--) {
         bullet = this.enemyBullets.at(i);
 
-        if (bullet.position.y > Arcadia.HEIGHT || bullet.position.y < 0) {
+        if (bullet.position.y > this.size.height / 2 || bullet.position.y < -this.size.height / 2) {
             this.enemyBullets.deactivate(i);
-        } else if (bullet.collidesWith(this.player) === true) {
+        } else if (bullet.collidesWith(this.player)) {
             this.particles.activate().startAt(this.player.position.x, this.player.position.y);
-            this.showGameOver();
+            this.showGameSceneOver();
             break;
         }
     }
@@ -245,10 +250,10 @@ Game.prototype.update = function (delta) {
 /**
  * @description Mouse/touch movement
  */
-Game.prototype.onPointStart = function (points) {
+GameScene.prototype.onPointStart = function (points) {
     Arcadia.Scene.prototype.onPointStart.call(this, points);
 
-    if (this.gameOver === true) {
+    if (this.gameOver) {
         return;
     }
 
@@ -260,10 +265,10 @@ Game.prototype.onPointStart = function (points) {
     }
 };
 
-Game.prototype.onPointMove = function (points) {
+GameScene.prototype.onPointMove = function (points) {
     Arcadia.Scene.prototype.onPointMove.call(this, points);
 
-    if (this.gameOver === true) {
+    if (this.gameOver) {
         return;
     }
 
@@ -275,10 +280,10 @@ Game.prototype.onPointMove = function (points) {
     }
 };
 
-Game.prototype.onPointEnd = function (points) {
+GameScene.prototype.onPointEnd = function (points) {
     Arcadia.Scene.prototype.onPointEnd.call(this, points);
 
-    if (this.gameOver === true) {
+    if (this.gameOver) {
         return;
     }
 
@@ -295,32 +300,30 @@ Game.prototype.onPointEnd = function (points) {
 /**
  * @description Handle keyboard input
  */
-Game.prototype.onKeyDown = function (key) {
-    if (this.gameOver === true) {
+GameScene.prototype.onKeyDown = function (key) {
+    if (this.gameOver) {
         return;
     }
 
-    var b;
-
-    if (key === "z" || key === "space") {
-        b = this.playerBullets.activate();
+    if (key === 'z' || key === 'space') {
+        var b = this.playerBullets.activate();
         b.position.x = this.player.position.x;
-        b.position.y = this.player.position.y - this.player.size / 2;
+        b.position.y = this.player.position.y - this.player.size.height / 2;
     }
 
-    if (key === "left") {
+    if (key === 'left') {
         this.player.velocity.x -= 1;
     }
 
-    if (key === "right") {
+    if (key === 'right') {
         this.player.velocity.x += 1;
     }
 
-    if (key === "up") {
+    if (key === 'up') {
         this.player.velocity.y -= 1;
     }
 
-    if (key === "down") {
+    if (key === 'down') {
         this.player.velocity.y += 1;
     }
 };
@@ -328,24 +331,24 @@ Game.prototype.onKeyDown = function (key) {
 /**
  * @description Handle keyboard input
  */
-Game.prototype.onKeyUp = function (key) {
-    if (this.gameOver === true) {
+GameScene.prototype.onKeyUp = function (key) {
+    if (this.gameOver) {
         return;
     }
 
-    if (key === "left") {
+    if (key === 'left') {
         this.player.velocity.x += 1;
     }
 
-    if (key === "right") {
+    if (key === 'right') {
         this.player.velocity.x -= 1;
     }
 
-    if (key === "up") {
+    if (key === 'up') {
         this.player.velocity.y += 1;
     }
 
-    if (key === "down") {
+    if (key === 'down') {
         this.player.velocity.y -= 1;
     }
 };
@@ -353,7 +356,7 @@ Game.prototype.onKeyUp = function (key) {
 /**
  * @description Show "game over!" text
  */
-Game.prototype.showGameOver = function () {
+GameScene.prototype.showGameSceneOver = function () {
     this.gameOver = true;
 
     this.children.deactivate(this.player);

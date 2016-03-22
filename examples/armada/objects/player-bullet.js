@@ -4,8 +4,8 @@
 var PlayerBullet = function () {
     Arcadia.Shape.apply(this, arguments);
 
-    this.vertices = 5;
-    this.size = 3;
+    this.vertices = 3;
+    this.size = {width: 7, height: 7};
     this.speed = 150;
     this.velocity.y = -1;
 };
