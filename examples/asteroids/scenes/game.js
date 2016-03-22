@@ -1,7 +1,7 @@
 /*jslint sloppy: true, plusplus: true, continue: true */
 /*globals Arcadia, Ship, Asteroid */
 
-var AsteroidsGameScene = function () {
+var GameScene = function () {
     Arcadia.Scene.apply(this, arguments);
 
     this.color = 'rgba(0, 0, 0, 0.25)';
@@ -78,7 +78,7 @@ var AsteroidsGameScene = function () {
         text: "TRY AGAIN",
         padding: 15,
         action: function () {
-            Arcadia.changeScene(AsteroidsGameScene);
+            Arcadia.changeScene(GameScene);
         }
     });
     this.add(this.tryAgainButton);
@@ -113,9 +113,9 @@ var AsteroidsGameScene = function () {
     this.init();
 };
 
-AsteroidsGameScene.prototype = new Arcadia.Scene();
+GameScene.prototype = new Arcadia.Scene();
 
-AsteroidsGameScene.prototype.init = function () {
+GameScene.prototype.init = function () {
     var i,
         asteroid;
 
@@ -132,7 +132,7 @@ AsteroidsGameScene.prototype.init = function () {
     this.ship.position = {x: 0, y: 0};
 };
 
-AsteroidsGameScene.prototype.update = function (delta) {
+GameScene.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
 
     this.fpsLabel.text = 'FPS: ' + Math.round(this.parent.fps);
@@ -181,7 +181,7 @@ AsteroidsGameScene.prototype.update = function (delta) {
 /**
  * @description Handle keyboard input
  */
-AsteroidsGameScene.prototype.onKeyDown = function (key) {
+GameScene.prototype.onKeyDown = function (key) {
     if (this.gameOver === true) {
         return;
     }
@@ -210,7 +210,7 @@ AsteroidsGameScene.prototype.onKeyDown = function (key) {
 /**
  * @description Handle keyboard input
  */
-AsteroidsGameScene.prototype.onKeyUp = function (key) {
+GameScene.prototype.onKeyUp = function (key) {
     if (this.gameOver === true) {
         return;
     }
@@ -224,7 +224,7 @@ AsteroidsGameScene.prototype.onKeyUp = function (key) {
     }
 };
 
-AsteroidsGameScene.prototype.nextLevel = function() {
+GameScene.prototype.nextLevel = function() {
     this.level += 1;
     this.init();
 };
@@ -232,7 +232,7 @@ AsteroidsGameScene.prototype.nextLevel = function() {
 /**
  * @description Show "game over!" text
  */
-AsteroidsGameScene.prototype.showGameOver = function () {
+GameScene.prototype.showGameOver = function () {
     this.gameOver = true;
 
     this.deactivate(this.ship);
@@ -245,7 +245,7 @@ AsteroidsGameScene.prototype.showGameOver = function () {
 /**
  * @description Call on a Shape object to have it wrap around the screen, Asteroids-style
  */
-AsteroidsGameScene.prototype.wrapAroundScreen = function (object) {
+GameScene.prototype.wrapAroundScreen = function (object) {
     if (object.position.x - object.size.width / 2 > this.size.width / 2) {
         object.position.x = -this.size.width / 2;
     }

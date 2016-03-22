@@ -1,7 +1,7 @@
 /*jslint sloppy: true, plusplus: true */
 /*globals Arcadia */
 
-var AsteroidsTitleScene = function () {
+var TitleScene = function () {
     Arcadia.Scene.apply(this, arguments);
     // Background color
     this.color = '#000';
@@ -29,10 +29,10 @@ var AsteroidsTitleScene = function () {
         text: 'START',
         font: '20px monospace',
         action: function () {
-            Arcadia.changeScene(AsteroidsGameScene);
+            Arcadia.changeScene(GameScene);
         }
     });
     this.add(button);
 };
 
-AsteroidsTitleScene.prototype = new Arcadia.Scene();
+TitleScene.prototype = new Arcadia.Scene();

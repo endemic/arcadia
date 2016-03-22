@@ -18,18 +18,9 @@ var Ship = function () {
     this.thrust = 0;
     this.MAX_VELOCITY = 0.50;
 
-    this.path = function (context) {
-        context.moveTo(0, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
-        context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height * Arcadia.PIXEL_RATIO);
-        context.moveTo(0, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
-        context.lineTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height * Arcadia.PIXEL_RATIO);
-        context.moveTo(-this.size.width / 3 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
-        context.lineTo(this.size.width / 3 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
-    };
-
     this.jet = new Arcadia.Shape({
         vertices: 3,
-        border: '1px #fff',
+        border: '2px #fff',
         rotation: Math.PI,
         size: {width: 8, height: 8},
         position: {x: 0, y: 22},
@@ -40,6 +31,15 @@ var Ship = function () {
 };
 
 Ship.prototype = new Arcadia.Shape();
+
+Ship.prototype.path = function(context) {
+    context.moveTo(0, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+    context.lineTo(this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height * Arcadia.PIXEL_RATIO);
+    context.moveTo(0, -this.size.height / 2 * Arcadia.PIXEL_RATIO);
+    context.lineTo(-this.size.width / 2 * Arcadia.PIXEL_RATIO, this.size.height * Arcadia.PIXEL_RATIO);
+    context.moveTo(-this.size.width / 3 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+    context.lineTo(this.size.width / 3 * Arcadia.PIXEL_RATIO, this.size.height / 2 * Arcadia.PIXEL_RATIO);
+};
 
 Ship.prototype.update = function (delta) {
     // Rotate the ship based on `angularVelocity`
