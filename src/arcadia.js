@@ -32,8 +32,6 @@
      * @description Change the active scene being displayed
      */
     Arcadia.changeScene = function (SceneClass, options) {
-        options = options || {};
-        options.parent = Arcadia.instance;
         Arcadia.instance.activeScene = new SceneClass(options);
     };
 

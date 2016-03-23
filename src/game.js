@@ -17,6 +17,9 @@
             height: options.height
         };
 
+        Arcadia.VIEWPORT_WIDTH = this.size.width;
+        Arcadia.VIEWPORT_HEIGHT = this.size.height;
+
         // If game is scaled up/down, clicks/touches need to be scaled
         this.scale = 1;
 
@@ -128,8 +131,7 @@
             window.addEventListener('resize', this.onResize, false);
         }
 
-        this.activeScene = new options.scene({ parent: this });
-
+        this.activeScene = new options.scene();
         this.start();
     };
 
@@ -308,8 +310,8 @@
             return;
         }
 
-        this.activeScene.draw(this.context);
         this.activeScene.update(delta / 1000); // call update() using seconds
+        this.activeScene.draw(this.context);
         this.previousDelta = currentDelta;
     };
 

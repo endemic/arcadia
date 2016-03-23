@@ -10,10 +10,26 @@
      * @constructor
      */
     var Scene = function (options) {
-        Arcadia.GameObject.apply(this, arguments);
-        this.enablePointEvents = true;
         options = options || {};
-        this.parent = options.parent;
+        Arcadia.GameObject.call(this, options);
+
+        var DEFAULT_SIZE = {
+            width: Arcadia.VIEWPORT_WIDTH,
+            height: Arcadia.VIEWPORT_HEIGHT
+        };
+
+        this.size = options.size || DEFAULT_SIZE;
+        this.enablePointEvents = true;
+
+        // implement a camera view/drawing offset
+        this.camera = {
+            target: null,
+            viewport: {
+                width: Arcadia.VIEWPORT_WIDTH,
+                height: Arcadia.VIEWPORT_HEIGHT
+            },
+            position: {x: 0, y: 0}
+        };
     };
 
     Scene.prototype = new Arcadia.GameObject();
@@ -25,7 +41,7 @@
     Scene.prototype.update = function (delta) {
         Arcadia.GameObject.prototype.update.call(this, delta);
 
-        if (!this.camera) {
+        if (!this.camera.target) {
             return;
         }
 
@@ -60,12 +76,10 @@
             context.clearRect(0, 0, context.canvas.width, context.canvas.height);
         }
 
-        var origin = {x: this.size.width / 2, y: this.size.height / 2};
-
-        if (this.camera) {
-            origin.x = this.camera.viewport.width / 2 - this.camera.position.x;
-            origin.y = this.camera.viewport.height / 2 - this.camera.position.y;
-        }
+        var origin = {
+            x: this.camera.viewport.width / 2 - this.camera.position.x,
+            y: this.camera.viewport.height / 2 - this.camera.position.y
+        };
 
         // Draw child objects
         Arcadia.GameObject.prototype.draw.call(this, context, origin.x, origin.y);
@@ -84,26 +98,15 @@
                 throw new Error('Scene camera target requires a `position` property.');
             }
 
-            var viewportSize = this.parent ? this.parent.size : this.size;
-
-            // implement a camera view/drawing offset
-            this.camera = {
-                target: shape,
-                viewport: {
-                    width: viewportSize.width,
-                    height: viewportSize.height
-                },
-                bounds: {
-                    top: -this.size.height / 2,
-                    bottom: this.size.height / 2,
-                    left: -this.size.width / 2,
-                    right: this.size.width / 2
-                },
-                position: {
-                    x: shape.position.x,
-                    y: shape.position.y
-                }
+            this.camera.target = shape;
+            this.camera.bounds = {
+                top: -this.size.height / 2,
+                bottom: this.size.height / 2,
+                left: -this.size.width / 2,
+                right: this.size.width / 2
             };
+            this.camera.position.x = this.camera.target.position.x;
+            this.camera.position.y = this.camera.target.position.y;
         }
     });
 
