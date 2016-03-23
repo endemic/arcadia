@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Arcadia Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!-- Standalone app tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- Proprietary Apple tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Arcadia Demo">
+
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            background-size: 100% 100%;
+            cursor: pointer;
+        }
+        body,
+        #arcadia,
+        #arcadia canvas {
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+    </style>
+
+    <!-- engine -->
+    <script src="../../dist/arcadia.js"></script>
+
+    <!-- scenes -->
+    <script src="scenes/camera.js"></script>
+    <script src="scenes/labels.js"></script>
+    <script src="scenes/menu.js"></script>
+    <script src="scenes/particles.js"></script>
+    <script src="scenes/shapes.js"></script>
+    <script src="scenes/tweens.js"></script>
+
+    <script>
+        window.onload = function () {
+            var game = new Arcadia.Game({
+                width: 375,
+                height: 667,
+                scene: MenuScene,
+                scaleToFit: true
+            });
+        };
+    </script>
+
+  </head>
+  <body></body>
+</html>
