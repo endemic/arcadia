@@ -4,8 +4,7 @@
 var GameScene = function () {
     Arcadia.Scene.apply(this, arguments);
 
-    this.color = 'rgba(0, 0, 0, 0.25)';
-    this.size = {width: 640, height: 480};
+    this.color = 'rgba(0, 0, 0, 0.15)';
 
     // Player's ship
     this.ship = new Ship();
@@ -135,7 +134,7 @@ GameScene.prototype.init = function () {
 GameScene.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
 
-    this.fpsLabel.text = 'FPS: ' + Math.round(this.parent.fps);
+    this.fpsLabel.text = 'FPS: ' + Math.round(Arcadia.FPS);
 
     if (this.asteroids.length === 0) {
         this.nextLevel();

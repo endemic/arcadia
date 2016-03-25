@@ -12,7 +12,7 @@ var EnemyBullet = function () {
     this.color = 'rgb(0, 255, 0)';
     this.speed = 75;
     this.lineWidth = 3;
-    this.angularVelocity = -1;
+    this.angularVelocity = Arcadia.randomSign();
 };
 
 EnemyBullet.prototype = new Arcadia.Shape();

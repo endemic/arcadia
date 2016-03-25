@@ -4,7 +4,6 @@
 var GameScene = function () {
     Arcadia.Scene.apply(this, arguments);
 
-    this.size = {width: 320, height: 568};
     this.color = 'rgba(0, 0, 0, 0.15)';
 
     var self = this;
@@ -14,7 +13,6 @@ var GameScene = function () {
         position: {x: 0, y: this.size.height / 3}
     });
     this.add(this.player);
-    // this.target = this.player;
 
     // Other game objects
     this.playerBullets = new Arcadia.Pool();
@@ -77,12 +75,11 @@ var GameScene = function () {
                 x: Arcadia.random(-self.size.width / 2, self.size.width / 2),
                 y: Arcadia.random(-self.size.height / 2, self.size.height / 2)
             },
-            vertices: 4,
+            vertices: 3,
             size: {
-                width: Arcadia.random(1, 5),
-                height: Arcadia.random(1, 5)
+                width: Arcadia.random(1, 3),
+                height: Arcadia.random(1, 3)
             },
-            color: '#fff',
             angularVelocity: Arcadia.random(1, 4) * Arcadia.randomSign()
         });
 
@@ -114,9 +111,9 @@ var GameScene = function () {
         text: 'GAME OVER',
         font: '40px monospace',
         color: 'rgba(255, 255, 255, 0.8)',
-        shadow: '0 0 10px #fff'
+        shadow: '0 0 10px #fff',
+        zIndex: 0
     });
-
     this.add(this.gameOverLabel);
     this.deactivate(this.gameOverLabel);
 
@@ -131,33 +128,47 @@ var GameScene = function () {
             text: 'TRY AGAIN',
         }),
         padding: 15,
+        zIndex: 0,
         action: function () {
             // Just reload this scene
             Arcadia.changeScene(GameScene);
         }
     });
-
     this.add(this.tryAgainButton);
     this.deactivate(this.tryAgainButton);
 
-    // Score label
-    this.label = new Arcadia.Label({
+    this.scoreLabel = new Arcadia.Label({
         text: 'Score: 0',
         font: '16px monospace',
-        shadow: '0 0 10px rgba(255, 255, 255, 0.8)',
+        shadow: '0 0 10px white',
         position: {
-            x: -this.size.width / 2 + 45,
-            y: -this.size.height / 2 + 10
-        }
+            x: -this.size.width / 2 + 55,
+            y: -this.size.height / 2 + 15
+        },
+        zIndex: 0
     });
-    this.add(this.label);
+    this.add(this.scoreLabel);
     this.score = 0;
+
+    this.fpsLabel = new Arcadia.Label({
+        text: 'FPS: 0',
+        font: '16px monospace',
+        shadow: '0 0 10px white',
+        position: {
+            x: this.size.width / 2 - 45,
+            y: -this.size.height / 2 + 15
+        },
+        zIndex: 0
+    });
+    this.add(this.fpsLabel);
 };
 
 GameScene.prototype = new Arcadia.Scene();
 
 GameScene.prototype.update = function (delta) {
     Arcadia.Scene.prototype.update.call(this, delta);
+
+    this.fpsLabel.text = 'FPS: ' + Math.round(Arcadia.FPS);
 
     var angle,
         bullet,
@@ -189,7 +200,7 @@ GameScene.prototype.update = function (delta) {
 
                     this.playerBullets.deactivate(i);
                     this.score += 10;
-                    this.label.text = "Score: " + this.score;
+                    this.scoreLabel.text = "Score: " + this.score;
                     continue;
                 }
             }

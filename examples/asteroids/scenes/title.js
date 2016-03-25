@@ -6,8 +6,6 @@ var TitleScene = function () {
     // Background color
     this.color = '#000';
 
-    this.size = {width: 640, height: 480};
-
     // Basic text label
     var title = new Arcadia.Label({
         position: {
