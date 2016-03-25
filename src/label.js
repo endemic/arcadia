@@ -25,11 +25,6 @@
         Object.keys(options).forEach(function (property) {
             self[property] = options[property];
         });
-
-        this.anchor = {
-            x: this.size.width / 2,
-            y: this.size.height / 2
-        };
     };
 
     Label.prototype = new Arcadia.Shape();
@@ -175,7 +170,7 @@
             return this._text;
         },
         set: function (value) {
-            this._text = value;
+            this._text = String(value);
             this.dirty = true;
         }
     });

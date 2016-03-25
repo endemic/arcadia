@@ -120,9 +120,8 @@
             return this._size;
         },
         set: function (size) {
-            // Bad things happen if you try to draw a 0x0 canvas
-            if (size.width < 1 || size.height < 1) {
-                throw new Error('Bad things happen when you make a canvas smaller than 1x1');
+            if (size.width === 0 || size.height === 0) {
+                throw new Error('Bad things happen if you try to draw a 0x0 canvas!');
             }
 
             this._size = {width: size.width, height: size.height};
@@ -262,11 +261,11 @@
      * @param {CanvasRenderingContext2D} context
      */
     Shape.prototype.draw = function (context, offsetX, offsetY, offsetRotation, offsetScale, offsetAlpha) {
-        offsetX = offsetX || 0;
-        offsetY = offsetY || 0;
-        offsetRotation = offsetRotation || 0;
-        offsetScale = offsetScale || 1;
-        offsetAlpha = offsetAlpha || 1;
+        offsetX = offsetX === undefined ? 0 : offsetX;
+        offsetY = offsetY === undefined ? 0 : offsetY;
+        offsetRotation = offsetRotation === undefined ? 0 : offsetRotation;
+        offsetScale = offsetScale === undefined ? 1 : offsetScale;
+        offsetAlpha = offsetAlpha === undefined ? 1 : offsetAlpha;
 
         context.save();
 

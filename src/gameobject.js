@@ -12,9 +12,9 @@
     var GameObject = function (options) {
         options = options || {};
 
-        this.scale = options.scale || 1;
         this.rotation = options.rotation || 0; // in radians
-        this.alpha = options.alpha || 1;
+        this.scale = options.scale === undefined ? 1 : options.scale;
+        this.alpha = options.alpha === undefined ? 1 : options.alpha;
         this.enablePointEvents = options.enablePointEvents || false;
         this.position = options.position || {x: 0, y: 0};
 

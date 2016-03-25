@@ -659,9 +659,9 @@
     var GameObject = function (options) {
         options = options || {};
 
-        this.scale = options.scale || 1;
         this.rotation = options.rotation || 0; // in radians
-        this.alpha = options.alpha || 1;
+        this.scale = options.scale === undefined ? 1 : options.scale;
+        this.alpha = options.alpha === undefined ? 1 : options.alpha;
         this.enablePointEvents = options.enablePointEvents || false;
         this.position = options.position || {x: 0, y: 0};
 
@@ -1293,9 +1293,8 @@ if (typeof module !== 'undefined') {
             return this._size;
         },
         set: function (size) {
-            // Bad things happen if you try to draw a 0x0 canvas
-            if (size.width < 1 || size.height < 1) {
-                throw new Error('Bad things happen when you make a canvas smaller than 1x1');
+            if (size.width === 0 || size.height === 0) {
+                throw new Error('Bad things happen if you try to draw a 0x0 canvas!');
             }
 
             this._size = {width: size.width, height: size.height};
@@ -1435,11 +1434,11 @@ if (typeof module !== 'undefined') {
      * @param {CanvasRenderingContext2D} context
      */
     Shape.prototype.draw = function (context, offsetX, offsetY, offsetRotation, offsetScale, offsetAlpha) {
-        offsetX = offsetX || 0;
-        offsetY = offsetY || 0;
-        offsetRotation = offsetRotation || 0;
-        offsetScale = offsetScale || 1;
-        offsetAlpha = offsetAlpha || 1;
+        offsetX = offsetX === undefined ? 0 : offsetX;
+        offsetY = offsetY === undefined ? 0 : offsetY;
+        offsetRotation = offsetRotation === undefined ? 0 : offsetRotation;
+        offsetScale = offsetScale === undefined ? 1 : offsetScale;
+        offsetAlpha = offsetAlpha === undefined ? 1 : offsetAlpha;
 
         context.save();
 
@@ -1705,11 +1704,6 @@ if (typeof module !== 'undefined') {
         Object.keys(options).forEach(function (property) {
             self[property] = options[property];
         });
-
-        this.anchor = {
-            x: this.size.width / 2,
-            y: this.size.height / 2
-        };
     };
 
     Label.prototype = new Arcadia.Shape();
@@ -1855,7 +1849,7 @@ if (typeof module !== 'undefined') {
             return this._text;
         },
         set: function (value) {
-            this._text = value;
+            this._text = String(value);
             this.dirty = true;
         }
     });
