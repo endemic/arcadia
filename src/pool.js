@@ -44,7 +44,7 @@
      */
     Pool.prototype.add = function (object) {
         // Add a z-index property
-        if (!object.zIndex) {
+        if (object.zIndex === undefined) {
             object.zIndex = this.active.length + this.inactive.length;
         }
 

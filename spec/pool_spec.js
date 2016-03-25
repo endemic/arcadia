@@ -30,6 +30,13 @@ describe('Arcadia.Pool', function () {
             expect(this.pool.at(3).zIndex).toBe(4);
         });
 
+        it('allows specifying zIndex', function () {
+            this.pool.add(new Arcadia.Shape({ zIndex: 0 }));
+            this.pool.add(new Arcadia.Shape({ zIndex: 0 }));
+            expect(this.pool.at(0).zIndex).toBe(0);
+            expect(this.pool.at(1).zIndex).toBe(0);
+        })
+
         it('doesn\'t overwite inactive objects', function () {
             var self = this;
             var inactiveShape = new Arcadia.Shape();

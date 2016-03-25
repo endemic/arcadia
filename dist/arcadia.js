@@ -44,7 +44,7 @@
      */
     Pool.prototype.add = function (object) {
         // Add a z-index property
-        if (!object.zIndex) {
+        if (object.zIndex === undefined) {
             object.zIndex = this.active.length + this.inactive.length;
         }
 
@@ -282,10 +282,10 @@
         this.offset = {x: 0, y: 0};
 
         // Static variable tracking performance
-        this.fps = 60;
+        Arcadia.FPS = 60;
 
         if (options.hasOwnProperty('fps')) {
-            this.fps_limit = options.fps;
+            Arcadia.FPS_LIMIT = options.fps;
         }
 
         // Allow embedding the app in a specified container
@@ -511,12 +511,10 @@
             this.points.pop();
         }
 
-        var cameraOffset = {x: 0, y: 0};
-
-        if (this.activeScene.camera) {
-            cameraOffset.x = this.activeScene.camera.position.x;
-            cameraOffset.y = this.activeScene.camera.position.y;
-        }
+        var cameraOffset = {
+            x: this.activeScene.camera.position.x,
+            y: this.activeScene.camera.position.y
+        };
 
         if (event.type.indexOf('mouse') !== -1) {
             this.points.unshift({
@@ -558,10 +556,10 @@
         var delta = currentDelta - this.previousDelta;
         this.updateId = window.requestAnimationFrame(this.update);
 
-        this.fps = this.fps * 0.9 + 1000 / delta * 0.1; // delta == milliseconds
+        Arcadia.FPS = Arcadia.FPS * 0.9 + 1000 / delta * 0.1; // delta == milliseconds
 
         // Check against FPS limit; 1000ms / {n}FPS = ms/frame
-        if (this.fps_limit && delta < 1000 / this.fps_limit) {
+        if (Arcadia.FPS_LIMIT && delta < 1000 / Arcadia.FPS_LIMIT) {
             return;
         }
 
@@ -1325,8 +1323,8 @@ if (typeof module !== 'undefined') {
         }
 
         // Canvas cache needs to be large enough to handle shape size, border, and shadow
-        this.canvas.width = (this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur) * Arcadia.PIXEL_RATIO;
-        this.canvas.height = (this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur) * Arcadia.PIXEL_RATIO;
+        this.canvas.width = (this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur * 2) * Arcadia.PIXEL_RATIO;
+        this.canvas.height = (this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur * 2) * Arcadia.PIXEL_RATIO;
 
         this.setAnchorPoint();
 
@@ -1415,8 +1413,8 @@ if (typeof module !== 'undefined') {
         var y = this._size.height / 2 + this._border.width / 2;
 
         if (this._shadow.blur > 0) {
-            x += this._shadow.blur / 2;
-            y += this._shadow.blur / 2;
+            x += this._shadow.blur;
+            y += this._shadow.blur;
         }
 
         // Move negatively if shadow is also negative

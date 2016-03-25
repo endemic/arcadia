@@ -150,8 +150,8 @@
         }
 
         // Canvas cache needs to be large enough to handle shape size, border, and shadow
-        this.canvas.width = (this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur) * Arcadia.PIXEL_RATIO;
-        this.canvas.height = (this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur) * Arcadia.PIXEL_RATIO;
+        this.canvas.width = (this.size.width + this._border.width + Math.abs(this._shadow.x) + this._shadow.blur * 2) * Arcadia.PIXEL_RATIO;
+        this.canvas.height = (this.size.height + this._border.width + Math.abs(this._shadow.y) + this._shadow.blur * 2) * Arcadia.PIXEL_RATIO;
 
         this.setAnchorPoint();
 
@@ -240,8 +240,8 @@
         var y = this._size.height / 2 + this._border.width / 2;
 
         if (this._shadow.blur > 0) {
-            x += this._shadow.blur / 2;
-            y += this._shadow.blur / 2;
+            x += this._shadow.blur;
+            y += this._shadow.blur;
         }
 
         // Move negatively if shadow is also negative
