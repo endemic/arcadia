@@ -56,7 +56,7 @@
         var currentTargetIndex = 0;
         this.target = balls[currentTargetIndex];
 
-        setInterval(function () {
+        var intervalId = setInterval(function () {
             currentTargetIndex += 1;
             if (currentTargetIndex === balls.length) {
                 currentTargetIndex = 0;
@@ -73,6 +73,7 @@
             border: '2px white',
             position: {x: -this.size.width / 2 + 40, y: -this.size.height / 2 + 15},
             action: function () {
+                clearInterval(intervalId);
                 Arcadia.changeScene(MenuScene);
             }
         });

@@ -1,7 +1,6 @@
 describe('Arcadia.Shape', function () {
     var shape;
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
+    var dummyContext;
     var SHAPE_WIDTH = 30;
     var SHAPE_HEIGHT = 20;
 
@@ -12,6 +11,16 @@ describe('Arcadia.Shape', function () {
                 height: SHAPE_HEIGHT
             }
         });
+
+        dummyContext = {
+            save: function dummySave() {},
+            translate: function dummyTranslate() {},
+            rotate: function dummyRotate() {},
+            scale: function dummyScale() {},
+            restore: function dummyRestore() {},
+            drawImage: function dummyDrawImage() {},
+            globalAlpha: null
+        };
     });
 
     afterEach(function () {
@@ -27,7 +36,7 @@ describe('Arcadia.Shape', function () {
             it('updates internal cache', function () {
                 spyOn(shape, 'drawCanvasCache');
                 shape.color = 'red';
-                shape.draw(context);
+                shape.draw(dummyContext);
                 expect(shape.drawCanvasCache).toHaveBeenCalled();
             });
         });
@@ -41,7 +50,7 @@ describe('Arcadia.Shape', function () {
             it('updates internal cache', function () {
                 spyOn(shape, 'drawCanvasCache');
                 shape.border = '2px red';
-                shape.draw(context);
+                shape.draw(dummyContext);
                 expect(shape.drawCanvasCache).toHaveBeenCalled();
             });
             it('throws an error on invalid args', function () {
@@ -62,7 +71,7 @@ describe('Arcadia.Shape', function () {
             it('updates internal cache', function () {
                 spyOn(shape, 'drawCanvasCache');
                 shape.shadow = '2px 2px 2px red';
-                shape.draw(context);
+                shape.draw(dummyContext);
                 expect(shape.drawCanvasCache).toHaveBeenCalled();
             });
             it('throws an error on invalid args', function () {
@@ -80,7 +89,7 @@ describe('Arcadia.Shape', function () {
             it('updates internal cache', function () {
                 spyOn(shape, 'drawCanvasCache');
                 shape.vertices = 0;
-                shape.draw(context);
+                shape.draw(dummyContext);
                 expect(shape.drawCanvasCache).toHaveBeenCalled();
             });
         });
@@ -93,13 +102,13 @@ describe('Arcadia.Shape', function () {
             it('updates internal cache', function () {
                 spyOn(shape, 'drawCanvasCache');
                 shape.size = {width: 10, height: 10};
-                shape.draw(context);
+                shape.draw(dummyContext);
                 expect(shape.drawCanvasCache).toHaveBeenCalled();
             });
             it('throws an error on invalid args', function () {
                 expect(function () {
                     shape.size = {width: 0, height: 0};
-                }).toThrowError('Bad things happen when you make a canvas smaller than 1x1');
+                }).toThrowError('Bad things happen if you try to draw a 0x0 canvas!');
             });
             xit('allows setting size via string rather than object', function () {
                 shape.size = '4px 5px';
@@ -117,7 +126,7 @@ describe('Arcadia.Shape', function () {
             it('updates internal cache', function () {
                 spyOn(shape, 'drawCanvasCache');
                 shape.path = customPath;
-                shape.draw(context);
+                shape.draw(dummyContext);
                 expect(shape.drawCanvasCache).toHaveBeenCalled();
             });
         });
@@ -205,6 +214,17 @@ describe('Arcadia.Shape', function () {
     });
 
     describe('#draw', function () {
+        it('inherits scale value from parent, even if zero', function () {
+            spyOn(dummyContext, 'scale');
+            shape.draw(dummyContext, 0, 0, 0, 0, 0); //context, offsetX, offsetY, offsetRotation, offsetScale, offsetAlpha
+            expect(dummyContext.scale).toHaveBeenCalledWith(0, 0);
+        });
+
+        it('inherits alpha value from parent, even if zero', function () {
+            shape.draw(dummyContext, 0, 0, 0, 0, 0); //context, offsetX, offsetY, offsetRotation, offsetScale, offsetAlpha
+            expect(dummyContext.globalAlpha).toBe(0);
+        });
+
         xit('draws the shape to the main canvas', function () {
 
         });

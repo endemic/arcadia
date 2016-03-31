@@ -42,11 +42,6 @@
         Object.keys(options).forEach(function (property) {
             self[property] = options[property];
         });
-
-        this.anchor = {
-            x: this.size.width / 2,
-            y: this.size.height / 2
-        };
     };
 
     Shape.prototype = new Arcadia.GameObject();
@@ -234,7 +229,6 @@
      * @description Find the midpoint of the shape
      */
     Shape.prototype.setAnchorPoint = function () {
-        // TODO: ensure correctness of this
         var x = this._size.width / 2 + this._border.width / 2;
         var y = this._size.height / 2 + this._border.width / 2;
 
@@ -252,8 +246,10 @@
         }
 
         // Set anchor point (midpoint of shape)
-        this.anchor.x = x * Arcadia.PIXEL_RATIO;
-        this.anchor.y = y * Arcadia.PIXEL_RATIO;
+        this.anchor = {
+            x: x * Arcadia.PIXEL_RATIO,
+            y: y * Arcadia.PIXEL_RATIO
+        };
     };
 
     /**

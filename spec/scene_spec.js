@@ -11,9 +11,11 @@ describe('Arcadia.Scene', function () {
     var GAME_HEIGHT = 480;
 
     beforeEach(function () {
+        Arcadia.VIEWPORT_WIDTH = 640;
+        Arcadia.VIEWPORT_HEIGHT = 480;
+
         scene = new Arcadia.Scene({
-            size: {width: SCENE_WIDTH, height: SCENE_HEIGHT},
-            parent: {size: {width: GAME_WIDTH, height: GAME_HEIGHT}}
+            size: {width: SCENE_WIDTH, height: SCENE_HEIGHT}
         });
         context = jasmine.createSpyObj('context', [ 'canvas', 'clearRect', 'translate', 'save' ]);
     });

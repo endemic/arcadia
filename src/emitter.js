@@ -18,13 +18,19 @@
         }
 
         Arcadia.GameObject.apply(this, arguments);
-
+        // TODO: allow these to be set via options arg
+        /*
+            wishlist:
+            1. Fade particles over duration
+            2. scale particles over duration
+            3. Speed range (minSpeed/maxSpeed)
+            4. direction range (i.e. over unit circle)
+        */
         this.duration = 1;
         this.fade = false;
         this.scale = 1;
         this.speed = 200;
-        this.i = null;
-        this.particle = null;
+        this.infinite = false;
 
         while (count--) {
             this.children.add(factory());
@@ -40,10 +46,8 @@
      * @param {number} x Position of emitter on x-axis
      * @param {number} y Position of emitter on y-axis
      */
-    Emitter.prototype.startAt = function (x, y) {
-        this.timer = 0;
-        this.position.x = x;
-        this.position.y = y;
+    Emitter.prototype.activate = function () {
+        this.elapsed = 0;
 
         this.children.activateAll();
         this.reset();
@@ -69,21 +73,24 @@
     Emitter.prototype.update = function (delta) {
         Arcadia.GameObject.prototype.update.call(this, delta);
 
-        this.timer += delta;
+        this.elapsed += delta;
 
         var index = this.children.length;
         var particle;
 
         while (index--) {
             particle = this.children.at(index);
+            particle.elapsed += delta;
 
-            //particle.colors.alpha -= delta / this.duration if this.fade
+            if (this.fade) {
+                particle.alpha -= delta / this.duration;
+            }
 
             if (this.scale !== 1) {
                 particle.scale += this.scale * delta / this.duration;
             }
 
-            if (this.timer >= this.duration) {
+            if (particle.elapsed >= this.duration) {
                 this.children.deactivate(index);
             }
         }
@@ -93,7 +100,7 @@
         var index = this.children.length;
 
         while (index--) {
-            if (this.children.at(index).reset) {
+            if (typeof this.children.at(index).reset === 'function') {
                 this.children.at(index).reset();
             }
         }
