@@ -47,7 +47,8 @@
     	Arcadia.Scene.prototype.onPointEnd.call(this, points);
 
     	var particles = this.particlePool.activate();
-    	particles.startAt(points[0].x, points[0].y);
+    	particles.position = {x: points[0].x, y: points[0].y};
+        particles.activate();
     };
 
     root.ParticleDemoScene = ParticleDemoScene;

@@ -173,7 +173,7 @@
      * @description Mouse/touch event callback
      */
     Game.prototype.onPointMove = function (event) {
-        if (!this.mouseMove) {
+        if (!this.mouseMove && Arcadia.ENV.desktop) {
             return;
         }
         this.getPoints(event);

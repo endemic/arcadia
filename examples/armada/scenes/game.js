@@ -192,7 +192,9 @@ GameScene.prototype.update = function (delta) {
 
                 // Remove both enemy and bullet if they collide
                 if (enemy.collidesWith(bullet) === true) {
-                    this.particles.activate().startAt(bullet.position.x, bullet.position.y);
+                    var emitter = this.particles.activate();
+                    emitter.position = {x: bullet.position.x, y: bullet.position.y};
+                    emitter.activate();
 
                     // Move enemy back to top
                     enemy.position.y = -this.size.height / 2;
@@ -251,7 +253,10 @@ GameScene.prototype.update = function (delta) {
         if (bullet.position.y > this.size.height / 2 || bullet.position.y < -this.size.height / 2) {
             this.enemyBullets.deactivate(i);
         } else if (bullet.collidesWith(this.player)) {
-            this.particles.activate().startAt(this.player.position.x, this.player.position.y);
+            var emitter = this.particles.activate();
+            emitter.position = {x: this.player.position.x, y: this.player.position.y};
+            emitter.activate();
+
             this.showGameSceneOver();
             break;
         }
@@ -268,9 +273,9 @@ GameScene.prototype.onPointStart = function (points) {
         return;
     }
 
-    var angle = Math.atan2(points.coordinates[0].y - this.player.position.y, points.coordinates[0].x - this.player.position.x);
+    var angle = Math.atan2(points[0].y - this.player.position.y, points[0].x - this.player.position.x);
 
-    if (this.player.position.x !== points.coordinates[0].x && this.player.position.y !== points.coordinates[0].y) {
+    if (this.player.position.x !== points[0].x && this.player.position.y !== points[0].y) {
         this.player.velocity.x = Math.cos(angle);
         this.player.velocity.y = Math.sin(angle);
     }
@@ -283,9 +288,9 @@ GameScene.prototype.onPointMove = function (points) {
         return;
     }
 
-    var angle = Math.atan2(points.coordinates[0].y - this.player.position.y, points.coordinates[0].x - this.player.position.x);
+    var angle = Math.atan2(points[0].y - this.player.position.y, points[0].x - this.player.position.x);
 
-    if (this.player.position.x !== points.coordinates[0].x && this.player.position.y !== points.coordinates[0].y) {
+    if (this.player.position.x !== points[0].x && this.player.position.y !== points[0].y) {
         this.player.velocity.x = Math.cos(angle);
         this.player.velocity.y = Math.sin(angle);
     }
