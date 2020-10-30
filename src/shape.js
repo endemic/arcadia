@@ -115,8 +115,8 @@
             return this._size;
         },
         set: function (size) {
-            if (size.width === 0 || size.height === 0) {
-                throw new Error('Bad things happen if you try to draw a 0x0 canvas!');
+            if (size.width < 1 || size.height < 1) {
+                throw new Error('`Shape` width/height must be greater than 1!');
             }
 
             this._size = {width: size.width, height: size.height};

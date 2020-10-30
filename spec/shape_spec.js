@@ -107,8 +107,8 @@ describe('Arcadia.Shape', function () {
             });
             it('throws an error on invalid args', function () {
                 expect(function () {
-                    shape.size = {width: 0, height: 0};
-                }).toThrowError('Bad things happen if you try to draw a 0x0 canvas!');
+                    shape.size = {width: 0.5, height: 0};
+                }).toThrowError('`Shape` width/height must be greater than 1!');
             });
             xit('allows setting size via string rather than object', function () {
                 shape.size = '4px 5px';
